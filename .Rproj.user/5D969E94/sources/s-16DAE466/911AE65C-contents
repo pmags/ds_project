@@ -1,0 +1,24 @@
+--- 
+title: "Intro Data Science long project"
+author: "Pedro Miguel de Sousa Magalhães"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+documentclass: book
+bibliography: [book.bib, packages.bib]
+---
+
+# Introduction
+
+## Students commitment
+
+> Declaro que o presente relatório é de minha autoria e não foi utilizado previamente noutro curso ou unidade curricular, desta ou de outra instituição. As referências a outros autores (afirmações,ideias, pensamentos) respeitam escrupulosamente as regras da atribuição, e encontramse devidamente indicadas no texto e nas referências bibliográficas, de acordo com as normas dereferenciação. Tenho consciência de que a prática de plágio e auto-plágio constitui um ilícito académico.
+
+## Software information
+
+The R session information when building this project is has shown below:
+
+
+```{r}
+sessionInfo()
+```
+

@@ -1,0 +1,22 @@
+"1","      date                close            eps           ema_15          ema_30         evwma_30    
+ Min.   :2015-01-02   Min.   :40.29   Min.   :2.12   Min.   :41.48   Min.   :41.94   Min.   :42.59  
+ 1st Qu.:2015-07-05   1st Qu.:46.23   1st Qu.:2.12   1st Qu.:45.99   1st Qu.:45.76   1st Qu.:45.45  
+ Median :2016-01-02   Median :51.33   Median :2.12   Median :51.42   Median :51.71   Median :51.46  
+ Mean   :2016-01-01   Mean   :50.99   Mean   :2.12   Mean   :50.78   Mean   :50.57   Mean   :50.07  
+ 3rd Qu.:2016-07-02   3rd Qu.:55.72   3rd Qu.:2.12   3rd Qu.:54.87   3rd Qu.:54.17   3rd Qu.:53.01  
+ Max.   :2016-12-30   Max.   :63.62   Max.   :2.12   Max.   :62.65   Max.   :61.82   Max.   :60.35  
+      rsi             roc                momentum            per_30      per_30_mean       
+ Min.   :21.82   Min.   :-0.0970986   Min.   :-4.35000   Min.   :19.78   Length:504        
+ 1st Qu.:45.19   1st Qu.:-0.0066319   1st Qu.:-0.34500   1st Qu.:21.58   Class :character  
+ Median :52.76   Median : 0.0001881   Median : 0.01000   Median :24.39   Mode  :character  
+ Mean   :53.03   Mean   : 0.0005774   Mean   : 0.03113   Mean   :23.86                     
+ 3rd Qu.:61.38   3rd Qu.: 0.0076617   3rd Qu.: 0.36250   3rd Qu.:25.55                     
+ Max.   :84.19   Max.   : 0.0994130   Max.   : 4.84000   Max.   :29.16                     
+ diff_close_open    volatility_cat    
+ Length:504         Length:504        
+ Class :character   Class :character  
+ Mode  :character   Mode  :character  
+                                      
+                                      
+                                      
+"

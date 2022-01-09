@@ -1,0 +1,54 @@
+# Business Understanding
+
+## Business objectives
+
+The client is a e-commerce company operating on the high end market. Its only known sales channel is online. They wish to improve their customers experience, and their conversion, by using the information they actively collect from each touchpoint.
+
+Main business goal: improve conversion
+How to achieve goal: understand which factors influence conversion so marketing strategy can be improved
+
+## Assess Situation
+
+A Sample of customer sessions for given period of time is provided. 
+There is no information regarding how session was defined.
+No information regarding user identification was provided and there for is not possible to use user as a perspective on the analysis or any information regarding acquisition journey. Therefore the project will focus solely on sessions, nonetheless it is important to point out the fact that a user can have several sessions which lead into a conversion and that can impact conversion strategies.
+
+No special hardware and environment needs was identified
+
+## Data Mining Goals
+
+Based on the Business Goals and the nature of the data available we can conclude this is a **binary classification problem with a focus on inference.** Therefore the following assumptions can be made about the expected output:
+
+- The actual model contains valuable information to be used by the client. Therefore, black box models are less in line with the needs,
+- The probability of conversion is not relevant,
+- Each variable attribution is relevant
+
+Throut this project we will address the following questions:
+
+- Is there a relationship between a conversion and information available related to that session ?
+- Which is the contribution of each of the variables to conversion?
+- How accurately can we estimate the effect on conversion?
+- Is there synergy among each session elements?
+- Does a model surpass a naive baseline approach of assuming the most shown class?
+- Does Data imbalance impact output?
+
+## Project Plan
+
+The current project was executed with the following stages:
+
+1. Explore data Analysis
+2. Data transformations
+3. Data preparation for modeling
+4. Modeling
+5. Conclusions
+
+
+The following terms will be used during this project with the following meaning:
+
+**User:** any unique IP which has reached the store. One individual can have more than one ip,
+
+**Client:** a user that converted, this means, it bought from the shop,
+
+**Touchpoints:** represents any interaction between the user and the online store of any sort,
+
+**Session:** a period of time (normally of 30 min max) during which the user interacted with the shop. Every session starts with a touchpoint. Under some conditions depending on the website metrics collection a session can have more than one touchpoint. 

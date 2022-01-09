@@ -1,0 +1,4 @@
+"1","Warning: Problem with `mutate()` column `r2`.
+i `r2 = map_dbl(fit, ~modelr::rsquare(., data = msft_prices_2015_2016_df))`.
+i prediction from a rank-deficient fit may be misleading
+"

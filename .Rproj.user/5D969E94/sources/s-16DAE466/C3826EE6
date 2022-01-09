@@ -1,0 +1,27 @@
+{
+    "id": "C3826EE6",
+    "path": "C:/repos/introDS_finalProject/scripts/eda_functions.R",
+    "project_path": "scripts/eda_functions.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1641693378516.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "wxz0ui7liih4g",
+        "Source": "Source",
+        "cursorPosition": "87,2",
+        "scrollLine": "0"
+    },
+    "folds": "14|30|25|0|\n40|51|83|0|\n98|49|144|0|\n159|52|192|0|\n",
+    "lastKnownWriteTime": 1641756053,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1641756053369,
+    "read_only": false,
+    "read_only_alternatives": []
+}

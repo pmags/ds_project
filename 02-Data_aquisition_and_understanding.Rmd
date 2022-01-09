@@ -1,0 +1,100 @@
+# Data aquisition and understanding
+
+```{r, libraries}
+
+library(tidyverse)
+library(corrplot)
+
+source("scripts/eda_functions.r")
+
+```
+
+
+```{r, importing data,}
+
+# import data
+full_data <- read_csv("./data/train_full.csv")
+balanced_data <- read_csv("./data/train_balanced.csv")
+
+```
+
+## Data description
+
+- session_id -> Identifier of the session
+- customer type -> Identifies if a user has purchased before (customer/prospect)
+- device group -> Device Group (app/mobile web/desktop/etc.)
+- visitor type -> If the device is new in the company platform
+- has_listing -> Flag that indicates if the session has a listing view
+- has_used_search -> Flag that indicates if the session has a search view
+- has_recommendation -> Flag that indicates if the session has a recommendation view
+- has_add_to_wishlist -> Flag that indicates if the session has an add_to_wishlist view
+- as_add_to_bag -> Flag that indicates if the session has an add_to_bag view
+- duration -> Session duration (in seconds)
+- view_qty -> Number of views in the session
+- unique_product_qty -> Number of distinct product page views within the session
+- unique_browse_designer_qty -> Number of distinct designer_id within the session
+- unique_browse_category_qty -> Number of distinct category_id within the session
+- is_subscribed -> If the user is subscribed in the newsletter
+- browser_name -> User agent browser name
+- country -> Session client country
+- bought -> Flag that indicates if the session has an order
+
+
+## Explore data
+
+
+
+What type of variation occurs within my variables?
+
+What type of covariation occurs between my variables?
+
+
+### Full data
+
+
+```{r}
+
+continuous <- full_data %>% 
+  select(duration) %>% 
+  names() %>% 
+  set_names()
+
+discrete <- full_data %>% 
+  select(view_qty, unique_product_qty, unique_browse_designer_qty) %>% 
+  names() %>% 
+  set_names()
+
+categorical <- full_data %>% 
+  select(-duration, -view_qty, -unique_product_qty, 
+         -unique_browse_designer_qty, - ...1, -session_id, -bought) %>% 
+  names() %>% 
+  set_names()
+
+eda_cont <- map(continuous, ~eda_continuous(full_data, .x))
+
+eda_dis <- map(discrete, ~eda_discrete(full_data, .x))
+
+eda_cat <- map(categorical, ~eda_categorical(full_data, .x))
+
+eda <- append(eda_cont, eda_dis)
+
+
+#grid.draw(eda[["duration"]]) 
+
+```
+
+```{r}
+
+M <- cor(full_data %>% 
+           select_if(is.numeric))
+corrplot(M, type = "upper", method = "number", diag = FALSE, 
+         order = 'hclust', addrect = 2)
+
+```
+
+- Chi squared test for categorical data
+
+### Balanced data
+
+## Assess data quality
+
