@@ -2,28 +2,76 @@
 
 ## Business objectives
 
-The client is a e-commerce company operating on the high end market. Its only known sales channel is online. They wish to improve their customers experience, and their conversion, by using the information they actively collect from each touchpoint.
 
-Main business goal: improve conversion
-How to achieve goal: understand which factors influence conversion so marketing strategy can be improved
+:::{style="color: blue;"}
+*What is the company wishing to achieve?*
+:::
+
+A Luxury high end Brand sells its goods online using its own e-commerce platform and wishes to **increase its conversion rate**.
+
+No further information is available about the companies business like other sale channel or product category, although from the available information we can conclude the brand has a global reach.
+
+```{r Conversion rate, echo=FALSE, message=TRUE, warning=FALSE}
+source("scripts/eda_functions.r")
+data <- read.csv("data/train_full.csv")
+
+ggplot(data, aes(x = factor(bought), 
+                 y = prop.table(stat(count)), 
+                 label = scales::percent(prop.table(stat(count))) )) +
+    geom_bar(fill="darkblue", color="black") +
+    geom_text(stat = 'count',
+                position = position_dodge(.9), 
+                vjust = -0.5, 
+                size = 3) +
+    scale_y_continuous(labels = scales::percent) +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Conversion Rate",
+      caption = "Calculation based on data set train-full"
+    ) 
+
+```
+
+The available sample data shows a 8% top of funnel conversion rate ( substantially higher than e-commerce benchmark which is around 2% ). Conversion top of funnel uses landing touchpoints as index. No information is given about any goal or additional metrics tracked by the company, therefore it won't be take into consideration during this project.
+
 
 ## Assess Situation
 
-A Sample of customer sessions for given period of time is provided. 
-There is no information regarding how session was defined.
-No information regarding user identification was provided and there for is not possible to use user as a perspective on the analysis or any information regarding acquisition journey. Therefore the project will focus solely on sessions, nonetheless it is important to point out the fact that a user can have several sessions which lead into a conversion and that can impact conversion strategies.
+:::{style="color: blue;"}
+*What is available for the project?*
+:::
 
-No special hardware and environment needs was identified
+A sample of balanced and unbalanced information was made available containing information about individual sessions. No information is provided about session definitions (eg: cap session duration. Industries norm is between 25 ~ 30 min) and about user anonymous ids. There isn't therefore, enough information to analyse potential impacts of different customer journeys. Additionally no information is provided concerning the date each session accured, which invalidate any seasonal analysis.
+
+Given the generaly accepted impact that multitudinous has on conversion it will be assume henceforward that **sessions are independent and identically distributed**
+
+### Hardware and environment special needs
+
+There aren't any specific needs for hardware or data infrastructure. Data will be ingested directly from csv files and all transformation will be done on development machine. Environment information available on `.renv` file
 
 ## Data Mining Goals
 
-Based on the Business Goals and the nature of the data available we can conclude this is a **binary classification problem with a focus on inference.** Therefore the following assumptions can be made about the expected output:
+:::{style="color: blue;"}
+*How will Data team achieve Business Goals?*
+:::
 
-- The actual model contains valuable information to be used by the client. Therefore, black box models are less in line with the needs,
-- The probability of conversion is not relevant,
-- Each variable attribution is relevant
+Based on the available information the project is **binary classification problem with a focus on inference.**. The company is looking to identify session variables which signal users which will convert or not in order to redefine marketing strategies and approaches. There are only to available states, either the user "bought" or it didn't. 
 
-Throut this project we will address the following questions:
+No information is provide regarding the expected use of this project. Therefore it will be assumed through this project that the main stakeholders is the marketing team and are human. Therefore, a bigger focus on the modeling process and coefficients is needed and is considered part of the deliver. The assumption is relevant since it impacts the final conclusions and the final model chosen. Given 2 similar models with sensible the same target metric the more interpretable one will be choosen.
+
+:::{.title}
+**Target metrics**
+:::
+
+Given the goals of this project stated before on Business Objectives the focus will be on maximizing *Accuracy*. The business is looking for the model which more accurately explains session conversion.
+
+:::{.title}
+**Data questions**
+:::
+
+During this project the following questions will be addressed
 
 - Is there a relationship between a conversion and information available related to that session ?
 - Which is the contribution of each of the variables to conversion?
@@ -34,14 +82,19 @@ Throut this project we will address the following questions:
 
 ## Project Plan
 
-The current project was executed with the following stages:
+Due to time restrictions the present project follows a hibryd approach of CRISP-DM and TDSF and is organized in the following stages:
 
-1. Explore data Analysis
-2. Data transformations
-3. Data preparation for modeling
-4. Modeling
-5. Conclusions
+Stage 1 - Undertand Business and Its environment
 
+Stage 2 - Understand and explore data: study of distribution and relationship among available data
+
+Stage 3 - Data preparation for modeing: Preprocessing workflow
+
+Stage 4 - Modeling: Model definition, initial experiments and hyperparamete tunning
+
+Stage 5 - Delivery: Conclusions of the project
+
+## Terms
 
 The following terms will be used during this project with the following meaning:
 

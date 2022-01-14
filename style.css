@@ -12,3 +12,17 @@ pre {
 pre code {
   white-space: inherit;
 }
+
+.yellowbox {
+  padding: 1em;
+  background: lightyellow;
+  color: black;
+}
+
+.center {
+  text-align: center;
+}
+
+.title {
+  font-size: 24px;
+}

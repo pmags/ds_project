@@ -1,19 +1,32 @@
 --- 
-title: "Intro Data Science long project"
+title: "Long Project: Model convertion for a Luxury Brand e-commerce"
+subtitle: "Introduction to Data Science [Masted Data Science]"
 author: "Pedro Miguel de Sousa Magalhães"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 documentclass: book
-bibliography: [book.bib, packages.bib]
+bibliography:
+- book.bib
+- packages.bib
+nocite: '@*'
 ---
 
-# Introduction
+# Introduction {-}
 
-## Students commitment
+:::{.title}
+**Students commitment**
+:::
 
-> Declaro que o presente relatório é de minha autoria e não foi utilizado previamente noutro curso ou unidade curricular, desta ou de outra instituição. As referências a outros autores (afirmações,ideias, pensamentos) respeitam escrupulosamente as regras da atribuição, e encontramse devidamente indicadas no texto e nas referências bibliográficas, de acordo com as normas dereferenciação. Tenho consciência de que a prática de plágio e auto-plágio constitui um ilícito académico.
+:::{.yellowbox}
 
-## Software information
+Declaro que o presente relatório é de minha autoria e não foi utilizado previamente noutro curso ou unidade curricular, desta ou de outra instituição. As referências a outros autores (afirmações,ideias, pensamentos) respeitam escrupulosamente as regras da atribuição, e encontramse devidamente indicadas no texto e nas referências bibliográficas, de acordo com as normas dereferenciação. Tenho consciência de que a prática de plágio e auto-plágio constitui um ilícito académico.
+
+:::
+
+
+:::{.title}
+**R session information**
+:::
 
 The R session information when building this project is has shown below:
 

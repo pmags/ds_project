@@ -3,16 +3,17 @@ title: "R Notebook"
 output: html_notebook
 ---
 
-## Workflow: Support Vector Machine
+## Support Vector Machine
 
-```{r libraries}
+```{r libraries, include=FALSE}
 # libraries
 library(tidyverse)
 library(tidymodels)
-library(keras)
 library(workflowsets)
-library(discrim)
-library(factoextra)
+
+source("scripts/eda_functions.r")
+
+doParallel::registerDoParallel()
 
 ```
 
@@ -30,7 +31,7 @@ balanced_data <- read_csv("./data/train_balanced.csv") %>%
 
 ```
 
-```{r resampling folds, message=TRUE, warning=FALSE}
+```{r resampling folds, message=TRUE, warning=FALSE, include=FALSE}
 
 # cv 10 folds
 
@@ -42,12 +43,16 @@ folds <- vfold_cv(balanced_data, v = 10)
 
 ```
 
-### Linear Kernel
+### Initial experience: Linear Kernel
 
-```{r}
+A Linear Kernel with default parameters will be used as the basis for
+
+```{r linear kernel}
 # 1. specify the model
 svm_linear <-
-  svm_linear()
+  svm_linear(cost = 0.5) %>% 
+  set_engine("kernlab") %>% 
+  set_mode("classification")
 
 
 # 2. preprocessing 
@@ -63,30 +68,134 @@ preprocess <-
   step_string2factor(all_nominal_predictors()) %>% 
   step_impute_knn(all_predictors(), neighbors = 3) %>%
   step_pca(starts_with("has_"), num_comp = 1) %>% 
-  step_corr(all_numeric_predictors(), threshold = .5)
+  step_corr(all_numeric_predictors(), threshold = .5) 
 
 preprocess_mlp_svm <- 
   preprocess %>% 
   step_normalize(all_numeric_predictors()) %>% 
   step_scale(all_numeric_predictors()) %>% 
-  step_dummy(all_nominal_predictors()) 
+  step_dummy(all_nominal_predictors()) %>% 
+  step_zv(all_predictors()) 
 
-  
 # 3, Buildworkflow
 svm_linear_wflow <- 
   workflow() %>% 
-  add_model(svm_lineart) %>% 
+  add_model(svm_linear) %>% 
   add_recipe(preprocess_mlp_svm)
 
 #4. Fit model
-fit_control <- control_resamples(save_pred = TRUE, save_workflow = TRUE)
+fit_control <- control_grid(save_pred = TRUE, save_workflow = TRUE)
 
 svm_linear_fit <- 
   svm_linear_wflow %>% 
-  fit_resamples(folds, verbose = TRUE, control = fit_control)
+  fit_resamples(
+    resamples = folds, 
+    verbose = TRUE, 
+    metrics = metric_set(roc_auc, accuracy, sens),
+    control = fit_control)
 
 
 #5. Performance metrics over the validation set
 collect_metrics(svm_linear_fit)
 
 ```
+
+```{r}
+
+conf_mat_resampled(svm_linear_fit)
+
+```
+
+```{r linear kernel roc curve}
+
+svm_linear_fit %>% 
+  collect_predictions() %>% 
+  group_by(id) %>% 
+  roc_curve(bought, .pred_0) %>% 
+  ggplot(aes(1- specificity, sensitivity, color = id)) +
+  geom_abline(lty = 3, color = "gray80", size = 1) +
+  geom_path(show.legend = FALSE, alpha = 0.6, size = 1) +
+  theme_masterDS() +
+  coord_equal()
+
+```
+
+
+
+### Fitting multiple models
+
+```{r setup workflow svm}
+
+#1. list model to inject into workflow
+svm_linear <-
+  svm_rbf(cost = 0.5) %>% 
+  set_engine("kernlab") %>% 
+  set_mode("classification")
+
+svm_poly_kernlab_spec <-
+  svm_poly(cost = tune(), degree = tune(), scale_factor = tune(), margin = tune()) %>%
+  set_engine('kernlab') %>%
+  set_mode('classification')
+
+svm_rbf_kernlab_spec <-
+  svm_rbf(cost = tune(), rbf_sigma = tune(), margin = tune()) %>%
+  set_engine('kernlab') %>%
+  set_mode('classification')
+
+models_flow <- 
+  workflow_set(
+    preproc = list(recipe = preprocess_mlp_svm),
+    models = list(svm_ploy = svm_poly_kernlab_spec, svm_rbf = svm_rbf_kernlab_spec),
+    cross = TRUE 
+    )
+
+```
+
+```{r}
+
+wf_fit <- 
+  models_flow %>%
+  workflow_map(
+    fn ="tune_grid",
+    resamples = folds,
+    metrics = metric_set(roc_auc, accuracy, sens),
+    verbose = TRUE
+    ) 
+
+```
+
+```{r}
+
+autoplot(wf_fit) +
+  theme_masterDS()
+
+```
+
+```{r}
+autoplot(wf_fit, select_best = TRUE) +
+  theme_masterDS()
+```
+
+```{r}
+rank_results(wf_fit, rank_metric = "sens", select_best = TRUE) %>% 
+   select(rank, mean, model, wflow_id, .config)
+```
+
+```{r}
+rank_results(wf_fit, rank_metric = "accuracy", select_best = TRUE) %>% 
+   select(rank, mean, model, wflow_id, .config)
+```
+
+```{r}
+
+autoplot(wf_fit, metric = "accuracy",id = "recipe_svm_ploy")
+
+```
+
+
+```{r}
+# export files
+save(wf_fit,file="_models/svm_wf_fit.RData")
+save(svm_linear_fit, file = "_models/svm_linear_fit.RData")
+```
+

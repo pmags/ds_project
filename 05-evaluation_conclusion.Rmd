@@ -6,3 +6,12 @@ output: html_document
 ---
 
 # Evaluation and conclusion
+
+
+```{r create_reference_list, include=FALSE}
+
+write_bib(x = .packages()), file = 'packages.bib')
+
+```
+
+

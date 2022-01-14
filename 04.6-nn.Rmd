@@ -89,7 +89,11 @@ fit_control <- control_resamples(save_pred = TRUE, save_workflow = TRUE)
 
 sl_fit <- 
   sl_wflow %>% 
-  fit_resamples(folds, verbose = TRUE, control = fit_control)
+  fit_resamples(
+    resamples = folds, 
+    metrics = metric_set(roc_auc, accuracy, sens, spec),
+    verbose = TRUE, 
+    control = fit_control)
 
 
 #5. Performance metrics over the validation set

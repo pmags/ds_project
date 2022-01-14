@@ -59,6 +59,7 @@ The initial experiment uses the preprocess schema and the default hyperparameter
 
 ## Baseline
 
+Given its simplicity and flexibility a Naive Bayes classifier will be used as baseline for this project. The preprocess was set to a minimum in order to measure the impact it might have on the final output. The engine used for this algorithm does not accept missing data, therefore we did a 3nn imputation.
 
 ```{r}
 
@@ -94,41 +95,31 @@ collect_metrics(baseline_fit)
 
 ```
 
-Given its simplicity and flexibility a Naive Bayes classifier will be used as baseline for this project. The preprocess was set to a minimum in order to measure the impact it might have on the final output. The engine used for this algorithm does not accept missing data, therefore we did a 3nn imputation.
+```{r}
 
+conf_mat_resampled(baseline_fit)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+```
 
 ```{r}
 
-# location <- list(
-#   longitude = Sale_Price ~ Longitude,
-#   latitude = Sale_Price ~ Latitude,
-#   coords = Sale_Price ~ Longitude + Latitude,
-#   neighborhood = Sale_Price ~ Neighborhood
-# )
-# 
-# library(workflowsets)
-# location_models <- workflow_set(preproc = location, models = list(lm = lm_model))
-# 
-# location_models <-
-#    location_models %>%
-#    mutate(fit = map(info, ~ fit(.x$workflow[[1]], ames_train)))
+svm_linear_fit %>% 
+  collect_predictions() %>% 
+  group_by(id) %>% 
+  roc_curve(bought, .pred_0) %>% 
+  ggplot(aes(1- specificity, sensitivity, color = id)) +
+  geom_abline(lty = 3, color = "gray80", size = 1) +
+  geom_path(show.legend = FALSE, alpha = 0.6, size = 1.2) +
+  theme_masterDS() +
+  coord_equal()
 
 ```
+
+
+
+
+
+
 
 
 

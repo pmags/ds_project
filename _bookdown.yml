@@ -1,10 +1,15 @@
 delete_merged_file: true
+before_chapter_script: ["scripts/pre_render.R"]
 language:
   ui:
     chapter_name: "Stage "
 rmd_files:
   html: [
+    "index.Rmd",
+    "01-business_understanding.Rmd",
+    "02-Data_aquisition_and_understanding.Rmd"]
+  latex: [
     "index.Rmd", 
-    "01-business_understanding.Rmd", 
-    "03-data_transformations.Rmd"]
-
+    "01-business_understanding.Rmd",
+    "02-Data_aquisition_and_understanding.Rmd"
+  ]

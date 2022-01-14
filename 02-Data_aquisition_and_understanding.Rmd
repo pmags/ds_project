@@ -1,17 +1,8 @@
----
-output: html_notebook
----
-
 # Data aquisition and understanding
 
+## Description
 
-Features by:
-- behavior
-- journey
-- segment
-- device and geo
-
-```{r message=FALSE, warning=FALSE}
+```{r libraries and scripts, message=FALSE, warning=FALSE, include=FALSE}
 
 library(tidyverse)
 library(corrplot)
@@ -20,12 +11,8 @@ library(tidymodels)
 library(mice)
 library(forecast)
 
+# script with visual functions
 source("scripts/eda_functions.r")
-
-```
-
-
-```{r message=TRUE, warning=FALSE}
 
 # import data
 unbalanced_data <- read_csv("./data/train_full.csv") %>% select(-...1)
@@ -44,64 +31,31 @@ balanced_data <- balanced_data %>%
 
 ```
 
-## Data description
+Two datasets were made available for analysis. One with a balanced class for the target variable and the other raw. This analysis focus on the full dataset. 
 
-Each row represents a unique session.
-The data available has the following nature and description given the role they play:
+From the available description the available columns follow into one of the following categories:
 
-**Dependent variable:**
+1. Irrelevant for the project;
 
-*bought:* categorical variable flagging if a order was made during that session. If true the value is 1 and zero undewise. Category available already has dummy. **This is the target or dependent variable of this project**.
+2. Target or dependent Variable: what will be studied;
 
-**Independent variable**
-Features to use with the models
+3. Customer Behavior related Features: potential features which reflect how users behaved on each session and can explain the target variable;
 
-*customer type:* category with 2 levels, "prospect" if it hasn't purchased before and "customer" if it's a repeated buyer.
+4. Customer Journey related Features: potential features contain information on how uses interacted with the on-line shop;
 
-```{r}
-unique(unbalanced_data$customer_type)
-```
-*device group:* category variable with 3 levels each representing the device source for each session.  
+5. Client Segment related Features: potential features which provide information on how a user might be classified from a marketing perspective;
 
-```{r}
-unique(unbalanced_data$device_group)
-```
-*visitor type:* categorical value with 2 levels representing if a given user is a new or recurring user. It differs from customer type because it focus on visits and not actual conversion, therefore a returning user can be a prospect.
+6. Device and Geography related Features: provide information regarding location and access device used by a user.
 
-```{r}
-unique(unbalanced_data$visitor_type)
-```
-*has_listing, has_used_search, has_recommendation, has_add_to_wishlist, has_add_to_bag:* are all boolean variables representing key milestones on business customer journey. They are TRUE/ 1 if a given session includes that step. 
+```{r data structure, message=FALSE, warning=FALSE}
 
-*duration:* continuous variable representing the session duration in seconds
-
-*view_qty:* discrete variable measuring the number of views during a session. Based on the information given we assume it measures the number of page views during a session
-
-*unique_product_qty:* given the definition on view_qty refered before, it measures the number of page views on product pages
-
-*unique_browse_designer_qty:* given the definition on view_qty refered before, it measures the number of page views on unique designer pages. The more the number represents a certain user researched a lot of desiners during the browsing session. Discrete variable
-
-*unique_browse_category_qty:* given the definition on view_qty refered before, it measures the number of page views on unique category pages. The more the number represents a certain user researched a lot of products categories during the browsing session. Discrete variable
-
-*browser_name:* categorical variable representing the browser used as source for each session. From the available information from the unbalanced data we have 52 different browsers present on this dataset. 
-
-```{r}
-
-unique(unbalanced_data$browser_name)
+str(unbalanced_data)
 
 ```
 
-*country:* categorical variable containing the country of origin for each session.
+## Irrelevant or technical information
 
-```{r}
-
-unique(unbalanced_data$country)
-
-```
-
-**Additional information not used as features**
-
-*session_id:* Unique identifier for each session. Each row represents a unique session
+`Session_id` is a unique key which sole purpose is to uniquely identify each sessions and contains no exploratory power, therefore it will be removed from future analysis.
 
 ```{r}
 
@@ -109,96 +63,11 @@ unique(unbalanced_data$country)
 length( unique(unbalanced_data$session_id) ) == nrow(unbalanced_data)
 
 ```
+## Target Variable: To buy or not to buy ...
 
-## Explore data
+**Boolean variable** which assumes the values of 1 when a transaction happened on the session and zero other wise. Its the objective variable of this project.
 
-```{r,unbalanced data, include=FALSE}
-
-continuous <- unbalanced_data %>% 
-  select(duration) %>% 
-  names() %>% 
-  set_names()
- 
-discrete <- unbalanced_data %>% 
-  select(view_qty, unique_product_qty, unique_browse_designer_qty) %>% 
-  names() %>% 
-  set_names()
-
-categorical <- unbalanced_data %>% 
-  select(-duration, -view_qty, -unique_product_qty, 
-         -unique_browse_designer_qty, -session_id, -bought) %>% 
-  names() %>% 
-  set_names()
-
-eda_cont <- map(continuous, ~eda_continuous(unbalanced_data, .x))
-
-eda_dis <- map(discrete, ~eda_discrete(unbalanced_data, .x))
-
-eda_cat <- map(categorical, ~eda_categorical(unbalanced_data, .x))
-
-eda_unbalanced <- c(eda_cont, eda_dis, eda_cat)
-rm(eda_cont,eda_dis, eda_cat)
-
-```
-
-```{r, balanced data, include=FALSE}
-
-continuous <- balanced_data %>% 
-  select(duration) %>% 
-  names() %>% 
-  set_names()
-
-discrete <- balanced_data %>% 
-  select(view_qty, unique_product_qty, unique_browse_designer_qty) %>% 
-  names() %>% 
-  set_names()
-
-categorical <- balanced_data %>% 
-  select(-duration, -view_qty, -unique_product_qty, 
-         -unique_browse_designer_qty, -session_id, -bought) %>% 
-  names() %>% 
-  set_names()
-
-eda_cont <- map(continuous, ~eda_continuous(balanced_data, .x))
-
-eda_dis <- map(discrete, ~eda_discrete(balanced_data, .x))
-
-eda_cat <- map(categorical, ~eda_categorical(balanced_data, .x))
-
-eda_balanced <- c(eda_cont, eda_dis, eda_cat)
-rm(eda_cont,eda_dis, eda_cat)
-
-```
-
-```{r, correlation plot, include=FALSE}
-
-M <- cor(unbalanced_data %>% 
-           select_if(is.numeric))
-corrplot(M, type = "upper", method = "number", diag = FALSE, 
-         order = 'hclust', addrect = 2)
-
-```
-
-```{r}
-
-unbalanced_chi <- unbalanced_data %>% 
-  select_if(is.factor) %>% 
-  map(function(x) chisq.test(x, unbalanced_data$bought))
-
-balanced_chi <- balanced_data %>% 
-  select_if(is.factor) %>% 
-  map(function(x) chisq.test(x, balanced_data$bought))
-
-
-```
-
-
-In this section we will explore the variables available using both unbalanced and balanced data. In special we will focus on the following questions:
-
-- What type of variation occurs within my variables?
-- What type of covariation occurs between my variables?
-
-### Dependent variable: Bought
+The available dataset with full data presents a severe class imbalance towards `not buy` which can and will Bias model output (a model assuming that nobody buys on each session is already "92% of the times right"). This bias is corrected on the balanced dataset at the expanse of some changes on 
 
 ```{r target variable, echo=FALSE, include=FALSE}
 
@@ -239,570 +108,16 @@ balanced_grid <- grid.arrange(balanced_bar, tableGrob(balanced_summary), nrow = 
 
 ```
 
-```{r echo=FALSE}
+```{r target unbalanced grid, echo=FALSE}
 
 grid.draw(unbalanced_grid) 
 
 ```
 
-The "bought" variable is the target variable from this study and we can conclude the data is severely class inbalance towards no order which can affects modeling since it is biased towards the majority class. Has can be seen below this effect is corrected on the balanced dataset.
-
-```{r}
+```{r target balanced grid}
 
 grid.draw(balanced_grid)
 
 ```
-
-### Customer type
-
-```{r}
-grid.draw(eda_unbalanced$customer_type)
-```
-
-```{r}
-grid.draw(eda_unbalanced$customer_type)
-```
-
-Customer type is a categorical variable with 2 levels. The current category in inbalanced with the majority of sessions being done by prospect clients. When compared with target the inbalanced differs slightly being bought the majority class for customers implying a relationship between the 2. 
-
-The resulst from the $\chi^2$ hipotesis test does not refuse the null hipothesys reinforcing the graphical analysis that a relationship might exist between this 2 variables that implies that recurrent customers buy more.
-
-```{r}
-unbalanced_chi["customer_type"]
-```
-
-```{r}
-balanced_chi["customer_type"]
-```
-
-
-### Platform
-
-```{r}
-grid.draw(eda_unbalanced$platform)
-```
-
-```{r}
-ggplot(unbalanced_data, aes(x = plaform)) +
-    geom_bar(fill="darkblue", color="black") +
-    theme_masterDS() +
-    labs(
-      x = "",
-      y = "",
-      title = "Frequency"
-    )
-```
-
-```{r}
-ggplot(unbalanced_data, aes( x = plaform, fill = bought )) +
-    geom_bar() +
-    theme_masterDS() +
-    labs(
-      x = "",
-      y = "",
-      title = "Frequency bought vs no bought"
-    )
-```
-
-```{r}
-prop.table(table(unbalanced_data[["plaform"]]))
-```
-
-
-```{r}
-unbalanced_chi["plaform"]
-```
-
-
-```{r}
-grid.draw(eda_balanced$platform)
-```
-
-```{r}
-prop.table(table(balanced_data[["plaform"]]))
-```
-
-```{r}
-balanced_chi["plaform"]
-```
-
-The graphical analysis show us that the majority of sessions (around 72% on the unbalanced dataset and 61% on the balanced ) were accessed through the website. Despite the inbalance between platforms we notice that the amount of conversion is comparable suggesting implying a higher conversion rate on mobile app compared to website. 
-
-The $\chi ^2$ for both unbalanced and balanced datasets do not allow for the rejection of the null hypothesis implying the existence of a degree of linear regression between the 2 variables.
-
-### Segment
-
-```{r}
-grid.draw(eda_unbalanced$segment)
-```
-
-```{r}
-unbalanced_chi["segment"]
-```
-
-
-```{r}
-grid.draw(eda_balanced$segment)
-```
-
-```{r}
-balanced_chi["segment"]
-```
-
-The graphical analysis shows that the great majority of sessions were executed by users not belonging to any segment. Does not point to any relationship. The $\chi ^2$ test for both unbalanced and balanced datasets do not allow for the rejection of the null hypothesis implying the existence of a degree of linear regression between the 2 variables.
-
-
-### Device Group
-
-```{r}
-
-grid.draw(eda_unbalanced$device_group)
-
-```
-
-```{r}
-
-unbalanced_chi["device_group"]
-
-```
-
-
-```{r}
-
-grid.draw(eda_balanced$device_group)
-
-```
-
-```{r}
-
-balanced_chi["device_group"]
-
-```
-
-The graphical analysis of the data tells us that the majority of sessions have been done using Mobile Web platform, although, when taking into account the actual conversion it suggests that a higher conversion rate exists on application or desktop than compared with Majority class.
-
-This same conclusions can be extracted from the balanced dataset although the differences are not as evident. The $\chi ^2$ tests for both dataset leads into refusing the null hypothesis so it suggests that a degree of relation ship exists between both variables.
-
-
-```{r}
-
-ggplot(unbalanced_data, aes(x = device_group, fill = plaform)) + 
-  geom_bar(stat = "count") + 
-  theme_masterDS() +
-    labs(
-      x = "",
-      y = "",
-      title = "Device Group x Platform"
-    )
-
-```
-
-This dataset includes a variable named platform that suggest that most sessions were done using website. At first glance it seems counter intuitive that most access be done through website and Mobile web but the above plot show that in reality most users opt to access using the mobile version of the website instead of the app. 
-
-The $\chi ^2$ test between this 2 variables confirms what we could already suspect from visual inspection, both variable seem to have a degree of relation leading to not refuting the null hiopothesis of dependeny. This implies interaction (or sinergy on marketing terms) between features which can impact how modeling efforts specially for models dependent on linear transformations (least squares regression) as is the case of logit.
-
-During the modeling step one might consider removing one of the variables or generate a new compound feature.
-
-```{r}
-
-chisq.test(as.character(unbalanced_data$plaform), as.character(unbalanced_data$device_group))
-
-```
-
-
-### Visitor type
-
-```{r}
-grid.draw(eda_unbalanced$visitor_type)
-```
-
-```{r}
-unbalanced_chi["visitor_type"]
-```
-
-```{r}
-grid.draw(eda_balanced$visitor_type)
-```
-
-```{r}
-balanced_chi["visitor_type"]
-
-```
-
-
-This feature focus on the Visitors. The unbalanced data available shows almost a 50% split, situations that changes on the balanced dataset which has a inbalance towards returning visitors. The graphical analysis suggests a higher conversion rate for returning visitor that for new one, suggesting that continuous visits (engagment) plays a role in conversion.
-
-The current dataset has information regarding customer type crossed with visitor type can provide us with interesting information
-
-
-```{r}
-
-ggplot(unbalanced_data, aes(x = visitor_type, fill = customer_type)) + 
-  geom_bar(stat = "count") + 
-  theme_masterDS() +
-    labs(
-      x = "",
-      y = "",
-      title = "Visitor Type x Custor Type"
-    )
-
-```
-
-Has expected only a fraction of new visitors actually buy on the first session hinting that the conversion journey is longer than one session, meaning than several visits are needed before a first conversion. We don't have enough information to conclude about the number of sessions needed (journey lenght) and neither the session index given a time window (eg: the current session is the #3 in the last 28 days) which is know to have a impact on conversion.
-
-### Journey milestones
-(has_listings) > has_add_to_bag
-
-```{r}
-grid.draw(eda_unbalanced$has_add_to_wishlist)
-
-```
-
-
-```{r}
-grid.draw(eda_unbalanced$has_listing)
-
-```
-
-
-```{r}
-grid.draw(eda_unbalanced$has_recommendation)
-```
-
-
-```{r}
-grid.draw(eda_unbalanced$has_used_search)
-```
-
-
-```{r}
-
-grid.draw(eda_unbalanced$has_add_to_bag)
-
-```
-
-This features are plotted together because they give insights into the journey a user made inside the website. We can conclude over a conversion funnel but it makes sense to explore the interactions between then while modeling because its known that normally strong effects exist between then (a user had a recommendation and added to the bag might be together a strong signal for conversion).
-
-The graphical analysis already provides a important insight given the business objectives. From the unbalanced data available we can conclude that around of 46% shopping carts are lost on that session. That raises a question of how are this recovered (example on a next session) or if this means that all this sales are lost right at the end of the sales funnel.
-
-
-```{r}
-prop.table(table(unbalanced_data[unbalanced_data$has_add_to_bag == 1,]$bought, unbalanced_data[unbalanced_data$has_add_to_bag == 1,]$has_add_to_bag)) [,2]
-```
-
-
-
-### Duration
-
-```{r}
-
-grid.draw(eda_unbalanced$duration) 
-
-```
-
-```{r}
-
-grid.draw(eda_balanced$duration) 
-
-```
-
-Both unbalanced and balanced datasets show a left skewed distribution for duration. The Distance between the Mean and Median provides a good view of data. This extrem values have a big influence impacting the gaussianity of the distribution. 
-
-Normally web analytics software limit session duration between 25 to 30 min. It is assumed that beyond that point either the user is idle or there is a error on the collection. For periods of engagement superior to that cap normally a new session is started. So a 1hour of engagement would signify 2 simultaneous sessions.
-
-In the case of our project we have no context regarding session duration. Therefore, we have no referencial from business which would lead us to remove. 
-
-From the graphical view we can see that the variable distribution is left skewed whcih can cause us problems during modeling and impacts our outlier analysis. We will log transform this variable.
-
-
-```{r}
-up <- quantile(unbalanced_data$duration, 0.75) + 3 * IQR(unbalanced_data$duration)
-
-unbalanced_outlier_clean <- unbalanced_data %>% 
-  filter(duration < up) 
-
-  density <- ggplot(unbalanced_data, aes(x = duration)) +
-    geom_density(color="darkblue") +
-    theme_masterDS() +
-    labs(
-      x = "",
-      y = "",
-      title = "Density"
-    )
-  
-  boxplot <- ggplot(unbalanced_data, aes(x = 1, y = duration)) + 
-    geom_boxplot() + 
-    theme_masterDS()+
-    labs(
-      x = "",
-      y="",
-      title = "Boxplot"
-    )   
-
-  density_log <- ggplot(unbalanced_data, aes(x = log(duration))) +
-    geom_density(color="darkblue") +
-    theme_masterDS() +
-    labs(
-      x = "",
-      y = "",
-      title = "Density (log transform)"
-    )
-  
-  boxplot_log <- ggplot(unbalanced_data, aes(x = 1, y = log(duration))) + 
-    geom_boxplot() + 
-    theme_masterDS()+
-    labs(
-      x = "",
-      y="",
-      title = "Boxplot (log trasnform)"
-    ) 
-
-grid.arrange(density, boxplot, density_log, boxplot_log,  layout_matrix = rbind(c(1,2),c(3,4)))
-
-```
-
-### View quantity
-
-```{r}
-
-grid.draw(eda_unbalanced$view_qty)
-
-```
-
-
-```{r}
-
-grid.draw(eda_balanced$view_qty)
-
-```
-
-left skwed apply log transform
-
-```{r}
- lambda <- BoxCox.lambda(unbalanced_data$view_qty, method = "guerrero") 
-
-histogram_log <- ggplot(unbalanced_data, aes(x = bcPower(view_qty, lambda = lambda))) +
-    geom_histogram(fill="darkblue", color="black") +
-    theme_masterDS() +
-    labs(
-      x = "",
-      y = "",
-      title = "Histogram"
-    )
-  
-  boxplot_log <- ggplot(unbalanced_data, aes(x = 1, y = bcPower(view_qty, lambda = lambda))) +
-    geom_boxplot() +
-    theme_masterDS()+
-    labs(
-      x = "",
-      y="",
-      title = "Boxplot"
-    )
-
-  grid.arrange(histogram_log, boxplot_log, nrow = 1)
-
-```
-
-### Unique product qty
-
-
-```{r}
-
-grid.draw(eda_unbalanced$unique_product_qty)
-
-```
-
-
-```{r}
-
-grid.draw(eda_balanced$unique_product_qty)
-
-```
-
-left skwed apply log transform
-
-```{r}
-lambda <- BoxCox.lambda(unbalanced_data$unique_product_qty, method = "guerrero")  
-
-histogram_log <- ggplot(unbalanced_data, aes(x = log(unique_product_qty))) +
-    geom_histogram(fill="darkblue", color="black") +
-    theme_masterDS() +
-    labs(
-      x = "",
-      y = "",
-      title = "Histogram"
-    )
-  
-  boxplot_log <- ggplot(unbalanced_data, aes(x = 1, y = log(unique_product_qty))) +
-    geom_boxplot() +
-    theme_masterDS()+
-    labs(
-      x = "",
-      y="",
-      title = "Boxplot"
-    )
-
-  grid.arrange(histogram_log, boxplot_log, nrow = 1)
-
-```
-
-
-### Unique browse designer quantity
-
-
-```{r}
-
-grid.draw(eda_unbalanced$unique_browse_designer_qty)
-
-```
-
-
-```{r}
-
-grid.draw(eda_balanced$unique_browse_designer_qty)
-
-```
-
-left skwed apply log transform
-
-```{r}
- histogram_log <- ggplot(unbalanced_data, aes(x = log(unique_browse_designer_qty))) +
-    geom_histogram(fill="darkblue", color="black") +
-    theme_masterDS() +
-    labs(
-      x = "",
-      y = "",
-      title = "Histogram"
-    )
-  
-  boxplot_log <- ggplot(unbalanced_data, aes(x = 1, y = log(unique_browse_designer_qty))) +
-    geom_boxplot() +
-    theme_masterDS()+
-    labs(
-      x = "",
-      y="",
-      title = "Boxplot"
-    )
-
-  grid.arrange(histogram_log, boxplot_log, nrow = 1)
-
-```
-```{r}
- histogram_log <- ggplot(unbalanced_data, aes(x = unique_browse_designer_qty/view_qty)) +
-    geom_histogram(fill="darkblue", color="black") +
-    theme_masterDS() +
-    labs(
-      x = "",
-      y = "",
-      title = "Histogram"
-    )
-  
-  boxplot_log <- ggplot(unbalanced_data, aes(x = 1, y = unique_browse_designer_qty/view_qty)) +
-    geom_boxplot() +
-    theme_masterDS()+
-    labs(
-      x = "",
-      y="",
-      title = "Boxplot"
-    )
-
-  grid.arrange(histogram_log, boxplot_log, nrow = 1)
-
-```
-
-
-### Is subscribed
-
-
-```{r}
-
-grid.draw(eda_unbalanced$is_subscribed)
-
-```
-
-
-```{r}
-
-grid.draw(eda_balanced$is_subscribed)
-
-```
-
-For both datasets the class majority is NA. From the information given we cannot conclude that we can remove this feature from the model, and given the number of observations affected we will look for imputation alternatives.
-
-If a particular variable is having more missing values that rest of the variables in the dataset, and, if by removing that one variable you can save many observations. I would, then, suggest to remove that particular variable, unless it is a really important predictor that makes a lot of business sense. It is a matter of deciding between the importance of the variable and losing out on a number of observation.
-
-Given that its a categorical variable we could replace with the mode, and that would mean that all NA would become Yes, but given the size of missing values this can return a huge impact. We will explore statitical imputation using knn.
-
-DMwR::knnImputation uses k-Nearest Neighbours approach to impute missing values. What kNN imputation does in simpler terms is as follows: For every observation to be imputed, it identifies ‘k’ closest observations based on the euclidean distance and computes the weighted average (weighted based on distance) of these ‘k’ obs.
-
-### Browser name
-
-
-```{r}
-
-grid.draw(eda_unbalanced$browser_name)
-
-```
-
-
-```{r}
-
-grid.draw(eda_balanced$browser_name)
-
-```
-
-### Country
-
-
-```{r}
-
-grid.draw(eda_unbalanced$country)
-
-```
-
-
-```{r}
-
-grid.draw(eda_balanced$country)
-
-```
-
-remove rows withna
-
-```{r}
-correct_data <- select(unbalanced_data, -session_id)
-summary(correct_data)
-
-rec <- recipe(bought ~ ., data = correct_data)
-
-ratio_recipe <- rec %>% 
-  step_impute_knn(all_predictors(), neighbors = 3)
-ratio_recipe2 <- prep(ratio_recipe, training = unbalanced_data, verbose = TRUE, retain = TRUE)
-imputed <- bake(ratio_recipe2,new_data = NULL)
-summary(imputed)
-
-```
-
-## Assess data quality & transformations to be made
-
-```{r}
-md.pattern(unbalanced_data, rotate.names = TRUE)
-```
-
-```{r}
-md.pattern(balanced_data,rotate.names = TRUE)
-```
-
-## Summary of findings
-
-- Device group and platform have a strong relationship and should be taken into consideration during transformations.
-- Features conserning journey can have strong intereactions between then which should be taken into consideration during the model
-- The graphical analysis already provides a important insight given the business objectives. From the unbalanced data available we can conclude that around of 46% shopping carts are lost on that session. That raises a question of how are this recovered (example on a next session) or if this means that all this sales are lost right at the end of the sales funnel.
-- Log transform duration
-- Log transform view_qty and remove below or after tukeys value
-- Log transform unique_qty remove below or after tukeys value
-- Log transform nique browse designer quantity remove below or after tukeys value
-- remove rows with na country
-
 
 
