@@ -1,0 +1,149 @@
+## Device and Geography related Features
+
+
+*browser_name:* categorical variable representing the browser used as source for each session. From the available information from the unbalanced data we have 52 different browsers present on this dataset. 
+
+```{r}
+
+unique(unbalanced_data$browser_name)
+
+```
+
+*country:* categorical variable containing the country of origin for each session.
+
+```{r}
+
+unique(unbalanced_data$country)
+
+```
+
+### Device Group
+
+```{r}
+
+grid.draw(eda_unbalanced$device_group)
+
+```
+
+```{r}
+
+unbalanced_chi["device_group"]
+
+```
+
+
+```{r}
+
+grid.draw(eda_balanced$device_group)
+
+```
+
+```{r}
+
+balanced_chi["device_group"]
+
+```
+
+The graphical analysis of the data tells us that the majority of sessions have been done using Mobile Web platform, although, when taking into account the actual conversion it suggests that a higher conversion rate exists on application or desktop than compared with Majority class.
+
+This same conclusions can be extracted from the balanced dataset although the differences are not as evident. The $\chi ^2$ tests for both dataset leads into refusing the null hypothesis so it suggests that a degree of relation ship exists between both variables.
+
+
+```{r}
+
+ggplot(unbalanced_data, aes(x = device_group, fill = plaform)) + 
+  geom_bar(stat = "count") + 
+  theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Device Group x Platform"
+    )
+
+```
+
+This dataset includes a variable named platform that suggest that most sessions were done using website. At first glance it seems counter intuitive that most access be done through website and Mobile web but the above plot show that in reality most users opt to access using the mobile version of the website instead of the app. 
+
+The $\chi ^2$ test between this 2 variables confirms what we could already suspect from visual inspection, both variable seem to have a degree of relation leading to not refuting the null hiopothesis of dependeny. This implies interaction (or sinergy on marketing terms) between features which can impact how modeling efforts specially for models dependent on linear transformations (least squares regression) as is the case of logit.
+
+During the modeling step one might consider removing one of the variables or generate a new compound feature.
+
+```{r}
+
+chisq.test(as.character(unbalanced_data$plaform), as.character(unbalanced_data$device_group))
+
+```
+
+### Browser name
+
+
+```{r}
+
+grid.draw(eda_unbalanced$browser_name)
+
+```
+
+
+```{r}
+
+grid.draw(eda_balanced$browser_name)
+
+```
+
+### Country
+
+
+```{r}
+
+grid.draw(eda_unbalanced$country)
+
+```
+
+
+```{r}
+
+grid.draw(eda_balanced$country)
+
+```
+
+
+remove rows withna
+
+```{r}
+correct_data <- select(unbalanced_data, -session_id)
+summary(correct_data)
+
+rec <- recipe(bought ~ ., data = correct_data)
+
+ratio_recipe <- rec %>% 
+  step_impute_knn(all_predictors(), neighbors = 3)
+ratio_recipe2 <- prep(ratio_recipe, training = unbalanced_data, verbose = TRUE, retain = TRUE)
+imputed <- bake(ratio_recipe2,new_data = NULL)
+summary(imputed)
+
+```
+
+## Assess data quality & transformations to be made
+
+```{r}
+md.pattern(unbalanced_data, rotate.names = TRUE)
+```
+
+```{r}
+md.pattern(balanced_data,rotate.names = TRUE)
+```
+
+## Summary of findings
+
+- REmove sessions with duration lower than 2secons and 10 to 1 page view
+- Log transform duration
+- Convert to ratio and log transform  after
+- For id should be againts unique product
+- Device group and platform have a strong relationship and should be taken into consideration during transformations.
+- Features conserning journey can have strong intereactions between then which should be taken into consideration during the model
+- The graphical analysis already provides a important insight given the business objectives. From the unbalanced data available we can conclude that around of 46% shopping carts are lost on that session. That raises a question of how are this recovered (example on a next session) or if this means that all this sales are lost right at the end of the sales funnel.
+- Log transform duration
+- Log transform view_qty and remove below or after tukeys value
+- Log transform unique_qty remove below or after tukeys value
+- Log transform nique browse designer quantity remove below or after tukeys value
+- remove rows with na country

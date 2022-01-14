@@ -1,0 +1,124 @@
+## Client Segment related Features
+
+*customer type:* category with 2 levels, "prospect" if it hasn't purchased before and "customer" if it's a repeated buyer.
+
+```{r}
+unique(unbalanced_data$customer_type)
+```
+
+
+*visitor type:* categorical value with 2 levels representing if a given user is a new or recurring user. It differs from customer type because it focus on visits and not actual conversion, therefore a returning user can be a prospect.
+
+```{r}
+unique(unbalanced_data$visitor_type)
+```
+
+
+
+### Customer type
+
+```{r}
+grid.draw(eda_unbalanced$customer_type)
+```
+
+```{r}
+grid.draw(eda_unbalanced$customer_type)
+```
+
+Customer type is a categorical variable with 2 levels. The current category in inbalanced with the majority of sessions being done by prospect clients. When compared with target the inbalanced differs slightly being bought the majority class for customers implying a relationship between the 2. 
+
+The resulst from the $\chi^2$ hipotesis test does not refuse the null hipothesys reinforcing the graphical analysis that a relationship might exist between this 2 variables that implies that recurrent customers buy more.
+
+```{r}
+unbalanced_chi["customer_type"]
+```
+
+```{r}
+balanced_chi["customer_type"]
+```
+
+### Segment
+
+```{r}
+grid.draw(eda_unbalanced$segment)
+```
+
+```{r}
+unbalanced_chi["segment"]
+```
+
+
+```{r}
+grid.draw(eda_balanced$segment)
+```
+
+```{r}
+balanced_chi["segment"]
+```
+
+The graphical analysis shows that the great majority of sessions were executed by users not belonging to any segment. Does not point to any relationship. The $\chi ^2$ test for both unbalanced and balanced datasets do not allow for the rejection of the null hypothesis implying the existence of a degree of linear regression between the 2 variables.
+
+### Visitor type
+
+```{r}
+grid.draw(eda_unbalanced$visitor_type)
+```
+
+```{r}
+unbalanced_chi["visitor_type"]
+```
+
+```{r}
+grid.draw(eda_balanced$visitor_type)
+```
+
+```{r}
+balanced_chi["visitor_type"]
+
+```
+
+
+This feature focus on the Visitors. The unbalanced data available shows almost a 50% split, situations that changes on the balanced dataset which has a inbalance towards returning visitors. The graphical analysis suggests a higher conversion rate for returning visitor that for new one, suggesting that continuous visits (engagment) plays a role in conversion.
+
+The current dataset has information regarding customer type crossed with visitor type can provide us with interesting information
+
+
+```{r}
+
+ggplot(unbalanced_data, aes(x = visitor_type, fill = customer_type)) + 
+  geom_bar(stat = "count") + 
+  theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Visitor Type x Custor Type"
+    )
+
+```
+
+Has expected only a fraction of new visitors actually buy on the first session hinting that the conversion journey is longer than one session, meaning than several visits are needed before a first conversion. We don't have enough information to conclude about the number of sessions needed (journey lenght) and neither the session index given a time window (eg: the current session is the #3 in the last 28 days) which is know to have a impact on conversion.
+
+
+### Is subscribed
+
+
+```{r}
+
+grid.draw(eda_unbalanced$is_subscribed)
+
+```
+
+
+```{r}
+
+grid.draw(eda_balanced$is_subscribed)
+
+```
+
+For both datasets the class majority is NA. From the information given we cannot conclude that we can remove this feature from the model, and given the number of observations affected we will look for imputation alternatives.
+
+If a particular variable is having more missing values that rest of the variables in the dataset, and, if by removing that one variable you can save many observations. I would, then, suggest to remove that particular variable, unless it is a really important predictor that makes a lot of business sense. It is a matter of deciding between the importance of the variable and losing out on a number of observation.
+
+Given that its a categorical variable we could replace with the mode, and that would mean that all NA would become Yes, but given the size of missing values this can return a huge impact. We will explore statitical imputation using knn.
+
+DMwR::knnImputation uses k-Nearest Neighbours approach to impute missing values. What kNN imputation does in simpler terms is as follows: For every observation to be imputed, it identifies ‘k’ closest observations based on the euclidean distance and computes the weighted average (weighted based on distance) of these ‘k’ obs.

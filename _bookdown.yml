@@ -7,7 +7,9 @@ rmd_files:
   html: [
     "index.Rmd",
     "01-business_understanding.Rmd",
-    "02-Data_aquisition_and_understanding.Rmd"]
+    "02-Data_aquisition_and_understanding.Rmd",
+    "02.1-Customer_behavior.Rmd",
+    "02.2-customer_journey_related.Rmd"]
   latex: [
     "index.Rmd", 
     "01-business_understanding.Rmd",

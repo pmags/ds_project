@@ -5,7 +5,7 @@ In this section we will explore the variables available using both unbalanced an
 - What type of variation occurs within my variables?
 - What type of covariation occurs between my variables?
 
-```{r libraries and scripts, message=FALSE, warning=FALSE, include=FALSE}
+```{r, message=FALSE, warning=FALSE, include=FALSE}
 
 library(tidyverse)
 library(corrplot)
@@ -24,17 +24,19 @@ balanced_data <- read_csv("./data/train_balanced.csv") %>% select(-...1)
 # convert categorical and dummy to factor variable
 unbalanced_data <- unbalanced_data %>% 
   mutate_at(vars(
-    !contains(c("duration", "view_qty", "unique_product_qty","unique_browse_designer_qty"))
+    !contains(c("duration", "view_qty", "unique_product_qty",
+                "unique_browse_designer_qty", "unique_browse_category_qty"))
     ), ~ as.factor(.))
 
 balanced_data <- balanced_data %>% 
   mutate_at(vars(
-    !contains(c("duration", "view_qty", "unique_product_qty","unique_browse_designer_qty"))
+    !contains(c("duration", "view_qty", "unique_product_qty",
+                "unique_browse_designer_qty", "unique_browse_category_qty"))
     ), ~ as.factor(.))
 
 ```
 
-```{r unbalanced data eda plots, data, include=FALSE, include=FALSE}
+```{r unbalanced data eda plots, include=FALSE, include=FALSE}
 
 continuous <- unbalanced_data %>% 
   select(duration) %>% 
@@ -92,7 +94,7 @@ rm(eda_cont,eda_dis, eda_cat)
 
 ```
 
-```{r, correlation plot, include=FALSE}
+```{r correlation plot, correlation plot, include=FALSE}
 
 M <- cor(unbalanced_data %>% 
            select_if(is.numeric))
@@ -101,7 +103,7 @@ corrplot(M, type = "upper", method = "number", diag = FALSE,
 
 ```
 
-```{r}
+```{r Chi-squared hipothesis test, message=FALSE, warning=FALSE, include=FALSE}
 
 unbalanced_chi <- unbalanced_data %>% 
   select_if(is.factor) %>% 
@@ -111,308 +113,38 @@ balanced_chi <- balanced_data %>%
   select_if(is.factor) %>% 
   map(function(x) chisq.test(x, balanced_data$bought))
 
+unbalanced_chi_numeric <- unbalanced_data %>% 
+  select_if(is.numeric) %>% 
+  map(function(x) chisq.test(x, as.factor(unbalanced_data$bought)))
+
+balanced_chi_numeric <- balanced_data %>% 
+  select_if(is.numeric) %>% 
+  map(function(x) chisq.test(x, as.factor(balanced_data$bought)))
 
 ```
 
 ### Duration
 
-*duration:* continuous variable representing the session duration in seconds
+Continuous variable representing the time a user was on a particular sessions. Values measured in seconds. No specifics are given regarding the concept of session used. The market standard is to limit session duration to an engagement window between 25 to 30 minutes. Above that time cap, a new session would start (even if the user is still navigating the site).
+It will assumed that no such cap exist and therefore extreme values are **not due to technical issues on web metrics**.
 
-### Page View Quantity
-
-*view_qty:* discrete variable measuring the number of views during a session. Based on the information given we assume it measures the number of page views during a session
-
-
-### Product Pages unique page views
-
-*unique_product_qty:* given the definition on view_qty refered before, it measures the number of page views on product pages
-
-
-### Designer Browsing unique page views
-
-
-*unique_browse_designer_qty:* given the definition on view_qty refered before, it measures the number of page views on unique designer pages. The more the number represents a certain user researched a lot of desiners during the browsing session. Discrete variable
-
-### Products categories unique page views
-
-*unique_browse_category_qty:* given the definition on view_qty refered before, it measures the number of page views on unique category pages. The more the number represents a certain user researched a lot of products categories during the browsing session. Discrete variable
-
-
-
-
-
-## Explore data
-
-
-
-
-### Customer type
-
-```{r}
-grid.draw(eda_unbalanced$customer_type)
-```
-
-```{r}
-grid.draw(eda_unbalanced$customer_type)
-```
-
-Customer type is a categorical variable with 2 levels. The current category in inbalanced with the majority of sessions being done by prospect clients. When compared with target the inbalanced differs slightly being bought the majority class for customers implying a relationship between the 2. 
-
-The resulst from the $\chi^2$ hipotesis test does not refuse the null hipothesys reinforcing the graphical analysis that a relationship might exist between this 2 variables that implies that recurrent customers buy more.
-
-```{r}
-unbalanced_chi["customer_type"]
-```
-
-```{r}
-balanced_chi["customer_type"]
-```
-
-
-### Platform
-
-```{r}
-grid.draw(eda_unbalanced$platform)
-```
-
-```{r}
-ggplot(unbalanced_data, aes(x = plaform)) +
-    geom_bar(fill="darkblue", color="black") +
-    theme_masterDS() +
-    labs(
-      x = "",
-      y = "",
-      title = "Frequency"
-    )
-```
-
-```{r}
-ggplot(unbalanced_data, aes( x = plaform, fill = bought )) +
-    geom_bar() +
-    theme_masterDS() +
-    labs(
-      x = "",
-      y = "",
-      title = "Frequency bought vs no bought"
-    )
-```
-
-```{r}
-prop.table(table(unbalanced_data[["plaform"]]))
-```
-
-
-```{r}
-unbalanced_chi["plaform"]
-```
-
-
-```{r}
-grid.draw(eda_balanced$platform)
-```
-
-```{r}
-prop.table(table(balanced_data[["plaform"]]))
-```
-
-```{r}
-balanced_chi["plaform"]
-```
-
-The graphical analysis show us that the majority of sessions (around 72% on the unbalanced dataset and 61% on the balanced ) were accessed through the website. Despite the inbalance between platforms we notice that the amount of conversion is comparable suggesting implying a higher conversion rate on mobile app compared to website. 
-
-The $\chi ^2$ for both unbalanced and balanced datasets do not allow for the rejection of the null hypothesis implying the existence of a degree of linear regression between the 2 variables.
-
-### Segment
-
-```{r}
-grid.draw(eda_unbalanced$segment)
-```
-
-```{r}
-unbalanced_chi["segment"]
-```
-
-
-```{r}
-grid.draw(eda_balanced$segment)
-```
-
-```{r}
-balanced_chi["segment"]
-```
-
-The graphical analysis shows that the great majority of sessions were executed by users not belonging to any segment. Does not point to any relationship. The $\chi ^2$ test for both unbalanced and balanced datasets do not allow for the rejection of the null hypothesis implying the existence of a degree of linear regression between the 2 variables.
-
-
-### Device Group
-
-```{r}
-
-grid.draw(eda_unbalanced$device_group)
-
-```
-
-```{r}
-
-unbalanced_chi["device_group"]
-
-```
-
-
-```{r}
-
-grid.draw(eda_balanced$device_group)
-
-```
-
-```{r}
-
-balanced_chi["device_group"]
-
-```
-
-The graphical analysis of the data tells us that the majority of sessions have been done using Mobile Web platform, although, when taking into account the actual conversion it suggests that a higher conversion rate exists on application or desktop than compared with Majority class.
-
-This same conclusions can be extracted from the balanced dataset although the differences are not as evident. The $\chi ^2$ tests for both dataset leads into refusing the null hypothesis so it suggests that a degree of relation ship exists between both variables.
-
-
-```{r}
-
-ggplot(unbalanced_data, aes(x = device_group, fill = plaform)) + 
-  geom_bar(stat = "count") + 
-  theme_masterDS() +
-    labs(
-      x = "",
-      y = "",
-      title = "Device Group x Platform"
-    )
-
-```
-
-This dataset includes a variable named platform that suggest that most sessions were done using website. At first glance it seems counter intuitive that most access be done through website and Mobile web but the above plot show that in reality most users opt to access using the mobile version of the website instead of the app. 
-
-The $\chi ^2$ test between this 2 variables confirms what we could already suspect from visual inspection, both variable seem to have a degree of relation leading to not refuting the null hiopothesis of dependeny. This implies interaction (or sinergy on marketing terms) between features which can impact how modeling efforts specially for models dependent on linear transformations (least squares regression) as is the case of logit.
-
-During the modeling step one might consider removing one of the variables or generate a new compound feature.
-
-```{r}
-
-chisq.test(as.character(unbalanced_data$plaform), as.character(unbalanced_data$device_group))
-
-```
-
-
-### Visitor type
-
-```{r}
-grid.draw(eda_unbalanced$visitor_type)
-```
-
-```{r}
-unbalanced_chi["visitor_type"]
-```
-
-```{r}
-grid.draw(eda_balanced$visitor_type)
-```
-
-```{r}
-balanced_chi["visitor_type"]
-
-```
-
-
-This feature focus on the Visitors. The unbalanced data available shows almost a 50% split, situations that changes on the balanced dataset which has a inbalance towards returning visitors. The graphical analysis suggests a higher conversion rate for returning visitor that for new one, suggesting that continuous visits (engagment) plays a role in conversion.
-
-The current dataset has information regarding customer type crossed with visitor type can provide us with interesting information
-
-
-```{r}
-
-ggplot(unbalanced_data, aes(x = visitor_type, fill = customer_type)) + 
-  geom_bar(stat = "count") + 
-  theme_masterDS() +
-    labs(
-      x = "",
-      y = "",
-      title = "Visitor Type x Custor Type"
-    )
-
-```
-
-Has expected only a fraction of new visitors actually buy on the first session hinting that the conversion journey is longer than one session, meaning than several visits are needed before a first conversion. We don't have enough information to conclude about the number of sessions needed (journey lenght) and neither the session index given a time window (eg: the current session is the #3 in the last 28 days) which is know to have a impact on conversion.
-
-### Journey milestones
-(has_listings) > has_add_to_bag
-
-```{r}
-grid.draw(eda_unbalanced$has_add_to_wishlist)
-
-```
-
-
-```{r}
-grid.draw(eda_unbalanced$has_listing)
-
-```
-
-
-```{r}
-grid.draw(eda_unbalanced$has_recommendation)
-```
-
-
-```{r}
-grid.draw(eda_unbalanced$has_used_search)
-```
-
-
-```{r}
-
-grid.draw(eda_unbalanced$has_add_to_bag)
-
-```
-
-This features are plotted together because they give insights into the journey a user made inside the website. We can conclude over a conversion funnel but it makes sense to explore the interactions between then while modeling because its known that normally strong effects exist between then (a user had a recommendation and added to the bag might be together a strong signal for conversion).
-
-The graphical analysis already provides a important insight given the business objectives. From the unbalanced data available we can conclude that around of 46% shopping carts are lost on that session. That raises a question of how are this recovered (example on a next session) or if this means that all this sales are lost right at the end of the sales funnel.
-
-
-```{r}
-prop.table(table(unbalanced_data[unbalanced_data$has_add_to_bag == 1,]$bought, unbalanced_data[unbalanced_data$has_add_to_bag == 1,]$has_add_to_bag)) [,2]
-```
-
-
-
-### Duration
-
-```{r}
+```{r plot duration unbalanced, echo=FALSE}
 
 grid.draw(eda_unbalanced$duration) 
 
 ```
 
-```{r}
+```{r plot duration balanced, echo=FALSE}
 
 grid.draw(eda_balanced$duration) 
 
 ```
 
-Both unbalanced and balanced datasets show a left skewed distribution for duration. The Distance between the Mean and Median provides a good view of data. This extrem values have a big influence impacting the gaussianity of the distribution. 
+Distribution information shows a severely left skewed distribution which is confirmed by the behavior of the qq_plot. This is present on both raw and balanced data. The max duration of `r max(unbalanced_data$duration)` means that at least one session was `{r} max(unbalanced_data$duration)/(60 * 60)` hours long, which, given what was said regarding session cap won't be considered as an outlier due to error.
 
-Normally web analytics software limit session duration between 25 to 30 min. It is assumed that beyond that point either the user is idle or there is a error on the collection. For periods of engagement superior to that cap normally a new session is started. So a 1hour of engagement would signify 2 simultaneous sessions.
+Data shows that visit duration is a long tail with a great majority of users staying just a fraction but a long line of users (power users?) which stay for longer. This distribution does not allow for a good analysis of outliers of the distribution given its nature and might prove to be tricky during modeling due to its non Gaussian nature. 
 
-In the case of our project we have no context regarding session duration. Therefore, we have no referencial from business which would lead us to remove. 
-
-From the graphical view we can see that the variable distribution is left skewed whcih can cause us problems during modeling and impacts our outlier analysis. We will log transform this variable.
-
-
-```{r}
-up <- quantile(unbalanced_data$duration, 0.75) + 3 * IQR(unbalanced_data$duration)
-
-unbalanced_outlier_clean <- unbalanced_data %>% 
-  filter(duration < up) 
+```{r log transform duration, echo=TRUE}
 
   density <- ggplot(unbalanced_data, aes(x = duration)) +
     geom_density(color="darkblue") +
@@ -447,32 +179,71 @@ unbalanced_outlier_clean <- unbalanced_data %>%
     labs(
       x = "",
       y="",
-      title = "Boxplot (log trasnform)"
+      title = "Boxplot (log transform)"
     ) 
 
 grid.arrange(density, boxplot, density_log, boxplot_log,  layout_matrix = rbind(c(1,2),c(3,4)))
 
 ```
 
-### View quantity
+**As a preprocess step this feature will be log transformed.** No more complex Box-Cox transformation will be used given that good results can already be achieved with the current transformation. No missing values were found. 
 
-```{r}
+```{r duration vs bought, echo=FALSE}
+
+ggplot(unbalanced_data, aes(x = bought, y = log(duration))) + 
+    geom_boxplot() + 
+    theme_masterDS()+
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot by Conversion",
+      caption = "Data from unbalanced dataset.Log transformed"
+    ) 
+
+```
+
+```{r duration vs bought balanced, echo=FALSE}
+
+ggplot(balanced_data, aes(x = bought, y = log(duration))) + 
+    geom_boxplot() + 
+    theme_masterDS()+
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot by Conversion",
+      caption = "Data from balanced dataset. Log transformed"
+    ) 
+
+```
+
+Ploted against the target variable it seems to imply a positive relationship between duration and conversion. From the sample sessions that converted had on median a higher duration. 
+
+
+### Page View Quantity
+
+Discrete variable measuring the number of views during a session. 
+
+```{r page view unbalanced, echo=FALSE}
 
 grid.draw(eda_unbalanced$view_qty)
 
 ```
 
 
-```{r}
+```{r page view balanced, echo=FALSE}
 
 grid.draw(eda_balanced$view_qty)
 
 ```
 
-left skwed apply log transform
+Distribution information shows a severely left skewed distribution which is confirmed by the behavior of the qq_plot. This is present on both raw and balanced data. The max duration is of `r max(unbalanced_data$view_qty)`. 
 
-```{r}
- lambda <- BoxCox.lambda(unbalanced_data$view_qty, method = "guerrero") 
+Despite is distribution the data shows a median of 10 page views which suggest an interesting engagement for a e-commerce provided other indicators regarding navigation are solid (if a user is jumping between pages because they don't load properly, an increase on page views might no be beneficial).
+
+Given the available information we cannot conclude that outliers due to errors exist. In an attempt to normalize the distribution a Box-Cox transformation will be used with a Optimized Lambda. 
+
+```{r view_qty box cox unbalanced, echo=FALSE, message=TRUE, warning=FALSE}
+lambda <- BoxCox.lambda(unbalanced_data$view_qty, method = "guerrero") 
 
 histogram_log <- ggplot(unbalanced_data, aes(x = bcPower(view_qty, lambda = lambda))) +
     geom_histogram(fill="darkblue", color="black") +
@@ -483,41 +254,26 @@ histogram_log <- ggplot(unbalanced_data, aes(x = bcPower(view_qty, lambda = lamb
       title = "Histogram"
     )
   
-  boxplot_log <- ggplot(unbalanced_data, aes(x = 1, y = bcPower(view_qty, lambda = lambda))) +
+boxplot_log <- ggplot(unbalanced_data, aes(x = 1, y = bcPower(view_qty, lambda = lambda))) +
     geom_boxplot() +
     theme_masterDS()+
     labs(
       x = "",
       y="",
-      title = "Boxplot"
+      title = "Boxplot",
+      caption = "unbalanced data"
     )
 
-  grid.arrange(histogram_log, boxplot_log, nrow = 1)
-
-```
-
-### Unique product qty
-
-
-```{r}
-
-grid.draw(eda_unbalanced$unique_product_qty)
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
 
 ```
 
 
-```{r}
+```{r view_qty box cox balanced, echo=FALSE, message=TRUE, warning=FALSE}
 
-grid.draw(eda_balanced$unique_product_qty)
+lambda <- BoxCox.lambda(balanced_data$view_qty, method = "guerrero") 
 
-```
-
-left skwed apply log transform
-
-```{r}
-lambda <- BoxCox.lambda(unbalanced_data$unique_product_qty, method = "guerrero")  
-
-histogram_log <- ggplot(unbalanced_data, aes(x = log(unique_product_qty))) +
+histogram_log <- ggplot(balanced_data, aes(x = bcPower(view_qty, lambda = lambda))) +
     geom_histogram(fill="darkblue", color="black") +
     theme_masterDS() +
     labs(
@@ -526,21 +282,250 @@ histogram_log <- ggplot(unbalanced_data, aes(x = log(unique_product_qty))) +
       title = "Histogram"
     )
   
-  boxplot_log <- ggplot(unbalanced_data, aes(x = 1, y = log(unique_product_qty))) +
+boxplot_log <- ggplot(balanced_data, aes(x = 1, y = bcPower(view_qty, lambda = lambda))) +
     geom_boxplot() +
     theme_masterDS()+
     labs(
       x = "",
       y="",
-      title = "Boxplot"
+      title = "Boxplot",
+      caption = "unbalanced data"
     )
 
-  grid.arrange(histogram_log, boxplot_log, nrow = 1)
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
+
+```
+With this transformation it is now visible 2 segments of sessions which deserve attention, sessions with zero views or just 1 view. 
+
+The information available provides no information whatsoever regardingt definition of view. The standard (defined by google) is the first hit at log to be a pageview. Therefore, technically all sessions would have a view. Using the same approach, a 1 view session is technically called a **bounce**. Once again assuming Googles standard (it owns 97% of the analytics market ...) a bounce is a session with just a starting hit but not information regarding log out (duration is a difference based calculation). 
+
+On a standard scenario the approach would be to remove all observations with a zero pageviews (technical errors) and session with 1 page view (if not other information regarding duration is available). In the scenario in analysis, given the available information we can't assume zero page views to be a technical error and therefore will filter the **dataset for observations with zero or one page views and a session duration smaller than 2 seconds.**
+
+
+```{r unbalanced no outlier, echo=FALSE, message=TRUE, warning=FALSE}
+
+lambda <- BoxCox.lambda(balanced_data$view_qty, method = "guerrero") 
+
+data <- unbalanced_data %>% 
+  filter( !((view_qty <= 1) & (duration <= 2)))
+
+histogram_log <- ggplot(data, aes(x = bcPower(view_qty, lambda = lambda))) +
+    geom_histogram(fill="darkblue", color="black", bins = 15) +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Histogram"
+    )
+  
+boxplot_log <- ggplot(data, aes(x = 1, y = bcPower(view_qty, lambda = lambda))) +
+    geom_boxplot() +
+    theme_masterDS()+
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot",
+      caption = "balanced data"
+    )
+
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
 
 ```
 
 
-### Unique browse designer quantity
+```{r balanced no outlier, echo=FALSE, message=TRUE, warning=FALSE}
+
+lambda <- BoxCox.lambda(balanced_data$view_qty, method = "guerrero") 
+
+data <- balanced_data %>% 
+  filter( !((view_qty <= 1) & (duration <= 2)))
+
+histogram_log <- ggplot(data, aes(x = bcPower(view_qty, lambda = lambda))) +
+    geom_histogram(fill="darkblue", color="black", bins = 15) +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Histogram"
+    )
+  
+boxplot_log <- ggplot(data, aes(x = 1, y = bcPower(view_qty, lambda = lambda))) +
+    geom_boxplot() +
+    theme_masterDS()+
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot",
+      caption = "balanced data"
+    )
+
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
+
+```
+
+The balanced data to be used with modeling is already close to normal distribution.
+
+
+```{r pageview vs bought balanced, echo=FALSE}
+
+ggplot(data, aes(x = bought, y = log(view_qty))) + 
+    geom_boxplot() + 
+    theme_masterDS()+
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot by Conversion",
+      caption = "Data from balanced dataset. Log transformed"
+    ) 
+
+```
+Compared by conversion the data seems to suggest that sessions with conversion had a higher number of page views.
+
+### Product Pages unique page views
+
+Discrete variable measuring the visits product related pages had. 
+
+```{r eda_unique_product unbalanced}
+
+grid.draw(eda_unbalanced$unique_product_qty)
+
+```
+
+
+```{r eda_unique_product balanced}
+
+grid.draw(eda_balanced$unique_product_qty)
+
+```
+
+The initial graphic analysis shows a right skewed distribution similar to was seen on before on Pageviews. Nonetheless, in this scenario zero page views is a acceptable outcome. When the target class is taken into consideration it seems to sugest a teneous impact albeit its true effects might be hidden by the distribution skew. 
+
+```{r pageviews vs product, echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot(data = unbalanced_data, 
+       aes(x = unique_product_qty, y = view_qty, 
+           shape = bought, color = bought)) +
+  geom_point(alpha = 0.5, position = position_jitter()) +
+  stat_smooth(method = lm, level = 0.95, se = TRUE, size = 0.5) +
+  scale_shape_manual(values = c(1,2)) +
+  scale_colour_brewer(palette = "Set1") +
+  theme_masterDS() +
+    labs(
+      x = "Pageviews product pages",
+      y = "Pageviews" ,
+      title = "Pageviews and product pageviews",
+      caption = "Data from unbalanced dataset"
+    ) 
+
+```
+
+Ploted together target, pageviews and product pageviews it becomes more evident that the relationship between target and product pageviews is not very visable but the Chi test lets us renouce the null hypothesis. 
+
+```{r echo=FALSE}
+
+unbalanced_chi_numeric$unique_product_qty
+
+```
+
+On the other hand, there seems to have a strong relation positive relation between pageviews and pagevies product. This may suggest an interaction between both features. Given the nature of this feature we will explore the impact of converting into a ratio using page views as denominator since product page view is in fact a subgroup of pageviews.
+
+
+
+```{r pageviews vs product ratio, echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot(data = unbalanced_data, 
+       aes(x = unique_product_qty / view_qty, y = view_qty, 
+           shape = bought, color = bought)) +
+  geom_point(alpha = 0.5, position = position_jitter()) +
+  scale_shape_manual(values = c(1,2)) +
+  scale_colour_brewer(palette = "Set1") +
+  theme_masterDS() +
+    labs(
+      x = "Pageviews product pages",
+      y = "Pageviews" ,
+      title = "Pageviews and product/pageview ",
+      caption = "Data from unbalanced dataset"
+    ) 
+
+```
+
+```{r unbalanced with ratio product, echo=FALSE, message=TRUE, warning=FALSE}
+
+data <- unbalanced_data %>% 
+  filter( !((view_qty <= 1) & (duration <= 2)))
+
+histogram_log <- ggplot(data, aes(x = log (unique_product_qty / view_qty ))) +
+    geom_histogram(fill="darkblue", color="black", bins = 15) +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Histogram"
+    )
+  
+boxplot_log <- ggplot(data, aes(x = 1, y = log(unique_product_qty / view_qty ))) +
+    geom_boxplot() +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot",
+      caption = "unbalanced data"
+    )
+
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
+
+```
+```{r balanced with ratio product, echo=FALSE, message=TRUE, warning=FALSE}
+
+data <- balanced_data %>% 
+  filter( !((view_qty <= 1) & (duration <= 2)))
+
+histogram_log <- ggplot(data, aes(x = log(unique_product_qty / view_qty ))) +
+    geom_histogram(fill="darkblue", color="black", bins = 15) +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Histogram"
+    )
+  
+boxplot_log <- ggplot(data, aes(x = 1, y = log( unique_product_qty / view_qty ))) +
+    geom_boxplot() +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot",
+      caption = "balanced data"
+    )
+
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
+
+```
+This transformation provides more insights into the behaviour of the average user indicating that on average 25% of page navigation is done on product related pages (from and into). Simultaneously it smooths the skewed effect reported earlier
+
+```{r ratio product view vs bought balanced, echo=FALSE}
+
+ggplot(data, aes(x = bought, y = log(unique_product_qty / view_qty ))) + 
+    geom_boxplot() + 
+    theme_masterDS()+
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot by Conversion",
+      caption = "Data from balanced dataset. Log transformed"
+    ) 
+
+```
+
+If the e-commecer has a more transactional focus it might not come as surprice the above plot and it seems to imply that user might already know what they want to buy prior to visit.
+
+Similar transformation will be done to the subsquent variables-
+
+### Designer Browsing unique page views
+
+Discrete variable measuring the number of Designers researched.
 
 
 ```{r}
@@ -556,11 +541,35 @@ grid.draw(eda_balanced$unique_browse_designer_qty)
 
 ```
 
-left skwed apply log transform
+Similar approach done before
 
-```{r}
- histogram_log <- ggplot(unbalanced_data, aes(x = log(unique_browse_designer_qty))) +
-    geom_histogram(fill="darkblue", color="black") +
+
+```{r pageviews vs designer, echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot(data = unbalanced_data, 
+       aes(x = unique_browse_designer_qty, y = view_qty, 
+           shape = bought, color = bought)) +
+  geom_point(alpha = 0.5, position = position_jitter()) +
+  stat_smooth(method = lm, level = 0.95, se = TRUE, size = 0.5) +
+  scale_shape_manual(values = c(1,2)) +
+  scale_colour_brewer(palette = "Set1") +
+  theme_masterDS() +
+    labs(
+      x = "Pageviews product pages",
+      y = "Pageviews" ,
+      title = "Pageviews and designer pageviews",
+      caption = "Data from unbalanced dataset"
+    ) 
+
+```
+
+```{r unbalanced with ratio designer, echo=FALSE, message=TRUE, warning=FALSE}
+
+data <- unbalanced_data %>% 
+  filter( !((view_qty <= 1) & (duration <= 2)))
+
+histogram_log <- ggplot(data, aes(x = log(unique_browse_designer_qty / view_qty ))) +
+    geom_histogram(fill="darkblue", color="black", bins = 15) +
     theme_masterDS() +
     labs(
       x = "",
@@ -568,21 +577,27 @@ left skwed apply log transform
       title = "Histogram"
     )
   
-  boxplot_log <- ggplot(unbalanced_data, aes(x = 1, y = log(unique_browse_designer_qty))) +
+boxplot_log <- ggplot(data, aes(x = 1, y = log(unique_browse_designer_qty / view_qty ))) +
     geom_boxplot() +
-    theme_masterDS()+
+    theme_masterDS() +
     labs(
       x = "",
       y="",
-      title = "Boxplot"
+      title = "Boxplot",
+      caption = "unbalanced data"
     )
 
-  grid.arrange(histogram_log, boxplot_log, nrow = 1)
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
 
 ```
-```{r}
- histogram_log <- ggplot(unbalanced_data, aes(x = unique_browse_designer_qty/view_qty)) +
-    geom_histogram(fill="darkblue", color="black") +
+
+```{r balanced with ratio designer, echo=FALSE, message=TRUE, warning=FALSE}
+
+data <- balanced_data %>% 
+  filter( !((view_qty <= 1) & (duration <= 2)))
+
+histogram_log <- ggplot(data, aes(x = log(unique_browse_designer_qty / view_qty ))) +
+    geom_histogram(fill="darkblue", color="black", bins = 15) +
     theme_masterDS() +
     labs(
       x = "",
@@ -590,112 +605,175 @@ left skwed apply log transform
       title = "Histogram"
     )
   
-  boxplot_log <- ggplot(unbalanced_data, aes(x = 1, y = unique_browse_designer_qty/view_qty)) +
+boxplot_log <- ggplot(data, aes(x = 1, y = log(unique_browse_designer_qty / view_qty ))) +
     geom_boxplot() +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot",
+      caption = "balanced data"
+    )
+
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
+
+```
+
+This transformation provides more insights into the behaviour of the average user indicating that on average 25% of page navigation is done on product related pages (from and into). Simultaneously it smooths the skewed effect reported earlier
+
+```{r ratio designer view vs bought balanced, echo=FALSE}
+
+ggplot(data, aes(x = bought, y = log(unique_browse_designer_qty / view_qty ))) + 
+    geom_boxplot() + 
+    theme_masterDS() +
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot by Conversion",
+      caption = "Data from balanced dataset. Log transformed"
+    ) 
+
+```
+
+### Products categories unique id
+
+Discrete variable measuring the visits Designer related pages had.
+
+
+```{r}
+
+grid.draw(eda_unbalanced$unique_browse_category_qty)
+
+```
+
+
+```{r}
+
+grid.draw(eda_balanced$unique_browse_category_qty)
+
+```
+
+Similar approach done before
+
+
+```{r pageviews vs category, echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot(data = unbalanced_data, 
+       aes(x = unique_browse_category_qty, y =  view_qty , 
+           shape = bought, color = bought)) +
+  geom_point(alpha = 0.5, position = position_jitter()) +
+  stat_smooth(method = lm, level = 0.95, se = TRUE, size = 0.5) +
+  scale_shape_manual(values = c(1,2)) +
+  scale_colour_brewer(palette = "Set1") +
+  theme_masterDS() +
+    labs(
+      x = "Pageviews product pages",
+      y = "Pageviews" ,
+      title = "Pageviews and designer pageviews",
+      caption = "Data from unbalanced dataset"
+    ) 
+
+```
+
+```{r echo=FALSE}
+
+unbalanced_chi$unique_browse_category_qty
+
+
+```
+
+
+
+```{r unbalanced with ratio category, echo=FALSE, message=TRUE, warning=FALSE}
+
+data <- unbalanced_data %>% 
+  filter( !((view_qty <= 1) & (duration <= 2)))
+
+histogram_log <- ggplot(data, aes(x = log(unique_browse_category_qty / view_qty ))) +
+    geom_histogram(fill="darkblue", color="black", bins = 15) +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Histogram"
+    )
+  
+boxplot_log <- ggplot(data, aes(x = 1, y = log(unique_browse_category_qty  / view_qty ))) +
+    geom_boxplot() +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot",
+      caption = "unbalanced data"
+    )
+
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
+
+```
+
+```{r balanced with ratio category, echo=FALSE, message=TRUE, warning=FALSE}
+
+data <- balanced_data %>% 
+  filter( !((view_qty <= 1) & (duration <= 2)))
+
+histogram_log <- ggplot(data, aes(x = log(unique_browse_category_qty / view_qty ))) +
+    geom_histogram(fill="darkblue", color="black", bins = 15) +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Histogram"
+    )
+  
+boxplot_log <- ggplot(data, aes(x = 1, y = log(unique_browse_category_qty / view_qty ))) +
+    geom_boxplot() +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot",
+      caption = "balanced data"
+    )
+
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
+
+```
+
+This transformation provides more insights into the behaviour of the average user indicating that on average 25% of page navigation is done on product related pages (from and into). Simultaneously it smooths the skewed effect reported earlier
+
+```{r ratio category view vs bought balanced, echo=FALSE}
+
+ggplot(data, aes(x = bought, y = log(unique_browse_category_qty / view_qty ))) + 
+    geom_boxplot() + 
     theme_masterDS()+
     labs(
       x = "",
       y="",
-      title = "Boxplot"
-    )
-
-  grid.arrange(histogram_log, boxplot_log, nrow = 1)
-
-```
-
-
-### Is subscribed
-
-
-```{r}
-
-grid.draw(eda_unbalanced$is_subscribed)
+      title = "Boxplot by Conversion",
+      caption = "Data from balanced dataset. Log transformed"
+    ) 
 
 ```
 
 
-```{r}
+### Potential ideas for feature engineering which were not implemented
 
-grid.draw(eda_balanced$is_subscribed)
-
-```
-
-For both datasets the class majority is NA. From the information given we cannot conclude that we can remove this feature from the model, and given the number of observations affected we will look for imputation alternatives.
-
-If a particular variable is having more missing values that rest of the variables in the dataset, and, if by removing that one variable you can save many observations. I would, then, suggest to remove that particular variable, unless it is a really important predictor that makes a lot of business sense. It is a matter of deciding between the importance of the variable and losing out on a number of observation.
-
-Given that its a categorical variable we could replace with the mode, and that would mean that all NA would become Yes, but given the size of missing values this can return a huge impact. We will explore statitical imputation using knn.
-
-DMwR::knnImputation uses k-Nearest Neighbours approach to impute missing values. What kNN imputation does in simpler terms is as follows: For every observation to be imputed, it identifies ‘k’ closest observations based on the euclidean distance and computes the weighted average (weighted based on distance) of these ‘k’ obs.
-
-### Browser name
+- The available data could synthesized using a non-supervised cluster algorithm which would help identify subsets of behaviors to be used during modeling. This approach has the advantage of possible reduce 4 variables into one.
 
 
-```{r}
-
-grid.draw(eda_unbalanced$browser_name)
-
-```
 
 
-```{r}
-
-grid.draw(eda_balanced$browser_name)
-
-```
-
-### Country
 
 
-```{r}
-
-grid.draw(eda_unbalanced$country)
-
-```
 
 
-```{r}
 
-grid.draw(eda_balanced$country)
 
-```
 
-remove rows withna
 
-```{r}
-correct_data <- select(unbalanced_data, -session_id)
-summary(correct_data)
 
-rec <- recipe(bought ~ ., data = correct_data)
 
-ratio_recipe <- rec %>% 
-  step_impute_knn(all_predictors(), neighbors = 3)
-ratio_recipe2 <- prep(ratio_recipe, training = unbalanced_data, verbose = TRUE, retain = TRUE)
-imputed <- bake(ratio_recipe2,new_data = NULL)
-summary(imputed)
-
-```
-
-## Assess data quality & transformations to be made
-
-```{r}
-md.pattern(unbalanced_data, rotate.names = TRUE)
-```
-
-```{r}
-md.pattern(balanced_data,rotate.names = TRUE)
-```
-
-## Summary of findings
-
-- Device group and platform have a strong relationship and should be taken into consideration during transformations.
-- Features conserning journey can have strong intereactions between then which should be taken into consideration during the model
-- The graphical analysis already provides a important insight given the business objectives. From the unbalanced data available we can conclude that around of 46% shopping carts are lost on that session. That raises a question of how are this recovered (example on a next session) or if this means that all this sales are lost right at the end of the sales funnel.
-- Log transform duration
-- Log transform view_qty and remove below or after tukeys value
-- Log transform unique_qty remove below or after tukeys value
-- Log transform nique browse designer quantity remove below or after tukeys value
-- remove rows with na country
 
 
 
