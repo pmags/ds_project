@@ -219,60 +219,29 @@ pre code {
 <p>Features by: - behavior - journey - segment - device and geo</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShmb3JlY2FzdClcblxuYGBgIn0= -->
-<pre class="r"><code>library(forecast)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5saWJyYXJ5KHRpZHl2ZXJzZSlcbmxpYnJhcnkoY29ycnBsb3QpXG5saWJyYXJ5KGNhcilcbmxpYnJhcnkodGlkeW1vZGVscylcbmxpYnJhcnkobWljZSlcbmxpYnJhcnkoZm9yZWNhc3QpXG5cbnNvdXJjZShcInNjcmlwdHMvZWRhX2Z1bmN0aW9ucy5yXCIpXG5cbmBgYCJ9 -->
+<pre class="r"><code>
+library(tidyverse)
+library(corrplot)
+library(car)
+library(tidymodels)
+library(mice)
+library(forecast)
+
+source(&quot;scripts/eda_functions.r&quot;)
 </code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiXG5BdHRhY2hpbmcgcGFja2FnZTog4oCYZm9yZWNhc3TigJlcblxuVGhlIGZvbGxvd2luZyBvYmplY3QgaXMgbWFza2VkIGZyb20g4oCYcGFja2FnZTp5YXJkc3RpY2vigJk6XG5cbiAgICBhY2N1cmFjeVxuIn0= -->
-<pre><code>
-Attaching package: ‘forecast’
-
-The following object is masked from ‘package:yardstick’:
-
-    accuracy</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG4jIGltcG9ydCBkYXRhXG51bmJhbGFuY2VkX2RhdGEgPC0gcmVhZF9jc3YoXCIuL2RhdGEvdHJhaW5fZnVsbC5jc3ZcIikgJT4lIHNlbGVjdCgtLi4uMSlcbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG4jIGltcG9ydCBkYXRhXG51bmJhbGFuY2VkX2RhdGEgPC0gcmVhZF9jc3YoXCIuL2RhdGEvdHJhaW5fZnVsbC5jc3ZcIikgJT4lIHNlbGVjdCgtLi4uMSlcbmJhbGFuY2VkX2RhdGEgPC0gcmVhZF9jc3YoXCIuL2RhdGEvdHJhaW5fYmFsYW5jZWQuY3N2XCIpICU+JSBzZWxlY3QoLS4uLjEpXG5cbiMgY29udmVydCBjYXRlZ29yaWNhbCBhbmQgZHVtbXkgdG8gZmFjdG9yIHZhcmlhYmxlXG51bmJhbGFuY2VkX2RhdGEgPC0gdW5iYWxhbmNlZF9kYXRhICU+JSBcbiAgbXV0YXRlX2F0KHZhcnMoXG4gICAgIWNvbnRhaW5zKGMoXCJkdXJhdGlvblwiLCBcInZpZXdfcXR5XCIsIFwidW5pcXVlX3Byb2R1Y3RfcXR5XCIsXCJ1bmlxdWVfYnJvd3NlX2Rlc2lnbmVyX3F0eVwiKSlcbiAgICApLCB+IGFzLmZhY3RvciguKSlcblxuYmFsYW5jZWRfZGF0YSA8LSBiYWxhbmNlZF9kYXRhICU+JSBcbiAgbXV0YXRlX2F0KHZhcnMoXG4gICAgIWNvbnRhaW5zKGMoXCJkdXJhdGlvblwiLCBcInZpZXdfcXR5XCIsIFwidW5pcXVlX3Byb2R1Y3RfcXR5XCIsXCJ1bmlxdWVfYnJvd3NlX2Rlc2lnbmVyX3F0eVwiKSlcbiAgICApLCB+IGFzLmZhY3RvciguKSlcblxuYGBgIn0= -->
 <pre class="r"><code>
 # import data
-unbalanced_data &lt;- read_csv(&quot;./data/train_full.csv&quot;) %&gt;% select(-...1)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiTmV3IG5hbWVzOlxuKiBgYCAtPiAuLi4xXG4ifQ== -->
-<pre><code>New names:
-* `` -&gt; ...1</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiUm93czogOTUwMDAgQ29sdW1uczogMjFcbi0tIENvbHVtbiBzcGVjaWZpY2F0aW9uIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tXG5EZWxpbWl0ZXI6IFwiLFwiXG5jaHIgICg5KTogc2Vzc2lvbl9pZCwgcGxhZm9ybSwgc2VnbWVudCwgY3VzdG9tZXJfdHlwZSwgZGV2aWNlX2dyb3VwLCB2aXNpdG9yX3R5cGUsIGlzX3N1YnNjcmliZWQsIGJyb3dzZXJfbmFtZSwgLi4uXG5kYmwgKDEyKTogLi4uMSwgaGFzX2xpc3RpbmcsIGhhc191c2VkX3NlYXJjaCwgaGFzX3JlY29tbWVuZGF0aW9uLCBoYXNfYWRkX3RvX3dpc2hsaXN0LCBoYXNfYWRkX3RvX2JhZywgZHVyYXRpb24sLi4uXG5cbmnDgiBVc2UgYHNwZWMoKWAgdG8gcmV0cmlldmUgdGhlIGZ1bGwgY29sdW1uIHNwZWNpZmljYXRpb24gZm9yIHRoaXMgZGF0YS5cbmnDgiBTcGVjaWZ5IHRoZSBjb2x1bW4gdHlwZXMgb3Igc2V0IGBzaG93X2NvbF90eXBlcyA9IEZBTFNFYCB0byBxdWlldCB0aGlzIG1lc3NhZ2UuXG4ifQ== -->
-<pre><code>Rows: 95000 Columns: 21
--- Column specification --------------------------------------------------------------------------------------------
-Delimiter: &quot;,&quot;
-chr  (9): session_id, plaform, segment, customer_type, device_group, visitor_type, is_subscribed, browser_name, ...
-dbl (12): ...1, has_listing, has_used_search, has_recommendation, has_add_to_wishlist, has_add_to_bag, duration,...
+unbalanced_data &lt;- read_csv(&quot;./data/train_full.csv&quot;) %&gt;% select(-...1)
+balanced_data &lt;- read_csv(&quot;./data/train_balanced.csv&quot;) %&gt;% select(-...1)
 
-iÂ Use `spec()` to retrieve the full column specification for this data.
-iÂ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYmFsYW5jZWRfZGF0YSA8LSByZWFkX2NzdihcIi4vZGF0YS90cmFpbl9iYWxhbmNlZC5jc3ZcIikgJT4lIHNlbGVjdCgtLi4uMSlcbmBgYCJ9 -->
-<pre class="r"><code>balanced_data &lt;- read_csv(&quot;./data/train_balanced.csv&quot;) %&gt;% select(-...1)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiTmV3IG5hbWVzOlxuKiBgYCAtPiAuLi4xXG4ifQ== -->
-<pre><code>New names:
-* `` -&gt; ...1</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiUm93czogMTYwMDAgQ29sdW1uczogMjFcbi0tIENvbHVtbiBzcGVjaWZpY2F0aW9uIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tXG5EZWxpbWl0ZXI6IFwiLFwiXG5jaHIgICg5KTogc2Vzc2lvbl9pZCwgcGxhZm9ybSwgc2VnbWVudCwgY3VzdG9tZXJfdHlwZSwgZGV2aWNlX2dyb3VwLCB2aXNpdG9yX3R5cGUsIGlzX3N1YnNjcmliZWQsIGJyb3dzZXJfbmFtZSwgLi4uXG5kYmwgKDEyKTogLi4uMSwgaGFzX2xpc3RpbmcsIGhhc191c2VkX3NlYXJjaCwgaGFzX3JlY29tbWVuZGF0aW9uLCBoYXNfYWRkX3RvX3dpc2hsaXN0LCBoYXNfYWRkX3RvX2JhZywgZHVyYXRpb24sLi4uXG5cbmnDgiBVc2UgYHNwZWMoKWAgdG8gcmV0cmlldmUgdGhlIGZ1bGwgY29sdW1uIHNwZWNpZmljYXRpb24gZm9yIHRoaXMgZGF0YS5cbmnDgiBTcGVjaWZ5IHRoZSBjb2x1bW4gdHlwZXMgb3Igc2V0IGBzaG93X2NvbF90eXBlcyA9IEZBTFNFYCB0byBxdWlldCB0aGlzIG1lc3NhZ2UuXG4ifQ== -->
-<pre><code>Rows: 16000 Columns: 21
--- Column specification --------------------------------------------------------------------------------------------
-Delimiter: &quot;,&quot;
-chr  (9): session_id, plaform, segment, customer_type, device_group, visitor_type, is_subscribed, browser_name, ...
-dbl (12): ...1, has_listing, has_used_search, has_recommendation, has_add_to_wishlist, has_add_to_bag, duration,...
-
-iÂ Use `spec()` to retrieve the full column specification for this data.
-iÂ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBjb252ZXJ0IGNhdGVnb3JpY2FsIGFuZCBkdW1teSB0byBmYWN0b3IgdmFyaWFibGVcbnVuYmFsYW5jZWRfZGF0YSA8LSB1bmJhbGFuY2VkX2RhdGEgJT4lIFxuICBtdXRhdGVfYXQodmFycyhcbiAgICAhY29udGFpbnMoYyhcImR1cmF0aW9uXCIsIFwidmlld19xdHlcIiwgXCJ1bmlxdWVfcHJvZHVjdF9xdHlcIixcInVuaXF1ZV9icm93c2VfZGVzaWduZXJfcXR5XCIpKVxuICAgICksIH4gYXMuZmFjdG9yKC4pKVxuXG5iYWxhbmNlZF9kYXRhIDwtIGJhbGFuY2VkX2RhdGEgJT4lIFxuICBtdXRhdGVfYXQodmFycyhcbiAgICAhY29udGFpbnMoYyhcImR1cmF0aW9uXCIsIFwidmlld19xdHlcIiwgXCJ1bmlxdWVfcHJvZHVjdF9xdHlcIixcInVuaXF1ZV9icm93c2VfZGVzaWduZXJfcXR5XCIpKVxuICAgICksIH4gYXMuZmFjdG9yKC4pKVxuXG5gYGAifQ== -->
-<pre class="r"><code># convert categorical and dummy to factor variable
+# convert categorical and dummy to factor variable
 unbalanced_data &lt;- unbalanced_data %&gt;% 
   mutate_at(vars(
     !contains(c(&quot;duration&quot;, &quot;view_qty&quot;, &quot;unique_product_qty&quot;,&quot;unique_browse_designer_qty&quot;))
@@ -298,10 +267,6 @@ balanced_data &lt;- balanced_data %&gt;%
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudW5pcXVlKHVuYmFsYW5jZWRfZGF0YSRjdXN0b21lcl90eXBlKVxuYGBgIn0= -->
 <pre class="r"><code>unique(unbalanced_data$customer_type)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiWzFdIHByb3NwZWN0IGN1c3RvbWVyXG5MZXZlbHM6IGN1c3RvbWVyIHByb3NwZWN0XG4ifQ== -->
-<pre><code>[1] prospect customer
-Levels: customer prospect</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p><em>device group:</em> category variable with 3 levels each representing the device source for each session.</p>
@@ -310,10 +275,6 @@ Levels: customer prospect</code></pre>
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudW5pcXVlKHVuYmFsYW5jZWRfZGF0YSRkZXZpY2VfZ3JvdXApXG5gYGAifQ== -->
 <pre class="r"><code>unique(unbalanced_data$device_group)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiWzFdIE1vYmlsZSBXZWIgQXBwICAgICAgICBEZXNrdG9wICAgXG5MZXZlbHM6IEFwcCBEZXNrdG9wIE1vYmlsZSBXZWJcbiJ9 -->
-<pre><code>[1] Mobile Web App        Desktop   
-Levels: App Desktop Mobile Web</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p><em>visitor type:</em> categorical value with 2 levels representing if a given user is a new or recurring user. It differs from customer type because it focus on visits and not actual conversion, therefore a returning user can be a prospect.</p>
@@ -322,10 +283,6 @@ Levels: App Desktop Mobile Web</code></pre>
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudW5pcXVlKHVuYmFsYW5jZWRfZGF0YSR2aXNpdG9yX3R5cGUpXG5gYGAifQ== -->
 <pre class="r"><code>unique(unbalanced_data$visitor_type)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiWzFdIG5ldyAgICAgICByZXR1cm5pbmdcbkxldmVsczogbmV3IHJldHVybmluZ1xuIn0= -->
-<pre><code>[1] new       returning
-Levels: new returning</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p><em>has_listing, has_used_search, has_recommendation, has_add_to_wishlist, has_add_to_bag:</em> are all boolean variables representing key milestones on business customer journey. They are TRUE/ 1 if a given session includes that step.</p>
@@ -337,60 +294,33 @@ Levels: new returning</code></pre>
 <p><em>browser_name:</em> categorical variable representing the browser used as source for each session. From the available information from the unbalanced data we have 52 different browsers present on this dataset.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG51bmlxdWUodW5iYWxhbmNlZF9kYXRhJGJyb3dzZXJfbmFtZSlcbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG51bmlxdWUodW5iYWxhbmNlZF9kYXRhJGJyb3dzZXJfbmFtZSlcblxuYGBgIn0= -->
 <pre class="r"><code>
-unique(unbalanced_data$browser_name)</code></pre>
+unique(unbalanced_data$browser_name)
+</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiIFsxXSBTYWZhcmkgICAgICAgICAgICAgICAgICBDaHJvbWUgICAgICAgICAgICAgICAgICA8TkE+ICAgICAgICAgICAgICAgICAgICBJbnN0YWdyYW0gQXBwICAgICAgICAgIFxuIFs1XSBNb2JpbGUgU2FmYXJpIFVJV2ViVmlldyBBbmRyb2lkIFdlYlZpZXcgICAgICAgICBGYWNlYm9vayBBcHAgICAgICAgICAgICBGaXJlZm94ICAgICAgICAgICAgICAgIFxuIFs5XSBZYW5kZXggQnJvd3NlciAgICAgICAgICBNaXVpIEJyb3dzZXIgICAgICAgICAgICBHb29nbGUgQXBwICAgICAgICAgICAgICBPcGVyYSAgICAgICAgICAgICAgICAgIFxuWzEzXSBFZGdlICAgICAgICAgICAgICAgICAgICBTYW1zdW5nIEJyb3dzZXIgICAgICAgICBIdWF3ZWlCcm93c2VyICAgICAgICAgICBWaXZvIEJyb3dzZXIgICAgICAgICAgIFxuWzE3XSBMaW5lIEFwcCAgICAgICAgICAgICAgICBOYXZlciAgICAgICAgICAgICAgICAgICBXZUNoYXQgQXBwICAgICAgICAgICAgICBPcGVyYSBNb2JpbGUgICAgICAgICAgIFxuWzIxXSBEdWNrRHVja0dvIEJyb3dzZXIgICAgICBTb2dvdSBFeHBsb3JlciAgICAgICAgICBBbGlBcHAgICAgICAgICAgICAgICAgICBTaWxrICAgICAgICAgICAgICAgICAgIFxuWzI1XSBBcHBsZSBNYWlsICAgICAgICAgICAgICBGaXJlZm94IGZvciBpT1MgICAgICAgICBXS0Jyb3dzZXIgICAgICAgICAgICAgICBVQyBCcm93c2VyICAgICAgICAgICAgIFxuWzI5XSBIZXlUYXBCcm93c2VyICAgICAgICAgICBNYXh0aG9uICAgICAgICAgICAgICAgICBXaGFsZSBCcm93c2VyICAgICAgICAgICBTbmFwY2hhdCAgICAgICAgICAgICAgIFxuWzMzXSBDTSBCcm93c2VyICAgICAgICAgICAgICBXZWlibyAgICAgICAgICAgICAgICAgICBEZWZhdWx0IEJyb3dzZXIgICAgICAgICBUdW5nc3RlbiBCcm93c2VyICAgICAgIFxuWzM3XSBRUUJyb3dzZXIgICAgICAgICAgICAgICBFY29zaWEgICAgICAgICAgICAgICAgICBTbGVpcG5pciAgICAgICAgICAgICAgICBBbmRyb2lkICAgICAgICAgICAgICAgIFxuWzQxXSBSRERvY3VtZW50cyBBcHAgICAgICAgICBDb2MgQ29jIEJyb3dzZXIgICAgICAgICBNZWl6dSBCcm93c2VyICAgICAgICAgICBEYXJlQm9vc3QgQm90ICAgICAgICAgIFxuWzQ1XSBQbGF5c3RhdGlvbiBCcm93c2VyICAgICBQdWZmaW4gICAgICAgICAgICAgICAgICBOZXRlYXNlIE11c2ljICAgICAgICAgICBXYXRlcmZveCAgICAgICAgICAgICAgIFxuWzQ5XSBFbGVtZW50cyBCcm93c2VyICAgICAgICBJcm9uICAgICAgICAgICAgICAgICAgICBNYWlsIE1hc3RlciAgICAgICAgICAgICBFZGdlIE1vYmlsZSAgICAgICAgICAgIFxuNTEgTGV2ZWxzOiBBbGlBcHAgQW5kcm9pZCBBbmRyb2lkIFdlYlZpZXcgQXBwbGUgTWFpbCBDaHJvbWUgQ00gQnJvd3NlciBDb2MgQ29jIEJyb3dzZXIgLi4uIFlhbmRleCBCcm93c2VyXG4ifQ== -->
-<pre><code> [1] Safari                  Chrome                  &lt;NA&gt;                    Instagram App          
- [5] Mobile Safari UIWebView Android WebView         Facebook App            Firefox                
- [9] Yandex Browser          Miui Browser            Google App              Opera                  
-[13] Edge                    Samsung Browser         HuaweiBrowser           Vivo Browser           
-[17] Line App                Naver                   WeChat App              Opera Mobile           
-[21] DuckDuckGo Browser      Sogou Explorer          AliApp                  Silk                   
-[25] Apple Mail              Firefox for iOS         WKBrowser               UC Browser             
-[29] HeyTapBrowser           Maxthon                 Whale Browser           Snapchat               
-[33] CM Browser              Weibo                   Default Browser         Tungsten Browser       
-[37] QQBrowser               Ecosia                  Sleipnir                Android                
-[41] RDDocuments App         Coc Coc Browser         Meizu Browser           DareBoost Bot          
-[45] Playstation Browser     Puffin                  Netease Music           Waterfox               
-[49] Elements Browser        Iron                    Mail Master             Edge Mobile            
-51 Levels: AliApp Android Android WebView Apple Mail Chrome CM Browser Coc Coc Browser ... Yandex Browser</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p><em>country:</em> categorical variable containing the country of origin for each session.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG51bmlxdWUodW5iYWxhbmNlZF9kYXRhJGNvdW50cnkpXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG51bmlxdWUodW5iYWxhbmNlZF9kYXRhJGNvdW50cnkpXG5cbmBgYCJ9 -->
 <pre class="r"><code>
-unique(unbalanced_data$country)</code></pre>
+unique(unbalanced_data$country)
+</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiICBbMV0gVVMgICBNWCAgIFJVICAgQVUgICBJTiAgIFBUICAgS1IgICBDTCAgIEdCICAgQUUgICBDTiAgIEhLICAgREUgICBHUiAgIFBMICAgS1cgICBMSSAgIEJSICAgQVQgICBIUiAgIENBICAgSVQgIFxuIFsyM10gU0EgICBUVyAgIFpBICAgVk4gICBKUCAgIEZSICAgUk8gICBRQSAgIE1FICAgQkggICBJRCAgIFBFICAgRVMgICBCRSAgIFBLICAgTEIgICBJRSAgIEtaICAgQkcgICBQSCAgIE5MICAgQVIgIFxuIFs0NV0gSUwgICBTRSAgIE5aICAgR0UgICBETyAgIERLICAgQlkgICBBRiAgIE1EICAgVEggICBNWSAgIFVBICAgTFQgICBDSCAgIEVHICAgTk8gICBDTyAgIFNHICAgQkEgICBSUyAgIEtIICAgSFUgIFxuIFs2N10gTU8gICBJUyAgIE9NICAgQU0gICBVWSAgIE1BICAgTkcgICBBTCAgIEJCICAgRUUgICBEWiAgIE1LICAgU0sgICBMVSAgIEFPICAgVFIgICBQQSAgIEVDICAgSk8gICBJUSAgIEJEICAgR0ggIFxuIFs4OV0gQ1kgICBTSSAgIEFaICAgQ1ogICBNVSAgIEtHICAgTVQgICBCTiAgIEZJICAgVE4gICBMViAgIENSICAgQlMgICBTViAgIFVaICAgR1QgICBBRCAgIE5QICAgSE4gICBDTSAgIEtFICAgRVQgIFxuWzExMV0gQUkgICBNQyAgIEdQICAgSk0gICA8TkE+IE1XICAgU04gICBWRSAgIFZJICAgQ0kgICBNUiAgIFpNICAgQVcgICBDRyAgIExLICAgUFIgICBHVSAgIEpFICAgR0cgICBCTSAgIFNSICAgR0kgIFxuWzEzM10gVFQgICBHWSAgIEJXICAgQVEgICBNTiAgIE1RICAgSFQgICBMQyAgIFNNICAgR0YgICBLWSAgIEJPICAgU0wgICBMQSAgIElDICAgS1YgICBWQyAgIFRDICAgQkogICBNWiAgIExTICAgUkUgIFxuWzE1NV0gTkMgICBETSAgIE1WICAgVUcgICBURyAgIEdMICAgUFkgICBOSSAgIEdNICBcbjE2MiBMZXZlbHM6IEFEIEFFIEFGIEFJIEFMIEFNIEFPIEFRIEFSIEFUIEFVIEFXIEFaIEJBIEJCIEJEIEJFIEJHIEJIIEJKIEJNIEJOIEJPIEJSIEJTIEJXIEJZIENBIENHIENIIENJIENMIC4uLiBaTVxuIn0= -->
-<pre><code>  [1] US   MX   RU   AU   IN   PT   KR   CL   GB   AE   CN   HK   DE   GR   PL   KW   LI   BR   AT   HR   CA   IT  
- [23] SA   TW   ZA   VN   JP   FR   RO   QA   ME   BH   ID   PE   ES   BE   PK   LB   IE   KZ   BG   PH   NL   AR  
- [45] IL   SE   NZ   GE   DO   DK   BY   AF   MD   TH   MY   UA   LT   CH   EG   NO   CO   SG   BA   RS   KH   HU  
- [67] MO   IS   OM   AM   UY   MA   NG   AL   BB   EE   DZ   MK   SK   LU   AO   TR   PA   EC   JO   IQ   BD   GH  
- [89] CY   SI   AZ   CZ   MU   KG   MT   BN   FI   TN   LV   CR   BS   SV   UZ   GT   AD   NP   HN   CM   KE   ET  
-[111] AI   MC   GP   JM   &lt;NA&gt; MW   SN   VE   VI   CI   MR   ZM   AW   CG   LK   PR   GU   JE   GG   BM   SR   GI  
-[133] TT   GY   BW   AQ   MN   MQ   HT   LC   SM   GF   KY   BO   SL   LA   IC   KV   VC   TC   BJ   MZ   LS   RE  
-[155] NC   DM   MV   UG   TG   GL   PY   NI   GM  
-162 Levels: AD AE AF AI AL AM AO AQ AR AT AU AW AZ BA BB BD BE BG BH BJ BM BN BO BR BS BW BY CA CG CH CI CL ... ZM</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p><strong>Additional information not used as features</strong></p>
 <p><em>session_id:</em> Unique identifier for each session. Each row represents a unique session</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG4jIHRlc3QgaWYgYSBzaW5nbGUgc2Vzc2lvbiBjYW4gaGF2ZSBtb3JlIHRoYW4gb25lIHJvd1xubGVuZ3RoKCB1bmlxdWUodW5iYWxhbmNlZF9kYXRhJHNlc3Npb25faWQpICkgPT0gbnJvdyh1bmJhbGFuY2VkX2RhdGEpXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG4jIHRlc3QgaWYgYSBzaW5nbGUgc2Vzc2lvbiBjYW4gaGF2ZSBtb3JlIHRoYW4gb25lIHJvd1xubGVuZ3RoKCB1bmlxdWUodW5iYWxhbmNlZF9kYXRhJHNlc3Npb25faWQpICkgPT0gbnJvdyh1bmJhbGFuY2VkX2RhdGEpXG5cbmBgYCJ9 -->
 <pre class="r"><code>
 # test if a single session can have more than one row
-length( unique(unbalanced_data$session_id) ) == nrow(unbalanced_data)</code></pre>
+length( unique(unbalanced_data$session_id) ) == nrow(unbalanced_data)
+</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFRSVUVcbiJ9 -->
-<pre><code>[1] TRUE</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
@@ -404,41 +334,15 @@ length( unique(unbalanced_data$session_id) ) == nrow(unbalanced_data)</code></pr
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5jb250aW51b3VzIDwtIHVuYmFsYW5jZWRfZGF0YSAlPiUgXG4gIHNlbGVjdChkdXJhdGlvbikgJT4lIFxuICBuYW1lcygpICU+JSBcbiAgc2V0X25hbWVzKClcbiBcbmRpc2NyZXRlIDwtIHVuYmFsYW5jZWRfZGF0YSAlPiUgXG4gIHNlbGVjdCh2aWV3X3F0eSwgdW5pcXVlX3Byb2R1Y3RfcXR5LCB1bmlxdWVfYnJvd3NlX2Rlc2lnbmVyX3F0eSkgJT4lIFxuICBuYW1lcygpICU+JSBcbiAgc2V0X25hbWVzKClcblxuY2F0ZWdvcmljYWwgPC0gdW5iYWxhbmNlZF9kYXRhICU+JSBcbiAgc2VsZWN0KC1kdXJhdGlvbiwgLXZpZXdfcXR5LCAtdW5pcXVlX3Byb2R1Y3RfcXR5LCBcbiAgICAgICAgIC11bmlxdWVfYnJvd3NlX2Rlc2lnbmVyX3F0eSwgLXNlc3Npb25faWQsIC1ib3VnaHQpICU+JSBcbiAgbmFtZXMoKSAlPiUgXG4gIHNldF9uYW1lcygpXG5cbmVkYV9jb250IDwtIG1hcChjb250aW51b3VzLCB+ZWRhX2NvbnRpbnVvdXModW5iYWxhbmNlZF9kYXRhLCAueCkpXG5cbmVkYV9kaXMgPC0gbWFwKGRpc2NyZXRlLCB+ZWRhX2Rpc2NyZXRlKHVuYmFsYW5jZWRfZGF0YSwgLngpKVxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG51bmJhbGFuY2VkX2NoaSA8LSB1bmJhbGFuY2VkX2RhdGEgJT4lIFxuICBzZWxlY3RfaWYoaXMuZmFjdG9yKSAlPiUgXG4gIG1hcChmdW5jdGlvbih4KSBjaGlzcS50ZXN0KHgsIHVuYmFsYW5jZWRfZGF0YSRib3VnaHQpKVxuXG5iYWxhbmNlZF9jaGkgPC0gYmFsYW5jZWRfZGF0YSAlPiUgXG4gIHNlbGVjdF9pZihpcy5mYWN0b3IpICU+JSBcbiAgbWFwKGZ1bmN0aW9uKHgpIGNoaXNxLnRlc3QoeCwgYmFsYW5jZWRfZGF0YSRib3VnaHQpKVxuXG5cbmBgYCJ9 -->
 <pre class="r"><code>
-continuous &lt;- unbalanced_data %&gt;% 
-  select(duration) %&gt;% 
-  names() %&gt;% 
-  set_names()
- 
-discrete &lt;- unbalanced_data %&gt;% 
-  select(view_qty, unique_product_qty, unique_browse_designer_qty) %&gt;% 
-  names() %&gt;% 
-  set_names()
+unbalanced_chi &lt;- unbalanced_data %&gt;% 
+  select_if(is.factor) %&gt;% 
+  map(function(x) chisq.test(x, unbalanced_data$bought))
 
-categorical &lt;- unbalanced_data %&gt;% 
-  select(-duration, -view_qty, -unique_product_qty, 
-         -unique_browse_designer_qty, -session_id, -bought) %&gt;% 
-  names() %&gt;% 
-  set_names()
-
-eda_cont &lt;- map(continuous, ~eda_continuous(unbalanced_data, .x))
-
-eda_dis &lt;- map(discrete, ~eda_discrete(unbalanced_data, .x))</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiYHN0YXRfYmluKClgIHVzaW5nIGBiaW5zID0gMzBgLiBQaWNrIGJldHRlciB2YWx1ZSB3aXRoIGBiaW53aWR0aGAuXG5gc3RhdF9iaW4oKWAgdXNpbmcgYGJpbnMgPSAzMGAuIFBpY2sgYmV0dGVyIHZhbHVlIHdpdGggYGJpbndpZHRoYC5cbmBzdGF0X2JpbigpYCB1c2luZyBgYmlucyA9IDMwYC4gUGljayBiZXR0ZXIgdmFsdWUgd2l0aCBgYmlud2lkdGhgLlxuYHN0YXRfYmluKClgIHVzaW5nIGBiaW5zID0gMzBgLiBQaWNrIGJldHRlciB2YWx1ZSB3aXRoIGBiaW53aWR0aGAuXG5gc3RhdF9iaW4oKWAgdXNpbmcgYGJpbnMgPSAzMGAuIFBpY2sgYmV0dGVyIHZhbHVlIHdpdGggYGJpbndpZHRoYC5cbmBzdGF0X2JpbigpYCB1c2luZyBgYmlucyA9IDMwYC4gUGljayBiZXR0ZXIgdmFsdWUgd2l0aCBgYmlud2lkdGhgLlxuIn0= -->
-<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZWRhX2NhdCA8LSBtYXAoY2F0ZWdvcmljYWwsIH5lZGFfY2F0ZWdvcmljYWwodW5iYWxhbmNlZF9kYXRhLCAueCkpXG5cbmVkYV91bmJhbGFuY2VkIDwtIGMoZWRhX2NvbnQsIGVkYV9kaXMsIGVkYV9jYXQpXG5ybShlZGFfY29udCxlZGFfZGlzLCBlZGFfY2F0KVxuXG5gYGAifQ== -->
-<pre class="r"><code>eda_cat &lt;- map(categorical, ~eda_categorical(unbalanced_data, .x))
-
-eda_unbalanced &lt;- c(eda_cont, eda_dis, eda_cat)
-rm(eda_cont,eda_dis, eda_cat)
+balanced_chi &lt;- balanced_data %&gt;% 
+  select_if(is.factor) %&gt;% 
+  map(function(x) chisq.test(x, balanced_data$bought))
 </code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
@@ -454,83 +358,9 @@ rm(eda_cont,eda_dis, eda_cat)
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-output-begin eyJkYXRhIjoiYHN0YXRfYmluKClgIHVzaW5nIGBiaW5zID0gMzBgLiBQaWNrIGJldHRlciB2YWx1ZSB3aXRoIGBiaW53aWR0aGAuXG5gc3RhdF9iaW4oKWAgdXNpbmcgYGJpbnMgPSAzMGAuIFBpY2sgYmV0dGVyIHZhbHVlIHdpdGggYGJpbndpZHRoYC5cbmBzdGF0X2JpbigpYCB1c2luZyBgYmlucyA9IDMwYC4gUGljayBiZXR0ZXIgdmFsdWUgd2l0aCBgYmlud2lkdGhgLlxuYHN0YXRfYmluKClgIHVzaW5nIGBiaW5zID0gMzBgLiBQaWNrIGJldHRlciB2YWx1ZSB3aXRoIGBiaW53aWR0aGAuXG5gc3RhdF9iaW4oKWAgdXNpbmcgYGJpbnMgPSAzMGAuIFBpY2sgYmV0dGVyIHZhbHVlIHdpdGggYGJpbndpZHRoYC5cbmBzdGF0X2JpbigpYCB1c2luZyBgYmlucyA9IDMwYC4gUGljayBiZXR0ZXIgdmFsdWUgd2l0aCBgYmlud2lkdGhgLlxuIn0= -->
-<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>The “bought” variable is the target variable from this study and we can conclude the data is severely class inbalance towards no order which can affects modeling since it is biased towards the majority class. Has can be seen below this effect is corrected on the balanced dataset.</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5NIDwtIGNvcih1bmJhbGFuY2VkX2RhdGEgJT4lIFxuICAgICAgICAgICBzZWxlY3RfaWYoaXMubnVtZXJpYykpXG5jb3JycGxvdChNLCB0eXBlID0gXCJ1cHBlclwiLCBtZXRob2QgPSBcIm51bWJlclwiLCBkaWFnID0gRkFMU0UsIFxuICAgICAgICAgb3JkZXIgPSAnaGNsdXN0JywgYWRkcmVjdCA9IDIpXG5cbmBgYCJ9 -->
-<pre class="r"><code>
-M &lt;- cor(unbalanced_data %&gt;% 
-           select_if(is.numeric))
-corrplot(M, type = &quot;upper&quot;, method = &quot;number&quot;, diag = FALSE, 
-         order = &#39;hclust&#39;, addrect = 2)
-</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-plot-begin eyJoZWlnaHQiOjQzMi42MzI5LCJ3aWR0aCI6NzAwLCJzaXplX2JlaGF2aW9yIjowLCJjb25kaXRpb25zIjpbXX0= -->
-<p><img src="data:image/png;base64,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" /></p>
-<!-- rnb-plot-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-<div id="customer-type" class="section level3">
-<h3>Customer type</h3>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG51bmJhbGFuY2VkX2NoaSA8LSB1bmJhbGFuY2VkX2RhdGEgJT4lIFxuICBzZWxlY3RfaWYoaXMuZmFjdG9yKSAlPiUgXG4gIG1hcChmdW5jdGlvbih4KSBjaGlzcS50ZXN0KHgsIHVuYmFsYW5jZWRfZGF0YSRib3VnaHQpKVxuYGBgIn0= -->
-<pre class="r"><code>
-unbalanced_chi &lt;- unbalanced_data %&gt;% 
-  select_if(is.factor) %&gt;% 
-  map(function(x) chisq.test(x, unbalanced_data$bought))</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBjaGlzcS50ZXN0KHgsIHVuYmFsYW5jZWRfZGF0YSRib3VnaHQpIDpcbiAgQ2hpLXNxdWFyZWQgYXBwcm94aW1hdGlvbiBtYXkgYmUgaW5jb3JyZWN0XG5XYXJuaW5nIGluIGNoaXNxLnRlc3QoeCwgdW5iYWxhbmNlZF9kYXRhJGJvdWdodCkgOlxuICBDaGktc3F1YXJlZCBhcHByb3hpbWF0aW9uIG1heSBiZSBpbmNvcnJlY3Rcbldhcm5pbmcgaW4gY2hpc3EudGVzdCh4LCB1bmJhbGFuY2VkX2RhdGEkYm91Z2h0KSA6XG4gIENoaS1zcXVhcmVkIGFwcHJveGltYXRpb24gbWF5IGJlIGluY29ycmVjdFxuV2FybmluZyBpbiBjaGlzcS50ZXN0KHgsIHVuYmFsYW5jZWRfZGF0YSRib3VnaHQpIDpcbiAgQ2hpLXNxdWFyZWQgYXBwcm94aW1hdGlvbiBtYXkgYmUgaW5jb3JyZWN0XG4ifQ== -->
-<pre><code>Warning in chisq.test(x, unbalanced_data$bought) :
-  Chi-squared approximation may be incorrect
-Warning in chisq.test(x, unbalanced_data$bought) :
-  Chi-squared approximation may be incorrect
-Warning in chisq.test(x, unbalanced_data$bought) :
-  Chi-squared approximation may be incorrect
-Warning in chisq.test(x, unbalanced_data$bought) :
-  Chi-squared approximation may be incorrect</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYmFsYW5jZWRfY2hpIDwtIGJhbGFuY2VkX2RhdGEgJT4lIFxuICBzZWxlY3RfaWYoaXMuZmFjdG9yKSAlPiUgXG4gIG1hcChmdW5jdGlvbih4KSBjaGlzcS50ZXN0KHgsIGJhbGFuY2VkX2RhdGEkYm91Z2h0KSlcbmBgYCJ9 -->
-<pre class="r"><code>balanced_chi &lt;- balanced_data %&gt;% 
-  select_if(is.factor) %&gt;% 
-  map(function(x) chisq.test(x, balanced_data$bought))</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBjaGlzcS50ZXN0KHgsIGJhbGFuY2VkX2RhdGEkYm91Z2h0KSA6XG4gIENoaS1zcXVhcmVkIGFwcHJveGltYXRpb24gbWF5IGJlIGluY29ycmVjdFxuV2FybmluZyBpbiBjaGlzcS50ZXN0KHgsIGJhbGFuY2VkX2RhdGEkYm91Z2h0KSA6XG4gIENoaS1zcXVhcmVkIGFwcHJveGltYXRpb24gbWF5IGJlIGluY29ycmVjdFxuV2FybmluZyBpbiBjaGlzcS50ZXN0KHgsIGJhbGFuY2VkX2RhdGEkYm91Z2h0KSA6XG4gIENoaS1zcXVhcmVkIGFwcHJveGltYXRpb24gbWF5IGJlIGluY29ycmVjdFxuV2FybmluZyBpbiBjaGlzcS50ZXN0KHgsIGJhbGFuY2VkX2RhdGEkYm91Z2h0KSA6XG4gIENoaS1zcXVhcmVkIGFwcHJveGltYXRpb24gbWF5IGJlIGluY29ycmVjdFxuV2FybmluZyBpbiBjaGlzcS50ZXN0KHgsIGJhbGFuY2VkX2RhdGEkYm91Z2h0KSA6XG4gIENoaS1zcXVhcmVkIGFwcHJveGltYXRpb24gbWF5IGJlIGluY29ycmVjdFxuIn0= -->
-<pre><code>Warning in chisq.test(x, balanced_data$bought) :
-  Chi-squared approximation may be incorrect
-Warning in chisq.test(x, balanced_data$bought) :
-  Chi-squared approximation may be incorrect
-Warning in chisq.test(x, balanced_data$bought) :
-  Chi-squared approximation may be incorrect
-Warning in chisq.test(x, balanced_data$bought) :
-  Chi-squared approximation may be incorrect
-Warning in chisq.test(x, balanced_data$bought) :
-  Chi-squared approximation may be incorrect</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5ncmlkLmRyYXcodW5iYWxhbmNlZF9ncmlkKSBcblxuYGBgIn0= -->
-<pre class="r"><code>
-grid.draw(unbalanced_grid) 
-</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>Customer type is a categorical variable with 2 levels. The current category in inbalanced with the majority of sessions being done by prospect clients. When compared with target the inbalanced differs slightly being bought the majority class for customers implying a relationship between the 2.</p>
-<p>The resulst from the <span class="math inline">\(\chi^2\)</span> hipotesis test does not refuse the null hipothesys reinforcing the graphical analysis that a relationship might exist between this 2 variables that implies that recurrent customers buy more.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5ncmlkLmRyYXcoYmFsYW5jZWRfZ3JpZClcblxuYGBgIn0= -->
@@ -540,16 +370,9 @@ grid.draw(balanced_grid)
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ3JpZC5kcmF3KGVkYV91bmJhbGFuY2VkJGN1c3RvbWVyX3R5cGUpXG5gYGAifQ== -->
-<pre class="r"><code>grid.draw(eda_unbalanced$customer_type)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
 </div>
-<div id="platform" class="section level3">
-<h3>Platform</h3>
+<div id="customer-type" class="section level3">
+<h3>Customer type</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ3JpZC5kcmF3KGVkYV91bmJhbGFuY2VkJGN1c3RvbWVyX3R5cGUpXG5gYGAifQ== -->
@@ -557,19 +380,20 @@ grid.draw(balanced_grid)
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ3JpZC5kcmF3KGVkYV91bmJhbGFuY2VkJGN1c3RvbWVyX3R5cGUpXG5gYGAifQ== -->
+<pre class="r"><code>grid.draw(eda_unbalanced$customer_type)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Customer type is a categorical variable with 2 levels. The current category in inbalanced with the majority of sessions being done by prospect clients. When compared with target the inbalanced differs slightly being bought the majority class for customers implying a relationship between the 2.</p>
+<p>The resulst from the <span class="math inline">\(\chi^2\)</span> hipotesis test does not refuse the null hipothesys reinforcing the graphical analysis that a relationship might exist between this 2 variables that implies that recurrent customers buy more.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudW5iYWxhbmNlZF9jaGlbXCJjdXN0b21lcl90eXBlXCJdXG5gYGAifQ== -->
 <pre class="r"><code>unbalanced_chi[&quot;customer_type&quot;]</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiJGN1c3RvbWVyX3R5cGVcblxuXHRQZWFyc29uJ3MgQ2hpLXNxdWFyZWQgdGVzdCB3aXRoIFlhdGVzJyBjb250aW51aXR5IGNvcnJlY3Rpb25cblxuZGF0YTogIHggYW5kIHVuYmFsYW5jZWRfZGF0YSRib3VnaHRcblgtc3F1YXJlZCA9IDk3NTAuNywgZGYgPSAxLCBwLXZhbHVlIDwgMi4yZS0xNlxuIn0= -->
-<pre><code>$customer_type
-
-    Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
-
-data:  x and unbalanced_data$bought
-X-squared = 9750.7, df = 1, p-value &lt; 2.2e-16</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
@@ -577,16 +401,11 @@ X-squared = 9750.7, df = 1, p-value &lt; 2.2e-16</code></pre>
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYmFsYW5jZWRfY2hpW1wiY3VzdG9tZXJfdHlwZVwiXVxuYGBgIn0= -->
 <pre class="r"><code>balanced_chi[&quot;customer_type&quot;]</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiJGN1c3RvbWVyX3R5cGVcblxuXHRQZWFyc29uJ3MgQ2hpLXNxdWFyZWQgdGVzdCB3aXRoIFlhdGVzJyBjb250aW51aXR5IGNvcnJlY3Rpb25cblxuZGF0YTogIHggYW5kIGJhbGFuY2VkX2RhdGEkYm91Z2h0XG5YLXNxdWFyZWQgPSAzNTkwLCBkZiA9IDEsIHAtdmFsdWUgPCAyLjJlLTE2XG4ifQ== -->
-<pre><code>$customer_type
-
-    Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
-
-data:  x and balanced_data$bought
-X-squared = 3590, df = 1, p-value &lt; 2.2e-16</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+</div>
+<div id="platform" class="section level3">
+<h3>Platform</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ3JpZC5kcmF3KGVkYV91bmJhbGFuY2VkJHBsYXRmb3JtKVxuYGBgIn0= -->
@@ -606,9 +425,6 @@ X-squared = 3590, df = 1, p-value &lt; 2.2e-16</code></pre>
       title = &quot;Frequency&quot;
     )</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-plot-begin eyJoZWlnaHQiOjQzMi42MzI5LCJ3aWR0aCI6NzAwLCJzaXplX2JlaGF2aW9yIjowLCJjb25kaXRpb25zIjpbXX0= -->
-<p><img src="data:image/png;base64,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" /></p>
-<!-- rnb-plot-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
@@ -623,9 +439,6 @@ X-squared = 3590, df = 1, p-value &lt; 2.2e-16</code></pre>
       title = &quot;Frequency bought vs no bought&quot;
     )</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-plot-begin eyJoZWlnaHQiOjQzMi42MzI5LCJ3aWR0aCI6NzAwLCJzaXplX2JlaGF2aW9yIjowLCJjb25kaXRpb25zIjpbXX0= -->
-<p><img src="data:image/png;base64,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" /></p>
-<!-- rnb-plot-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
@@ -633,11 +446,6 @@ X-squared = 3590, df = 1, p-value &lt; 2.2e-16</code></pre>
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucHJvcC50YWJsZSh0YWJsZSh1bmJhbGFuY2VkX2RhdGFbW1wicGxhZm9ybVwiXV0pKVxuYGBgIn0= -->
 <pre class="r"><code>prop.table(table(unbalanced_data[[&quot;plaform&quot;]]))</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiXG5tb2JpbGVfYXBwICAgIHdlYnNpdGUgXG4gMC4yNzYxMjYzICAwLjcyMzg3MzcgXG4ifQ== -->
-<pre><code>
-mobile_app    website 
- 0.2761263  0.7238737 </code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
@@ -645,21 +453,8 @@ mobile_app    website
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudW5iYWxhbmNlZF9jaGlbXCJwbGFmb3JtXCJdXG5gYGAifQ== -->
 <pre class="r"><code>unbalanced_chi[&quot;plaform&quot;]</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiJHBsYWZvcm1cblxuXHRQZWFyc29uJ3MgQ2hpLXNxdWFyZWQgdGVzdCB3aXRoIFlhdGVzJyBjb250aW51aXR5IGNvcnJlY3Rpb25cblxuZGF0YTogIHggYW5kIHVuYmFsYW5jZWRfZGF0YSRib3VnaHRcblgtc3F1YXJlZCA9IDI4OTYuNCwgZGYgPSAxLCBwLXZhbHVlIDwgMi4yZS0xNlxuIn0= -->
-<pre><code>$plaform
-
-    Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
-
-data:  x and unbalanced_data$bought
-X-squared = 2896.4, df = 1, p-value &lt; 2.2e-16</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>The graphical analysis show us that the majority of sessions (around 72% on the unbalanced dataset and 61% on the balanced ) were accessed through the website. Despite the inbalance between platforms we notice that the amount of conversion is comparable suggesting implying a higher conversion rate on mobile app compared to website.</p>
-<p>The <span class="math inline">\(\chi ^2\)</span> for both unbalanced and balanced datasets do not allow for the rejection of the null hypothesis implying the existence of a degree of linear regression between the 2 variables.</p>
-</div>
-<div id="segment" class="section level3">
-<h3>Segment</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ3JpZC5kcmF3KGVkYV9iYWxhbmNlZCRwbGF0Zm9ybSlcbmBgYCJ9 -->
@@ -672,11 +467,6 @@ X-squared = 2896.4, df = 1, p-value &lt; 2.2e-16</code></pre>
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucHJvcC50YWJsZSh0YWJsZShiYWxhbmNlZF9kYXRhW1tcInBsYWZvcm1cIl1dKSlcbmBgYCJ9 -->
 <pre class="r"><code>prop.table(table(balanced_data[[&quot;plaform&quot;]]))</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiXG5tb2JpbGVfYXBwICAgIHdlYnNpdGUgXG4gICAwLjM5MTI1ICAgIDAuNjA4NzUgXG4ifQ== -->
-<pre><code>
-mobile_app    website 
-   0.39125    0.60875 </code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
@@ -684,16 +474,13 @@ mobile_app    website
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYmFsYW5jZWRfY2hpW1wicGxhZm9ybVwiXVxuYGBgIn0= -->
 <pre class="r"><code>balanced_chi[&quot;plaform&quot;]</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiJHBsYWZvcm1cblxuXHRQZWFyc29uJ3MgQ2hpLXNxdWFyZWQgdGVzdCB3aXRoIFlhdGVzJyBjb250aW51aXR5IGNvcnJlY3Rpb25cblxuZGF0YTogIHggYW5kIGJhbGFuY2VkX2RhdGEkYm91Z2h0XG5YLXNxdWFyZWQgPSAxMzYwLjUsIGRmID0gMSwgcC12YWx1ZSA8IDIuMmUtMTZcbiJ9 -->
-<pre><code>$plaform
-
-    Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
-
-data:  x and balanced_data$bought
-X-squared = 1360.5, df = 1, p-value &lt; 2.2e-16</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<p>The graphical analysis show us that the majority of sessions (around 72% on the unbalanced dataset and 61% on the balanced ) were accessed through the website. Despite the inbalance between platforms we notice that the amount of conversion is comparable suggesting implying a higher conversion rate on mobile app compared to website.</p>
+<p>The <span class="math inline">\(\chi ^2\)</span> for both unbalanced and balanced datasets do not allow for the rejection of the null hypothesis implying the existence of a degree of linear regression between the 2 variables.</p>
+</div>
+<div id="segment" class="section level3">
+<h3>Segment</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ3JpZC5kcmF3KGVkYV91bmJhbGFuY2VkJHNlZ21lbnQpXG5gYGAifQ== -->
@@ -701,23 +488,11 @@ X-squared = 1360.5, df = 1, p-value &lt; 2.2e-16</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>The graphical analysis shows that the great majority of sessions were executed by users not belonging to any segment. Does not point to any relationship. The <span class="math inline">\(\chi ^2\)</span> test for both unbalanced and balanced datasets do not allow for the rejection of the null hypothesis implying the existence of a degree of linear regression between the 2 variables.</p>
-</div>
-<div id="device-group" class="section level3">
-<h3>Device Group</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudW5iYWxhbmNlZF9jaGlbXCJzZWdtZW50XCJdXG5gYGAifQ== -->
 <pre class="r"><code>unbalanced_chi[&quot;segment&quot;]</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiJHNlZ21lbnRcblxuXHRQZWFyc29uJ3MgQ2hpLXNxdWFyZWQgdGVzdFxuXG5kYXRhOiAgeCBhbmQgdW5iYWxhbmNlZF9kYXRhJGJvdWdodFxuWC1zcXVhcmVkID0gMTAyMDMsIGRmID0gNSwgcC12YWx1ZSA8IDIuMmUtMTZcbiJ9 -->
-<pre><code>$segment
-
-    Pearson&#39;s Chi-squared test
-
-data:  x and unbalanced_data$bought
-X-squared = 10203, df = 5, p-value &lt; 2.2e-16</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
@@ -732,16 +507,12 @@ X-squared = 10203, df = 5, p-value &lt; 2.2e-16</code></pre>
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYmFsYW5jZWRfY2hpW1wic2VnbWVudFwiXVxuYGBgIn0= -->
 <pre class="r"><code>balanced_chi[&quot;segment&quot;]</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiJHNlZ21lbnRcblxuXHRQZWFyc29uJ3MgQ2hpLXNxdWFyZWQgdGVzdFxuXG5kYXRhOiAgeCBhbmQgYmFsYW5jZWRfZGF0YSRib3VnaHRcblgtc3F1YXJlZCA9IDMwNzEsIGRmID0gNSwgcC12YWx1ZSA8IDIuMmUtMTZcbiJ9 -->
-<pre><code>$segment
-
-    Pearson&#39;s Chi-squared test
-
-data:  x and balanced_data$bought
-X-squared = 3071, df = 5, p-value &lt; 2.2e-16</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<p>The graphical analysis shows that the great majority of sessions were executed by users not belonging to any segment. Does not point to any relationship. The <span class="math inline">\(\chi ^2\)</span> test for both unbalanced and balanced datasets do not allow for the rejection of the null hypothesis implying the existence of a degree of linear regression between the 2 variables.</p>
+</div>
+<div id="device-group" class="section level3">
+<h3>Device Group</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5ncmlkLmRyYXcoZWRhX3VuYmFsYW5jZWQkZGV2aWNlX2dyb3VwKVxuXG5gYGAifQ== -->
@@ -751,27 +522,15 @@ grid.draw(eda_unbalanced$device_group)
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>The graphical analysis of the data tells us that the majority of sessions have been done using Mobile Web platform, although, when taking into account the actual conversion it suggests that a higher conversion rate exists on application or desktop than compared with Majority class.</p>
-<p>This same conclusions can be extracted from the balanced dataset although the differences are not as evident. The <span class="math inline">\(\chi ^2\)</span> tests for both dataset leads into refusing the null hypothesis so it suggests that a degree of relation ship exists between both variables.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG51bmJhbGFuY2VkX2NoaVtcImRldmljZV9ncm91cFwiXVxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG51bmJhbGFuY2VkX2NoaVtcImRldmljZV9ncm91cFwiXVxuXG5gYGAifQ== -->
 <pre class="r"><code>
-unbalanced_chi[&quot;device_group&quot;]</code></pre>
+unbalanced_chi[&quot;device_group&quot;]
+</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiJGRldmljZV9ncm91cFxuXG5cdFBlYXJzb24ncyBDaGktc3F1YXJlZCB0ZXN0XG5cbmRhdGE6ICB4IGFuZCB1bmJhbGFuY2VkX2RhdGEkYm91Z2h0XG5YLXNxdWFyZWQgPSAzNzU1LjQsIGRmID0gMiwgcC12YWx1ZSA8IDIuMmUtMTZcbiJ9 -->
-<pre><code>$device_group
-
-    Pearson&#39;s Chi-squared test
-
-data:  x and unbalanced_data$bought
-X-squared = 3755.4, df = 2, p-value &lt; 2.2e-16</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>This dataset includes a variable named platform that suggest that most sessions were done using website. At first glance it seems counter intuitive that most access be done through website and Mobile web but the above plot show that in reality most users opt to access using the mobile version of the website instead of the app.</p>
-<p>The <span class="math inline">\(\chi ^2\)</span> test between this 2 variables confirms what we could already suspect from visual inspection, both variable seem to have a degree of relation leading to not refuting the null hiopothesis of dependeny. This implies interaction (or sinergy on marketing terms) between features which can impact how modeling efforts specially for models dependent on linear transformations (least squares regression) as is the case of logit.</p>
-<p>During the modeling step one might consider removing one of the variables or generate a new compound feature.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5ncmlkLmRyYXcoZWRhX2JhbGFuY2VkJGRldmljZV9ncm91cClcblxuYGBgIn0= -->
@@ -781,25 +540,17 @@ grid.draw(eda_balanced$device_group)
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-</div>
-<div id="visitor-type" class="section level3">
-<h3>Visitor type</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5iYWxhbmNlZF9jaGlbXCJkZXZpY2VfZ3JvdXBcIl1cbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5iYWxhbmNlZF9jaGlbXCJkZXZpY2VfZ3JvdXBcIl1cblxuYGBgIn0= -->
 <pre class="r"><code>
-balanced_chi[&quot;device_group&quot;]</code></pre>
+balanced_chi[&quot;device_group&quot;]
+</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiJGRldmljZV9ncm91cFxuXG5cdFBlYXJzb24ncyBDaGktc3F1YXJlZCB0ZXN0XG5cbmRhdGE6ICB4IGFuZCBiYWxhbmNlZF9kYXRhJGJvdWdodFxuWC1zcXVhcmVkID0gMjAwMy40LCBkZiA9IDIsIHAtdmFsdWUgPCAyLjJlLTE2XG4ifQ== -->
-<pre><code>$device_group
-
-    Pearson&#39;s Chi-squared test
-
-data:  x and balanced_data$bought
-X-squared = 2003.4, df = 2, p-value &lt; 2.2e-16</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<p>The graphical analysis of the data tells us that the majority of sessions have been done using Mobile Web platform, although, when taking into account the actual conversion it suggests that a higher conversion rate exists on application or desktop than compared with Majority class.</p>
+<p>This same conclusions can be extracted from the balanced dataset although the differences are not as evident. The <span class="math inline">\(\chi ^2\)</span> tests for both dataset leads into refusing the null hypothesis so it suggests that a degree of relation ship exists between both variables.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5nZ3Bsb3QodW5iYWxhbmNlZF9kYXRhLCBhZXMoeCA9IGRldmljZV9ncm91cCwgZmlsbCA9IHBsYWZvcm0pKSArIFxuICBnZW9tX2JhcihzdGF0ID0gXCJjb3VudFwiKSArIFxuICB0aGVtZV9tYXN0ZXJEUygpICtcbiAgICBsYWJzKFxuICAgICAgeCA9IFwiXCIsXG4gICAgICB5ID0gXCJcIixcbiAgICAgIHRpdGxlID0gXCJEZXZpY2UgR3JvdXAgeCBQbGF0Zm9ybVwiXG4gICAgKVxuXG5gYGAifQ== -->
@@ -814,26 +565,23 @@ ggplot(unbalanced_data, aes(x = device_group, fill = plaform)) +
     )
 </code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-plot-begin eyJoZWlnaHQiOjQzMi42MzI5LCJ3aWR0aCI6NzAwLCJzaXplX2JlaGF2aW9yIjowLCJjb25kaXRpb25zIjpbXX0= -->
-<p><img src="data:image/png;base64,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" /></p>
-<!-- rnb-plot-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<p>This dataset includes a variable named platform that suggest that most sessions were done using website. At first glance it seems counter intuitive that most access be done through website and Mobile web but the above plot show that in reality most users opt to access using the mobile version of the website instead of the app.</p>
+<p>The <span class="math inline">\(\chi ^2\)</span> test between this 2 variables confirms what we could already suspect from visual inspection, both variable seem to have a degree of relation leading to not refuting the null hiopothesis of dependeny. This implies interaction (or sinergy on marketing terms) between features which can impact how modeling efforts specially for models dependent on linear transformations (least squares regression) as is the case of logit.</p>
+<p>During the modeling step one might consider removing one of the variables or generate a new compound feature.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5jaGlzcS50ZXN0KGFzLmNoYXJhY3Rlcih1bmJhbGFuY2VkX2RhdGEkcGxhZm9ybSksIGFzLmNoYXJhY3Rlcih1bmJhbGFuY2VkX2RhdGEkZGV2aWNlX2dyb3VwKSlcbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5jaGlzcS50ZXN0KGFzLmNoYXJhY3Rlcih1bmJhbGFuY2VkX2RhdGEkcGxhZm9ybSksIGFzLmNoYXJhY3Rlcih1bmJhbGFuY2VkX2RhdGEkZGV2aWNlX2dyb3VwKSlcblxuYGBgIn0= -->
 <pre class="r"><code>
-chisq.test(as.character(unbalanced_data$plaform), as.character(unbalanced_data$device_group))</code></pre>
+chisq.test(as.character(unbalanced_data$plaform), as.character(unbalanced_data$device_group))
+</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiXG5cdFBlYXJzb24ncyBDaGktc3F1YXJlZCB0ZXN0XG5cbmRhdGE6ICBhcy5jaGFyYWN0ZXIodW5iYWxhbmNlZF9kYXRhJHBsYWZvcm0pIGFuZCBhcy5jaGFyYWN0ZXIodW5iYWxhbmNlZF9kYXRhJGRldmljZV9ncm91cClcblgtc3F1YXJlZCA9IDk1MDAwLCBkZiA9IDIsIHAtdmFsdWUgPCAyLjJlLTE2XG4ifQ== -->
-<pre><code>
-    Pearson&#39;s Chi-squared test
-
-data:  as.character(unbalanced_data$plaform) and as.character(unbalanced_data$device_group)
-X-squared = 95000, df = 2, p-value &lt; 2.2e-16</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+</div>
+<div id="visitor-type" class="section level3">
+<h3>Visitor type</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ3JpZC5kcmF3KGVkYV91bmJhbGFuY2VkJHZpc2l0b3JfdHlwZSlcbmBgYCJ9 -->
@@ -841,28 +589,13 @@ X-squared = 95000, df = 2, p-value &lt; 2.2e-16</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>This feature focus on the Visitors. The unbalanced data available shows almost a 50% split, situations that changes on the balanced dataset which has a inbalance towards returning visitors. The graphical analysis suggests a higher conversion rate for returning visitor that for new one, suggesting that continuous visits (engagment) plays a role in conversion.</p>
-<p>The current dataset has information regarding customer type crossed with visitor type can provide us with interesting information</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudW5iYWxhbmNlZF9jaGlbXCJ2aXNpdG9yX3R5cGVcIl1cbmBgYCJ9 -->
 <pre class="r"><code>unbalanced_chi[&quot;visitor_type&quot;]</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiJHZpc2l0b3JfdHlwZVxuXG5cdFBlYXJzb24ncyBDaGktc3F1YXJlZCB0ZXN0IHdpdGggWWF0ZXMnIGNvbnRpbnVpdHkgY29ycmVjdGlvblxuXG5kYXRhOiAgeCBhbmQgdW5iYWxhbmNlZF9kYXRhJGJvdWdodFxuWC1zcXVhcmVkID0gNDAwMS4zLCBkZiA9IDEsIHAtdmFsdWUgPCAyLjJlLTE2XG4ifQ== -->
-<pre><code>$visitor_type
-
-    Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
-
-data:  x and unbalanced_data$bought
-X-squared = 4001.3, df = 1, p-value &lt; 2.2e-16</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>Has expected only a fraction of new visitors actually buy on the first session hinting that the conversion journey is longer than one session, meaning than several visits are needed before a first conversion. We don’t have enough information to conclude about the number of sessions needed (journey lenght) and neither the session index given a time window (eg: the current session is the #3 in the last 28 days) which is know to have a impact on conversion.</p>
-</div>
-<div id="journey-milestones" class="section level3">
-<h3>Journey milestones</h3>
-<p>(has_listings) &gt; has_add_to_bag</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ3JpZC5kcmF3KGVkYV9iYWxhbmNlZCR2aXNpdG9yX3R5cGUpXG5gYGAifQ== -->
@@ -872,19 +605,14 @@ X-squared = 4001.3, df = 1, p-value &lt; 2.2e-16</code></pre>
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYmFsYW5jZWRfY2hpW1widmlzaXRvcl90eXBlXCJdXG5gYGAifQ== -->
-<pre class="r"><code>balanced_chi[&quot;visitor_type&quot;]</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYmFsYW5jZWRfY2hpW1widmlzaXRvcl90eXBlXCJdXG5cbmBgYCJ9 -->
+<pre class="r"><code>balanced_chi[&quot;visitor_type&quot;]
+</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiJHZpc2l0b3JfdHlwZVxuXG5cdFBlYXJzb24ncyBDaGktc3F1YXJlZCB0ZXN0IHdpdGggWWF0ZXMnIGNvbnRpbnVpdHkgY29ycmVjdGlvblxuXG5kYXRhOiAgeCBhbmQgYmFsYW5jZWRfZGF0YSRib3VnaHRcblgtc3F1YXJlZCA9IDI1MjkuNiwgZGYgPSAxLCBwLXZhbHVlIDwgMi4yZS0xNlxuIn0= -->
-<pre><code>$visitor_type
-
-    Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
-
-data:  x and balanced_data$bought
-X-squared = 2529.6, df = 1, p-value &lt; 2.2e-16</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<p>This feature focus on the Visitors. The unbalanced data available shows almost a 50% split, situations that changes on the balanced dataset which has a inbalance towards returning visitors. The graphical analysis suggests a higher conversion rate for returning visitor that for new one, suggesting that continuous visits (engagment) plays a role in conversion.</p>
+<p>The current dataset has information regarding customer type crossed with visitor type can provide us with interesting information</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5nZ3Bsb3QodW5iYWxhbmNlZF9kYXRhLCBhZXMoeCA9IHZpc2l0b3JfdHlwZSwgZmlsbCA9IGN1c3RvbWVyX3R5cGUpKSArIFxuICBnZW9tX2JhcihzdGF0ID0gXCJjb3VudFwiKSArIFxuICB0aGVtZV9tYXN0ZXJEUygpICtcbiAgICBsYWJzKFxuICAgICAgeCA9IFwiXCIsXG4gICAgICB5ID0gXCJcIixcbiAgICAgIHRpdGxlID0gXCJWaXNpdG9yIFR5cGUgeCBDdXN0b3IgVHlwZVwiXG4gICAgKVxuXG5gYGAifQ== -->
@@ -899,11 +627,13 @@ ggplot(unbalanced_data, aes(x = visitor_type, fill = customer_type)) +
     )
 </code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-plot-begin eyJoZWlnaHQiOjQzMi42MzI5LCJ3aWR0aCI6NzAwLCJzaXplX2JlaGF2aW9yIjowLCJjb25kaXRpb25zIjpbXX0= -->
-<p><img src="data:image/png;base64,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" /></p>
-<!-- rnb-plot-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<p>Has expected only a fraction of new visitors actually buy on the first session hinting that the conversion journey is longer than one session, meaning than several visits are needed before a first conversion. We don’t have enough information to conclude about the number of sessions needed (journey lenght) and neither the session index given a time window (eg: the current session is the #3 in the last 28 days) which is know to have a impact on conversion.</p>
+</div>
+<div id="journey-milestones" class="section level3">
+<h3>Journey milestones</h3>
+<p>(has_listings) &gt; has_add_to_bag</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ3JpZC5kcmF3KGVkYV91bmJhbGFuY2VkJGhhc19hZGRfdG9fd2lzaGxpc3QpXG5cbmBgYCJ9 -->
@@ -920,8 +650,6 @@ ggplot(unbalanced_data, aes(x = visitor_type, fill = customer_type)) +
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>This features are plotted together because they give insights into the journey a user made inside the website. We can conclude over a conversion funnel but it makes sense to explore the interactions between then while modeling because its known that normally strong effects exist between then (a user had a recommendation and added to the bag might be together a strong signal for conversion).</p>
-<p>The graphical analysis already provides a important insight given the business objectives. From the unbalanced data available we can conclude that around of 46% shopping carts are lost on that session. That raises a question of how are this recovered (example on a next session) or if this means that all this sales are lost right at the end of the sales funnel.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ3JpZC5kcmF3KGVkYV91bmJhbGFuY2VkJGhhc19yZWNvbW1lbmRhdGlvbilcbmBgYCJ9 -->
@@ -929,9 +657,6 @@ ggplot(unbalanced_data, aes(x = visitor_type, fill = customer_type)) +
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-</div>
-<div id="duration" class="section level3">
-<h3>Duration</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ3JpZC5kcmF3KGVkYV91bmJhbGFuY2VkJGhhc191c2VkX3NlYXJjaClcbmBgYCJ9 -->
@@ -948,24 +673,18 @@ grid.draw(eda_unbalanced$has_add_to_bag)
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>Both unbalanced and balanced datasets show a left skewed distribution for duration. The Distance between the Mean and Median provides a good view of data. This extrem values have a big influence impacting the gaussianity of the distribution.</p>
-<p>Normally web analytics software limit session duration between 25 to 30 min. It is assumed that beyond that point either the user is idle or there is a error on the collection. For periods of engagement superior to that cap normally a new session is started. So a 1hour of engagement would signify 2 simultaneous sessions.</p>
-<p>In the case of our project we have no context regarding session duration. Therefore, we have no referencial from business which would lead us to remove.</p>
-<p>From the graphical view we can see that the variable distribution is left skewed whcih can cause us problems during modeling and impacts our outlier analysis. We will log transform this variable.</p>
+<p>This features are plotted together because they give insights into the journey a user made inside the website. We can conclude over a conversion funnel but it makes sense to explore the interactions between then while modeling because its known that normally strong effects exist between then (a user had a recommendation and added to the bag might be together a strong signal for conversion).</p>
+<p>The graphical analysis already provides a important insight given the business objectives. From the unbalanced data available we can conclude that around of 46% shopping carts are lost on that session. That raises a question of how are this recovered (example on a next session) or if this means that all this sales are lost right at the end of the sales funnel.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucHJvcC50YWJsZSh0YWJsZSh1bmJhbGFuY2VkX2RhdGFbdW5iYWxhbmNlZF9kYXRhJGhhc19hZGRfdG9fYmFnID09IDEsXSRib3VnaHQsIHVuYmFsYW5jZWRfZGF0YVt1bmJhbGFuY2VkX2RhdGEkaGFzX2FkZF90b19iYWcgPT0gMSxdJGhhc19hZGRfdG9fYmFnKSkgWywyXVxuYGBgIn0= -->
 <pre class="r"><code>prop.table(table(unbalanced_data[unbalanced_data$has_add_to_bag == 1,]$bought, unbalanced_data[unbalanced_data$has_add_to_bag == 1,]$has_add_to_bag)) [,2]</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiICAgICAgICAwICAgICAgICAgMSBcbjAuNDUwMDg3OSAwLjU0OTkxMjEgXG4ifQ== -->
-<pre><code>        0         1 
-0.4500879 0.5499121 </code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
-<div id="view-quantity" class="section level3">
-<h3>View quantity</h3>
+<div id="duration" class="section level3">
+<h3>Duration</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5ncmlkLmRyYXcoZWRhX3VuYmFsYW5jZWQkZHVyYXRpb24pIFxuXG5gYGAifQ== -->
@@ -984,10 +703,13 @@ grid.draw(eda_balanced$duration)
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>left skwed apply log transform</p>
+<p>Both unbalanced and balanced datasets show a left skewed distribution for duration. The Distance between the Mean and Median provides a good view of data. This extrem values have a big influence impacting the gaussianity of the distribution.</p>
+<p>Normally web analytics software limit session duration between 25 to 30 min. It is assumed that beyond that point either the user is idle or there is a error on the collection. For periods of engagement superior to that cap normally a new session is started. So a 1hour of engagement would signify 2 simultaneous sessions.</p>
+<p>In the case of our project we have no context regarding session duration. Therefore, we have no referencial from business which would lead us to remove.</p>
+<p>From the graphical view we can see that the variable distribution is left skewed whcih can cause us problems during modeling and impacts our outlier analysis. We will log transform this variable.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudXAgPC0gcXVhbnRpbGUodW5iYWxhbmNlZF9kYXRhJGR1cmF0aW9uLCAwLjc1KSArIDMgKiBJUVIodW5iYWxhbmNlZF9kYXRhJGR1cmF0aW9uKVxuXG51bmJhbGFuY2VkX291dGxpZXJfY2xlYW4gPC0gdW5iYWxhbmNlZF9kYXRhICU+JSBcbiAgZmlsdGVyKGR1cmF0aW9uIDwgdXApIFxuXG4gIGRlbnNpdHkgPC0gZ2dwbG90KHVuYmFsYW5jZWRfZGF0YSwgYWVzKHggPSBkdXJhdGlvbikpICtcbiAgICBnZW9tX2RlbnNpdHkoY29sb3I9XCJkYXJrYmx1ZVwiKSArXG4gICAgdGhlbWVfbWFzdGVyRFMoKSArXG4gICAgbGFicyhcbiAgICAgIHggPSBcIlwiLFxuICAgICAgeSA9IFwiXCIsXG4gICAgICB0aXRsZSA9IFwiRGVuc2l0eVwiXG4gICAgKVxuICBcbiAgYm94cGxvdCA8LSBnZ3Bsb3QodW5iYWxhbmNlZF9kYXRhLCBhZXMoeCA9IDEsIHkgPSBkdXJhdGlvbikpICsgXG4gICAgZ2VvbV9ib3hwbG90KCkgKyBcbiAgICB0aGVtZV9tYXN0ZXJEUygpK1xuICAgIGxhYnMoXG4gICAgICB4ID0gXCJcIixcbiAgICAgIHk9XCJcIixcbiAgICAgIHRpdGxlID0gXCJCb3hwbG90XCJcbiAgICApICAgXG5cbiAgZGVuc2l0eV9sb2cgPC0gZ2dwbG90KHVuYmFsYW5jZWRfZGF0YSwgYWVzKHggPSBsb2coZHVyYXRpb24pKSkgK1xuICAgIGdlb21fZGVuc2l0eShjb2xvcj1cImRhcmtibHVlXCIpICtcbiAgICB0aGVtZV9tYXN0ZXJEUygpICtcbiAgICBsYWJzKFxuICAgICAgeCA9IFwiXCIsXG4gICAgICB5ID0gXCJcIixcbiAgICAgIHRpdGxlID0gXCJEZW5zaXR5IChsb2cgdHJhbnNmb3JtKVwiXG4gICAgKVxuICBcbiAgYm94cGxvdF9sb2cgPC0gZ2dwbG90KHVuYmFsYW5jZWRfZGF0YSwgYWVzKHggPSAxLCB5ID0gbG9nKGR1cmF0aW9uKSkpICsgXG4gICAgZ2VvbV9ib3hwbG90KCkgKyBcbiAgICB0aGVtZV9tYXN0ZXJEUygpK1xuICAgIGxhYnMoXG4gICAgICB4ID0gXCJcIixcbiAgICAgIHk9XCJcIixcbiAgICAgIHRpdGxlID0gXCJCb3hwbG90IChsb2cgdHJhc25mb3JtKVwiXG4gICAgKSBcblxuZ3JpZC5hcnJhbmdlKGRlbnNpdHksIGJveHBsb3QsIGRlbnNpdHlfbG9nLCBib3hwbG90X2xvZywgIGxheW91dF9tYXRyaXggPSByYmluZChjKDEsMiksYygzLDQpKSlcbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudXAgPC0gcXVhbnRpbGUodW5iYWxhbmNlZF9kYXRhJGR1cmF0aW9uLCAwLjc1KSArIDMgKiBJUVIodW5iYWxhbmNlZF9kYXRhJGR1cmF0aW9uKVxuXG51bmJhbGFuY2VkX291dGxpZXJfY2xlYW4gPC0gdW5iYWxhbmNlZF9kYXRhICU+JSBcbiAgZmlsdGVyKGR1cmF0aW9uIDwgdXApIFxuXG4gIGRlbnNpdHkgPC0gZ2dwbG90KHVuYmFsYW5jZWRfZGF0YSwgYWVzKHggPSBkdXJhdGlvbikpICtcbiAgICBnZW9tX2RlbnNpdHkoY29sb3I9XCJkYXJrYmx1ZVwiKSArXG4gICAgdGhlbWVfbWFzdGVyRFMoKSArXG4gICAgbGFicyhcbiAgICAgIHggPSBcIlwiLFxuICAgICAgeSA9IFwiXCIsXG4gICAgICB0aXRsZSA9IFwiRGVuc2l0eVwiXG4gICAgKVxuICBcbiAgYm94cGxvdCA8LSBnZ3Bsb3QodW5iYWxhbmNlZF9kYXRhLCBhZXMoeCA9IDEsIHkgPSBkdXJhdGlvbikpICsgXG4gICAgZ2VvbV9ib3hwbG90KCkgKyBcbiAgICB0aGVtZV9tYXN0ZXJEUygpK1xuICAgIGxhYnMoXG4gICAgICB4ID0gXCJcIixcbiAgICAgIHk9XCJcIixcbiAgICAgIHRpdGxlID0gXCJCb3hwbG90XCJcbiAgICApICAgXG5cbiAgZGVuc2l0eV9sb2cgPC0gZ2dwbG90KHVuYmFsYW5jZWRfZGF0YSwgYWVzKHggPSBsb2coZHVyYXRpb24pKSkgK1xuICAgIGdlb21fZGVuc2l0eShjb2xvcj1cImRhcmtibHVlXCIpICtcbiAgICB0aGVtZV9tYXN0ZXJEUygpICtcbiAgICBsYWJzKFxuICAgICAgeCA9IFwiXCIsXG4gICAgICB5ID0gXCJcIixcbiAgICAgIHRpdGxlID0gXCJEZW5zaXR5IChsb2cgdHJhbnNmb3JtKVwiXG4gICAgKVxuICBcbiAgYm94cGxvdF9sb2cgPC0gZ2dwbG90KHVuYmFsYW5jZWRfZGF0YSwgYWVzKHggPSAxLCB5ID0gbG9nKGR1cmF0aW9uKSkpICsgXG4gICAgZ2VvbV9ib3hwbG90KCkgKyBcbiAgICB0aGVtZV9tYXN0ZXJEUygpK1xuICAgIGxhYnMoXG4gICAgICB4ID0gXCJcIixcbiAgICAgIHk9XCJcIixcbiAgICAgIHRpdGxlID0gXCJCb3hwbG90IChsb2cgdHJhc25mb3JtKVwiXG4gICAgKSBcblxuZ3JpZC5hcnJhbmdlKGRlbnNpdHksIGJveHBsb3QsIGRlbnNpdHlfbG9nLCBib3hwbG90X2xvZywgIGxheW91dF9tYXRyaXggPSByYmluZChjKDEsMiksYygzLDQpKSlcblxuYGBgIn0= -->
 <pre class="r"><code>up &lt;- quantile(unbalanced_data$duration, 0.75) + 3 * IQR(unbalanced_data$duration)
 
 unbalanced_outlier_clean &lt;- unbalanced_data %&gt;% 
@@ -1029,20 +751,14 @@ unbalanced_outlier_clean &lt;- unbalanced_data %&gt;%
       title = &quot;Boxplot (log trasnform)&quot;
     ) 
 
-grid.arrange(density, boxplot, density_log, boxplot_log,  layout_matrix = rbind(c(1,2),c(3,4)))</code></pre>
+grid.arrange(density, boxplot, density_log, boxplot_log,  layout_matrix = rbind(c(1,2),c(3,4)))
+</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZzogUmVtb3ZlZCA0MTQxNyByb3dzIGNvbnRhaW5pbmcgbm9uLWZpbml0ZSB2YWx1ZXMgKHN0YXRfZGVuc2l0eSkuXG5XYXJuaW5nOiBSZW1vdmVkIDQxNDE3IHJvd3MgY29udGFpbmluZyBub24tZmluaXRlIHZhbHVlcyAoc3RhdF9ib3hwbG90KS5cbiJ9 -->
-<pre><code>Warning: Removed 41417 rows containing non-finite values (stat_density).
-Warning: Removed 41417 rows containing non-finite values (stat_boxplot).</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-plot-begin eyJoZWlnaHQiOjQzMi42MzI5LCJ3aWR0aCI6NzAwLCJzaXplX2JlaGF2aW9yIjowLCJjb25kaXRpb25zIjpbXX0= -->
-<p><img src="data:image/png;base64,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" /></p>
-<!-- rnb-plot-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
-<div id="unique-product-qty" class="section level3">
-<h3>Unique product qty</h3>
+<div id="view-quantity" class="section level3">
+<h3>View quantity</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5ncmlkLmRyYXcoZWRhX3VuYmFsYW5jZWQkdmlld19xdHkpXG5cbmBgYCJ9 -->
@@ -1064,7 +780,7 @@ grid.draw(eda_balanced$view_qty)
 <p>left skwed apply log transform</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIGxhbWJkYSA8LSBCb3hDb3gubGFtYmRhKHVuYmFsYW5jZWRfZGF0YSR2aWV3X3F0eSwgbWV0aG9kID0gXCJndWVycmVyb1wiKSBcblxuaGlzdG9ncmFtX2xvZyA8LSBnZ3Bsb3QodW5iYWxhbmNlZF9kYXRhLCBhZXMoeCA9IGJjUG93ZXIodmlld19xdHksIGxhbWJkYSA9IGxhbWJkYSkpKSArXG4gICAgZ2VvbV9oaXN0b2dyYW0oZmlsbD1cImRhcmtibHVlXCIsIGNvbG9yPVwiYmxhY2tcIikgK1xuICAgIHRoZW1lX21hc3RlckRTKCkgK1xuICAgIGxhYnMoXG4gICAgICB4ID0gXCJcIixcbiAgICAgIHkgPSBcIlwiLFxuICAgICAgdGl0bGUgPSBcIkhpc3RvZ3JhbVwiXG4gICAgKVxuICBcbiAgYm94cGxvdF9sb2cgPC0gZ2dwbG90KHVuYmFsYW5jZWRfZGF0YSwgYWVzKHggPSAxLCB5ID0gYmNQb3dlcih2aWV3X3F0eSwgbGFtYmRhID0gbGFtYmRhKSkpICtcbiAgICBnZW9tX2JveHBsb3QoKSArXG4gICAgdGhlbWVfbWFzdGVyRFMoKStcbiAgICBsYWJzKFxuICAgICAgeCA9IFwiXCIsXG4gICAgICB5PVwiXCIsXG4gICAgICB0aXRsZSA9IFwiQm94cGxvdFwiXG4gICAgKVxuXG4gIGdyaWQuYXJyYW5nZShoaXN0b2dyYW1fbG9nLCBib3hwbG90X2xvZywgbnJvdyA9IDEpXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIGxhbWJkYSA8LSBCb3hDb3gubGFtYmRhKHVuYmFsYW5jZWRfZGF0YSR2aWV3X3F0eSwgbWV0aG9kID0gXCJndWVycmVyb1wiKSBcblxuaGlzdG9ncmFtX2xvZyA8LSBnZ3Bsb3QodW5iYWxhbmNlZF9kYXRhLCBhZXMoeCA9IGJjUG93ZXIodmlld19xdHksIGxhbWJkYSA9IGxhbWJkYSkpKSArXG4gICAgZ2VvbV9oaXN0b2dyYW0oZmlsbD1cImRhcmtibHVlXCIsIGNvbG9yPVwiYmxhY2tcIikgK1xuICAgIHRoZW1lX21hc3RlckRTKCkgK1xuICAgIGxhYnMoXG4gICAgICB4ID0gXCJcIixcbiAgICAgIHkgPSBcIlwiLFxuICAgICAgdGl0bGUgPSBcIkhpc3RvZ3JhbVwiXG4gICAgKVxuICBcbiAgYm94cGxvdF9sb2cgPC0gZ2dwbG90KHVuYmFsYW5jZWRfZGF0YSwgYWVzKHggPSAxLCB5ID0gYmNQb3dlcih2aWV3X3F0eSwgbGFtYmRhID0gbGFtYmRhKSkpICtcbiAgICBnZW9tX2JveHBsb3QoKSArXG4gICAgdGhlbWVfbWFzdGVyRFMoKStcbiAgICBsYWJzKFxuICAgICAgeCA9IFwiXCIsXG4gICAgICB5PVwiXCIsXG4gICAgICB0aXRsZSA9IFwiQm94cGxvdFwiXG4gICAgKVxuXG4gIGdyaWQuYXJyYW5nZShoaXN0b2dyYW1fbG9nLCBib3hwbG90X2xvZywgbnJvdyA9IDEpXG5cbmBgYCJ9 -->
 <pre class="r"><code> lambda &lt;- BoxCox.lambda(unbalanced_data$view_qty, method = &quot;guerrero&quot;) 
 
 histogram_log &lt;- ggplot(unbalanced_data, aes(x = bcPower(view_qty, lambda = lambda))) +
@@ -1085,19 +801,14 @@ histogram_log &lt;- ggplot(unbalanced_data, aes(x = bcPower(view_qty, lambda = l
       title = &quot;Boxplot&quot;
     )
 
-  grid.arrange(histogram_log, boxplot_log, nrow = 1)</code></pre>
+  grid.arrange(histogram_log, boxplot_log, nrow = 1)
+</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiYHN0YXRfYmluKClgIHVzaW5nIGBiaW5zID0gMzBgLiBQaWNrIGJldHRlciB2YWx1ZSB3aXRoIGBiaW53aWR0aGAuXG4ifQ== -->
-<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-plot-begin eyJoZWlnaHQiOjQzMi42MzI5LCJ3aWR0aCI6NzAwLCJzaXplX2JlaGF2aW9yIjowLCJjb25kaXRpb25zIjpbXX0= -->
-<p><img src="data:image/png;base64,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" /></p>
-<!-- rnb-plot-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
-<div id="unique-browse-designer-quantity" class="section level3">
-<h3>Unique browse designer quantity</h3>
+<div id="unique-product-qty" class="section level3">
+<h3>Unique product qty</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5ncmlkLmRyYXcoZWRhX3VuYmFsYW5jZWQkdW5pcXVlX3Byb2R1Y3RfcXR5KVxuXG5gYGAifQ== -->
@@ -1119,15 +830,10 @@ grid.draw(eda_balanced$unique_product_qty)
 <p>left skwed apply log transform</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGFtYmRhIDwtIEJveENveC5sYW1iZGEodW5iYWxhbmNlZF9kYXRhJHVuaXF1ZV9wcm9kdWN0X3F0eSwgbWV0aG9kID0gXCJndWVycmVyb1wiKSAgXG5gYGAifQ== -->
-<pre class="r"><code>lambda &lt;- BoxCox.lambda(unbalanced_data$unique_product_qty, method = &quot;guerrero&quot;)  </code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBndWVycmVybyh4LCBsb3dlciwgdXBwZXIpIDpcbiAgR3VlcnJlcm8ncyBtZXRob2QgZm9yIHNlbGVjdGluZyBhIEJveC1Db3ggcGFyYW1ldGVyIChsYW1iZGEpIGlzIGdpdmVuIGZvciBzdHJpY3RseSBwb3NpdGl2ZSBkYXRhLlxuIn0= -->
-<pre><code>Warning in guerrero(x, lower, upper) :
-  Guerrero&#39;s method for selecting a Box-Cox parameter (lambda) is given for strictly positive data.</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaGlzdG9ncmFtX2xvZyA8LSBnZ3Bsb3QodW5iYWxhbmNlZF9kYXRhLCBhZXMoeCA9IGxvZyh1bmlxdWVfcHJvZHVjdF9xdHkpKSkgK1xuICAgIGdlb21faGlzdG9ncmFtKGZpbGw9XCJkYXJrYmx1ZVwiLCBjb2xvcj1cImJsYWNrXCIpICtcbiAgICB0aGVtZV9tYXN0ZXJEUygpICtcbiAgICBsYWJzKFxuICAgICAgeCA9IFwiXCIsXG4gICAgICB5ID0gXCJcIixcbiAgICAgIHRpdGxlID0gXCJIaXN0b2dyYW1cIlxuICAgIClcbiAgXG4gIGJveHBsb3RfbG9nIDwtIGdncGxvdCh1bmJhbGFuY2VkX2RhdGEsIGFlcyh4ID0gMSwgeSA9IGxvZyh1bmlxdWVfcHJvZHVjdF9xdHkpKSkgK1xuICAgIGdlb21fYm94cGxvdCgpICtcbiAgICB0aGVtZV9tYXN0ZXJEUygpK1xuICAgIGxhYnMoXG4gICAgICB4ID0gXCJcIixcbiAgICAgIHk9XCJcIixcbiAgICAgIHRpdGxlID0gXCJCb3hwbG90XCJcbiAgICApXG5cbiAgZ3JpZC5hcnJhbmdlKGhpc3RvZ3JhbV9sb2csIGJveHBsb3RfbG9nLCBucm93ID0gMSlcbmBgYCJ9 -->
-<pre class="r"><code>histogram_log &lt;- ggplot(unbalanced_data, aes(x = log(unique_product_qty))) +
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGFtYmRhIDwtIEJveENveC5sYW1iZGEodW5iYWxhbmNlZF9kYXRhJHVuaXF1ZV9wcm9kdWN0X3F0eSwgbWV0aG9kID0gXCJndWVycmVyb1wiKSAgXG5cbmhpc3RvZ3JhbV9sb2cgPC0gZ2dwbG90KHVuYmFsYW5jZWRfZGF0YSwgYWVzKHggPSBsb2codW5pcXVlX3Byb2R1Y3RfcXR5KSkpICtcbiAgICBnZW9tX2hpc3RvZ3JhbShmaWxsPVwiZGFya2JsdWVcIiwgY29sb3I9XCJibGFja1wiKSArXG4gICAgdGhlbWVfbWFzdGVyRFMoKSArXG4gICAgbGFicyhcbiAgICAgIHggPSBcIlwiLFxuICAgICAgeSA9IFwiXCIsXG4gICAgICB0aXRsZSA9IFwiSGlzdG9ncmFtXCJcbiAgICApXG4gIFxuICBib3hwbG90X2xvZyA8LSBnZ3Bsb3QodW5iYWxhbmNlZF9kYXRhLCBhZXMoeCA9IDEsIHkgPSBsb2codW5pcXVlX3Byb2R1Y3RfcXR5KSkpICtcbiAgICBnZW9tX2JveHBsb3QoKSArXG4gICAgdGhlbWVfbWFzdGVyRFMoKStcbiAgICBsYWJzKFxuICAgICAgeCA9IFwiXCIsXG4gICAgICB5PVwiXCIsXG4gICAgICB0aXRsZSA9IFwiQm94cGxvdFwiXG4gICAgKVxuXG4gIGdyaWQuYXJyYW5nZShoaXN0b2dyYW1fbG9nLCBib3hwbG90X2xvZywgbnJvdyA9IDEpXG5cbmBgYCJ9 -->
+<pre class="r"><code>lambda &lt;- BoxCox.lambda(unbalanced_data$unique_product_qty, method = &quot;guerrero&quot;)  
+
+histogram_log &lt;- ggplot(unbalanced_data, aes(x = log(unique_product_qty))) +
     geom_histogram(fill=&quot;darkblue&quot;, color=&quot;black&quot;) +
     theme_masterDS() +
     labs(
@@ -1145,17 +851,15 @@ grid.draw(eda_balanced$unique_product_qty)
       title = &quot;Boxplot&quot;
     )
 
-  grid.arrange(histogram_log, boxplot_log, nrow = 1)</code></pre>
+  grid.arrange(histogram_log, boxplot_log, nrow = 1)
+</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiYHN0YXRfYmluKClgIHVzaW5nIGBiaW5zID0gMzBgLiBQaWNrIGJldHRlciB2YWx1ZSB3aXRoIGBiaW53aWR0aGAuXG5XYXJuaW5nOiBSZW1vdmVkIDI4ODI5IHJvd3MgY29udGFpbmluZyBub24tZmluaXRlIHZhbHVlcyAoc3RhdF9iaW4pLlxuV2FybmluZzogUmVtb3ZlZCAyODgyOSByb3dzIGNvbnRhaW5pbmcgbm9uLWZpbml0ZSB2YWx1ZXMgKHN0YXRfYm94cGxvdCkuXG4ifQ== -->
-<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-Warning: Removed 28829 rows containing non-finite values (stat_bin).
-Warning: Removed 28829 rows containing non-finite values (stat_boxplot).</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-plot-begin eyJoZWlnaHQiOjQzMi42MzI5LCJ3aWR0aCI6NzAwLCJzaXplX2JlaGF2aW9yIjowLCJjb25kaXRpb25zIjpbXX0= -->
-<p><img src="data:image/png;base64,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" /></p>
-<!-- rnb-plot-end -->
 <!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="unique-browse-designer-quantity" class="section level3">
+<h3>Unique browse designer quantity</h3>
+<!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5ncmlkLmRyYXcoZWRhX3VuYmFsYW5jZWQkdW5pcXVlX2Jyb3dzZV9kZXNpZ25lcl9xdHkpXG5cbmBgYCJ9 -->
 <pre class="r"><code>
@@ -1164,9 +868,6 @@ grid.draw(eda_unbalanced$unique_browse_designer_qty)
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-</div>
-<div id="is-subscribed" class="section level3">
-<h3>Is subscribed</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5ncmlkLmRyYXcoZWRhX2JhbGFuY2VkJHVuaXF1ZV9icm93c2VfZGVzaWduZXJfcXR5KVxuXG5gYGAifQ== -->
@@ -1176,9 +877,10 @@ grid.draw(eda_balanced$unique_browse_designer_qty)
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<p>left skwed apply log transform</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIGhpc3RvZ3JhbV9sb2cgPC0gZ2dwbG90KHVuYmFsYW5jZWRfZGF0YSwgYWVzKHggPSBsb2codW5pcXVlX2Jyb3dzZV9kZXNpZ25lcl9xdHkpKSkgK1xuICAgIGdlb21faGlzdG9ncmFtKGZpbGw9XCJkYXJrYmx1ZVwiLCBjb2xvcj1cImJsYWNrXCIpICtcbiAgICB0aGVtZV9tYXN0ZXJEUygpICtcbiAgICBsYWJzKFxuICAgICAgeCA9IFwiXCIsXG4gICAgICB5ID0gXCJcIixcbiAgICAgIHRpdGxlID0gXCJIaXN0b2dyYW1cIlxuICAgIClcbiAgXG4gIGJveHBsb3RfbG9nIDwtIGdncGxvdCh1bmJhbGFuY2VkX2RhdGEsIGFlcyh4ID0gMSwgeSA9IGxvZyh1bmlxdWVfYnJvd3NlX2Rlc2lnbmVyX3F0eSkpKSArXG4gICAgZ2VvbV9ib3hwbG90KCkgK1xuICAgIHRoZW1lX21hc3RlckRTKCkrXG4gICAgbGFicyhcbiAgICAgIHggPSBcIlwiLFxuICAgICAgeT1cIlwiLFxuICAgICAgdGl0bGUgPSBcIkJveHBsb3RcIlxuICAgIClcblxuICBncmlkLmFycmFuZ2UoaGlzdG9ncmFtX2xvZywgYm94cGxvdF9sb2csIG5yb3cgPSAxKVxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIGhpc3RvZ3JhbV9sb2cgPC0gZ2dwbG90KHVuYmFsYW5jZWRfZGF0YSwgYWVzKHggPSBsb2codW5pcXVlX2Jyb3dzZV9kZXNpZ25lcl9xdHkpKSkgK1xuICAgIGdlb21faGlzdG9ncmFtKGZpbGw9XCJkYXJrYmx1ZVwiLCBjb2xvcj1cImJsYWNrXCIpICtcbiAgICB0aGVtZV9tYXN0ZXJEUygpICtcbiAgICBsYWJzKFxuICAgICAgeCA9IFwiXCIsXG4gICAgICB5ID0gXCJcIixcbiAgICAgIHRpdGxlID0gXCJIaXN0b2dyYW1cIlxuICAgIClcbiAgXG4gIGJveHBsb3RfbG9nIDwtIGdncGxvdCh1bmJhbGFuY2VkX2RhdGEsIGFlcyh4ID0gMSwgeSA9IGxvZyh1bmlxdWVfYnJvd3NlX2Rlc2lnbmVyX3F0eSkpKSArXG4gICAgZ2VvbV9ib3hwbG90KCkgK1xuICAgIHRoZW1lX21hc3RlckRTKCkrXG4gICAgbGFicyhcbiAgICAgIHggPSBcIlwiLFxuICAgICAgeT1cIlwiLFxuICAgICAgdGl0bGUgPSBcIkJveHBsb3RcIlxuICAgIClcblxuICBncmlkLmFycmFuZ2UoaGlzdG9ncmFtX2xvZywgYm94cGxvdF9sb2csIG5yb3cgPSAxKVxuXG5gYGAifQ== -->
 <pre class="r"><code> histogram_log &lt;- ggplot(unbalanced_data, aes(x = log(unique_browse_designer_qty))) +
     geom_histogram(fill=&quot;darkblue&quot;, color=&quot;black&quot;) +
     theme_masterDS() +
@@ -1197,28 +899,12 @@ grid.draw(eda_balanced$unique_browse_designer_qty)
       title = &quot;Boxplot&quot;
     )
 
-  grid.arrange(histogram_log, boxplot_log, nrow = 1)</code></pre>
+  grid.arrange(histogram_log, boxplot_log, nrow = 1)
+</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiYHN0YXRfYmluKClgIHVzaW5nIGBiaW5zID0gMzBgLiBQaWNrIGJldHRlciB2YWx1ZSB3aXRoIGBiaW53aWR0aGAuXG5XYXJuaW5nOiBSZW1vdmVkIDE0Nzc4IHJvd3MgY29udGFpbmluZyBub24tZmluaXRlIHZhbHVlcyAoc3RhdF9iaW4pLlxuV2FybmluZzogUmVtb3ZlZCAxNDc3OCByb3dzIGNvbnRhaW5pbmcgbm9uLWZpbml0ZSB2YWx1ZXMgKHN0YXRfYm94cGxvdCkuXG4ifQ== -->
-<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-Warning: Removed 14778 rows containing non-finite values (stat_bin).
-Warning: Removed 14778 rows containing non-finite values (stat_boxplot).</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-plot-begin eyJoZWlnaHQiOjQzMi42MzI5LCJ3aWR0aCI6NzAwLCJzaXplX2JlaGF2aW9yIjowLCJjb25kaXRpb25zIjpbXX0= -->
-<p><img src="data:image/png;base64,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" /></p>
-<!-- rnb-plot-end -->
 <!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>For both datasets the class majority is NA. From the information given we cannot conclude that we can remove this feature from the model, and given the number of observations affected we will look for imputation alternatives.</p>
-<p>If a particular variable is having more missing values that rest of the variables in the dataset, and, if by removing that one variable you can save many observations. I would, then, suggest to remove that particular variable, unless it is a really important predictor that makes a lot of business sense. It is a matter of deciding between the importance of the variable and losing out on a number of observation.</p>
-<p>Given that its a categorical variable we could replace with the mode, and that would mean that all NA would become Yes, but given the size of missing values this can return a huge impact. We will explore statitical imputation using knn.</p>
-<p>DMwR::knnImputation uses k-Nearest Neighbours approach to impute missing values. What kNN imputation does in simpler terms is as follows: For every observation to be imputed, it identifies ‘k’ closest observations based on the euclidean distance and computes the weighted average (weighted based on distance) of these ‘k’ obs.</p>
-</div>
-<div id="browser-name" class="section level3">
-<h3>Browser name</h3>
-<!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIGhpc3RvZ3JhbV9sb2cgPC0gZ2dwbG90KHVuYmFsYW5jZWRfZGF0YSwgYWVzKHggPSB1bmlxdWVfYnJvd3NlX2Rlc2lnbmVyX3F0eS92aWV3X3F0eSkpICtcbiAgICBnZW9tX2hpc3RvZ3JhbShmaWxsPVwiZGFya2JsdWVcIiwgY29sb3I9XCJibGFja1wiKSArXG4gICAgdGhlbWVfbWFzdGVyRFMoKSArXG4gICAgbGFicyhcbiAgICAgIHggPSBcIlwiLFxuICAgICAgeSA9IFwiXCIsXG4gICAgICB0aXRsZSA9IFwiSGlzdG9ncmFtXCJcbiAgICApXG4gIFxuICBib3hwbG90X2xvZyA8LSBnZ3Bsb3QodW5iYWxhbmNlZF9kYXRhLCBhZXMoeCA9IDEsIHkgPSB1bmlxdWVfYnJvd3NlX2Rlc2lnbmVyX3F0eS92aWV3X3F0eSkpICtcbiAgICBnZW9tX2JveHBsb3QoKSArXG4gICAgdGhlbWVfbWFzdGVyRFMoKStcbiAgICBsYWJzKFxuICAgICAgeCA9IFwiXCIsXG4gICAgICB5PVwiXCIsXG4gICAgICB0aXRsZSA9IFwiQm94cGxvdFwiXG4gICAgKVxuXG4gIGdyaWQuYXJyYW5nZShoaXN0b2dyYW1fbG9nLCBib3hwbG90X2xvZywgbnJvdyA9IDEpXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIGhpc3RvZ3JhbV9sb2cgPC0gZ2dwbG90KHVuYmFsYW5jZWRfZGF0YSwgYWVzKHggPSB1bmlxdWVfYnJvd3NlX2Rlc2lnbmVyX3F0eS92aWV3X3F0eSkpICtcbiAgICBnZW9tX2hpc3RvZ3JhbShmaWxsPVwiZGFya2JsdWVcIiwgY29sb3I9XCJibGFja1wiKSArXG4gICAgdGhlbWVfbWFzdGVyRFMoKSArXG4gICAgbGFicyhcbiAgICAgIHggPSBcIlwiLFxuICAgICAgeSA9IFwiXCIsXG4gICAgICB0aXRsZSA9IFwiSGlzdG9ncmFtXCJcbiAgICApXG4gIFxuICBib3hwbG90X2xvZyA8LSBnZ3Bsb3QodW5iYWxhbmNlZF9kYXRhLCBhZXMoeCA9IDEsIHkgPSB1bmlxdWVfYnJvd3NlX2Rlc2lnbmVyX3F0eS92aWV3X3F0eSkpICtcbiAgICBnZW9tX2JveHBsb3QoKSArXG4gICAgdGhlbWVfbWFzdGVyRFMoKStcbiAgICBsYWJzKFxuICAgICAgeCA9IFwiXCIsXG4gICAgICB5PVwiXCIsXG4gICAgICB0aXRsZSA9IFwiQm94cGxvdFwiXG4gICAgKVxuXG4gIGdyaWQuYXJyYW5nZShoaXN0b2dyYW1fbG9nLCBib3hwbG90X2xvZywgbnJvdyA9IDEpXG5cbmBgYCJ9 -->
 <pre class="r"><code> histogram_log &lt;- ggplot(unbalanced_data, aes(x = unique_browse_designer_qty/view_qty)) +
     geom_histogram(fill=&quot;darkblue&quot;, color=&quot;black&quot;) +
     theme_masterDS() +
@@ -1237,16 +923,14 @@ Warning: Removed 14778 rows containing non-finite values (stat_boxplot).</code><
       title = &quot;Boxplot&quot;
     )
 
-  grid.arrange(histogram_log, boxplot_log, nrow = 1)</code></pre>
+  grid.arrange(histogram_log, boxplot_log, nrow = 1)
+</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiYHN0YXRfYmluKClgIHVzaW5nIGBiaW5zID0gMzBgLiBQaWNrIGJldHRlciB2YWx1ZSB3aXRoIGBiaW53aWR0aGAuXG4ifQ== -->
-<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-plot-begin eyJoZWlnaHQiOjQzMi42MzI5LCJ3aWR0aCI6NzAwLCJzaXplX2JlaGF2aW9yIjowLCJjb25kaXRpb25zIjpbXX0= -->
-<p><img src="data:image/png;base64,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" /></p>
-<!-- rnb-plot-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+</div>
+<div id="is-subscribed" class="section level3">
+<h3>Is subscribed</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5ncmlkLmRyYXcoZWRhX3VuYmFsYW5jZWQkaXNfc3Vic2NyaWJlZClcblxuYGBgIn0= -->
@@ -1256,9 +940,6 @@ grid.draw(eda_unbalanced$is_subscribed)
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-</div>
-<div id="country" class="section level3">
-<h3>Country</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5ncmlkLmRyYXcoZWRhX2JhbGFuY2VkJGlzX3N1YnNjcmliZWQpXG5cbmBgYCJ9 -->
@@ -1268,6 +949,13 @@ grid.draw(eda_balanced$is_subscribed)
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<p>For both datasets the class majority is NA. From the information given we cannot conclude that we can remove this feature from the model, and given the number of observations affected we will look for imputation alternatives.</p>
+<p>If a particular variable is having more missing values that rest of the variables in the dataset, and, if by removing that one variable you can save many observations. I would, then, suggest to remove that particular variable, unless it is a really important predictor that makes a lot of business sense. It is a matter of deciding between the importance of the variable and losing out on a number of observation.</p>
+<p>Given that its a categorical variable we could replace with the mode, and that would mean that all NA would become Yes, but given the size of missing values this can return a huge impact. We will explore statitical imputation using knn.</p>
+<p>DMwR::knnImputation uses k-Nearest Neighbours approach to impute missing values. What kNN imputation does in simpler terms is as follows: For every observation to be imputed, it identifies ‘k’ closest observations based on the euclidean distance and computes the weighted average (weighted based on distance) of these ‘k’ obs.</p>
+</div>
+<div id="browser-name" class="section level3">
+<h3>Browser name</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5ncmlkLmRyYXcoZWRhX3VuYmFsYW5jZWQkYnJvd3Nlcl9uYW1lKVxuXG5gYGAifQ== -->
@@ -1277,7 +965,6 @@ grid.draw(eda_unbalanced$browser_name)
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>remove rows withna</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5ncmlkLmRyYXcoZWRhX2JhbGFuY2VkJGJyb3dzZXJfbmFtZSlcblxuYGBgIn0= -->
@@ -1288,9 +975,8 @@ grid.draw(eda_balanced$browser_name)
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
-</div>
-<div id="assess-data-quality-transformations-to-be-made" class="section level2">
-<h2>Assess data quality &amp; transformations to be made</h2>
+<div id="country" class="section level3">
+<h3>Country</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5ncmlkLmRyYXcoZWRhX3VuYmFsYW5jZWQkY291bnRyeSlcblxuYGBgIn0= -->
@@ -1306,6 +992,42 @@ grid.draw(eda_unbalanced$country)
 <pre class="r"><code>
 grid.draw(eda_balanced$country)
 </code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>remove rows withna</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29ycmVjdF9kYXRhIDwtIHNlbGVjdCh1bmJhbGFuY2VkX2RhdGEsIC1zZXNzaW9uX2lkKVxuc3VtbWFyeShjb3JyZWN0X2RhdGEpXG5cbnJlYyA8LSByZWNpcGUoYm91Z2h0IH4gLiwgZGF0YSA9IGNvcnJlY3RfZGF0YSlcblxucmF0aW9fcmVjaXBlIDwtIHJlYyAlPiUgXG4gIHN0ZXBfaW1wdXRlX2tubihhbGxfcHJlZGljdG9ycygpLCBuZWlnaGJvcnMgPSAzKVxucmF0aW9fcmVjaXBlMiA8LSBwcmVwKHJhdGlvX3JlY2lwZSwgdHJhaW5pbmcgPSB1bmJhbGFuY2VkX2RhdGEsIHZlcmJvc2UgPSBUUlVFLCByZXRhaW4gPSBUUlVFKVxuaW1wdXRlZCA8LSBiYWtlKHJhdGlvX3JlY2lwZTIsbmV3X2RhdGEgPSBOVUxMKVxuc3VtbWFyeShpbXB1dGVkKVxuXG5gYGAifQ== -->
+<pre class="r"><code>correct_data &lt;- select(unbalanced_data, -session_id)
+summary(correct_data)
+
+rec &lt;- recipe(bought ~ ., data = correct_data)
+
+ratio_recipe &lt;- rec %&gt;% 
+  step_impute_knn(all_predictors(), neighbors = 3)
+ratio_recipe2 &lt;- prep(ratio_recipe, training = unbalanced_data, verbose = TRUE, retain = TRUE)
+imputed &lt;- bake(ratio_recipe2,new_data = NULL)
+summary(imputed)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+</div>
+<div id="assess-data-quality-transformations-to-be-made" class="section level2">
+<h2>Assess data quality &amp; transformations to be made</h2>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWQucGF0dGVybih1bmJhbGFuY2VkX2RhdGEsIHJvdGF0ZS5uYW1lcyA9IFRSVUUpXG5gYGAifQ== -->
+<pre class="r"><code>md.pattern(unbalanced_data, rotate.names = TRUE)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWQucGF0dGVybihiYWxhbmNlZF9kYXRhLHJvdGF0ZS5uYW1lcyA9IFRSVUUpXG5gYGAifQ== -->
+<pre class="r"><code>md.pattern(balanced_data,rotate.names = TRUE)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->

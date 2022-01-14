@@ -1,0 +1,90 @@
+## Naive Bayes Classifier
+
+```{r libraries}
+# libraries
+library(tidyverse)
+library(tidymodels)
+library(keras)
+library(workflowsets)
+library(discrim)
+library(factoextra)
+
+```
+
+```{r data preprocess, message=TRUE, warning=FALSE, include=FALSE}
+# import data and prepocess
+
+# import and prepare data
+# import data
+unbalanced_data <- read_csv("./data/train_full.csv") %>% 
+  select(-...1, -session_id) %>% 
+  mutate(bought = as.factor(bought))
+balanced_data <- read_csv("./data/train_balanced.csv") %>% 
+  select(-...1, -session_id) %>% 
+  mutate(bought = as.factor(bought))
+
+```
+
+```{r resampling folds, message=TRUE, warning=FALSE}
+
+# cv 10 folds
+
+set.seed(1234)
+# To keep speed of processing no repeats will be used during resampling
+# folds <- vfold_cv(balanced_data, v = 10, repeats = 5)
+
+folds <- vfold_cv(balanced_data, v = 10)
+
+
+```
+
+### Initial experiments
+
+Following the baseline but introducing pre-processing
+
+```{r}
+
+# 1. specify the model
+naive_Bayes <-
+  discrim::naive_Bayes() %>%
+  set_engine('klaR')
+
+# 2. preprocessing 
+preprocess <- 
+  recipe(bought ~ . , data = balanced_data) %>%
+  step_ratio(starts_with("unique_"), denom = denom_vars(view_qty)) %>% 
+  step_rm(device_group, unique_product_qty, unique_browse_designer_qty, 
+          unique_browse_category_qty) %>% 
+  step_other(country, browser_name, threshold = 0.05) %>%
+  step_mutate(is_bounce = ifelse(view_qty == 1, 1, 0)) %>%
+  step_log(view_qty) %>%
+  step_filter(duration < 60 * 60 * 24) %>%
+  step_string2factor(all_nominal_predictors()) %>% 
+  step_impute_knn(all_predictors(), neighbors = 3) %>%
+  step_pca(starts_with("has_"), num_comp = 1) %>% 
+  step_corr(all_numeric_predictors(), threshold = .5)
+  
+
+preprocess_logit_nn <- 
+  preprocess %>% 
+  step_dummy(all_nominal_predictors()) %>% 
+  step_scale(all_numeric_predictors())
+
+# 3, Buildworkflow
+nbayes_wflow <- 
+  workflow() %>% 
+  add_model(naive_Bayes) %>% 
+  add_recipe(preprocess_logit_nn)
+
+#4. Fit model
+fit_control <- control_resamples(save_pred = TRUE, save_workflow = TRUE)
+
+nbayes_fit <- 
+  nbayes_wflow %>% 
+  fit_resamples(folds, verbose = TRUE, control = fit_control)
+
+
+#5. Performance metrics over the validation set
+collect_metrics(nbayes_fit)
+
+```

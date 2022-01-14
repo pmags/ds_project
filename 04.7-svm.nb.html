@@ -215,8 +215,8 @@ pre code {
 
 
 <!-- rnb-text-begin -->
-<div id="modeling" class="section level1">
-<h1>Modeling</h1>
+<div id="workflow-support-vector-machine" class="section level2">
+<h2>Workflow: Support Vector Machine</h2>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBsaWJyYXJpZXNcbmxpYnJhcnkodGlkeXZlcnNlKVxubGlicmFyeSh0aWR5bW9kZWxzKVxubGlicmFyeShrZXJhcylcbmxpYnJhcnkod29ya2Zsb3dzZXRzKVxubGlicmFyeShkaXNjcmltKVxubGlicmFyeShmYWN0b2V4dHJhKVxuXG5gYGAifQ== -->
@@ -235,7 +235,7 @@ library(factoextra)
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG4jIGN2IDEwIGZvbGRzXG5cbnNldC5zZWVkKDEyMzQpXG4jIFRvIGtlZXAgc3BlZWQgb2YgcHJvY2Vzc2luZyBubyByZXBlYXRzIHdpbGwgYmUgdXNlZCBkdXJpbmcgcmVzYW1wbGluZ1xuIyBmb2xkcyA8LSB2Zm9sZF9jdihiYWxhbmNlZF9kYXRhLCB2ID0gMTAsIHJlcGVhdHMgPSA1KVxuXG5mb2xkcyA8LSB2Zm9sZF9jdihiYWxhbmNlZF9kYXRhLCB2ID0gMTApXG5cblxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG4jIGN2IDEwIGZvbGRzXG5cbnNldC5zZWVkKDEyMzQpXG4jIFRvIGtlZXAgc3BlZWQgb2YgcHJvY2Vzc2luZyBubyByZXBlYXRzIHdpbGwgYmUgdXNlZCBkdXJpbmcgcmVzYW1wbGluZ1xuIyBmb2xkcyA8LSB2Zm9sZF9jdihiYWxhbmNlZF9kYXRhLCB2ID0gMTAsIHJlcGVhdHMgPSA1KVxuXG5mb2xkcyA8LSB2Zm9sZF9jdihiYWxhbmNlZF9kYXRhLCB2ID0gMTApXG5cbmBgYCJ9 -->
 <pre class="r"><code>
 # cv 10 folds
 
@@ -248,105 +248,61 @@ folds &lt;- vfold_cv(balanced_data, v = 10)
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>The following planning will be used for a list of candidate models:</p>
-<ol style="list-style-type: decimal">
-<li>A Model baseline will be defined and will be used to compare against other models</li>
-<li>Define training and evaluation series. Using Cross Validation with 10 folds</li>
-<li>Initial experiment using preprocessing workflow</li>
-<li>When needed given this project objectives hyperparameters will be tuned</li>
-<li>Retrain model with new hyperparameters</li>
-<li>Model comparisson</li>
-</ol>
-<p>Given the goals set for this project we shall focus on Accuracy and Auc ROC as metricas to compare models.</p>
-<p>The initial experiment uses the preprocess schema and the default hyperparameters for each model.</p>
-<div id="baseline" class="section level2">
-<h2>Baseline</h2>
+<div id="linear-kernel" class="section level3">
+<h3>Linear Kernel</h3>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG4jIDEuIHNwZWNpZnkgdGhlIG1vZGVsXG5uYWl2ZV9CYXllcyA8LVxuICBkaXNjcmltOjpuYWl2ZV9CYXllcygpICU+JVxuICBzZXRfZW5naW5lKCdrbGFSJylcblxuIyAyLiBwcmVwcm9jZXNzaW5nIFxucHJlcHJvY2VzcyA8LSBcbiAgcmVjaXBlKGJvdWdodCB+IC4sIGRhdGEgPSBiYWxhbmNlZF9kYXRhKSAlPiVcbiAgc3RlcF9zdHJpbmcyZmFjdG9yKGFsbF9ub21pbmFsX3ByZWRpY3RvcnMoKSkgJT4lIFxuICBzdGVwX2ltcHV0ZV9rbm4oYWxsX3ByZWRpY3RvcnMoKSwgbmVpZ2hib3JzID0gMykgJT4lXG4gIHN0ZXBfc2NhbGUoYWxsX251bWVyaWNfcHJlZGljdG9ycygpKVxuICBcblxuIyAzLCBCdWlsZHdvcmtmbG93XG5iYXNlbGluZV93ZmxvdyA8LSBcbiAgd29ya2Zsb3coKSAlPiUgXG4gIGFkZF9tb2RlbChuYWl2ZV9CYXllcykgJT4lIFxuICBhZGRfcmVjaXBlKHByZXByb2Nlc3MpXG5cbiM0LiBGaXQgbW9kZWxcbmZpdF9jb250cm9sIDwtIGNvbnRyb2xfcmVzYW1wbGVzKHNhdmVfcHJlZCA9IFRSVUUsIHNhdmVfd29ya2Zsb3cgPSBUUlVFKVxuXG5iYXNlbGluZV9maXQgPC0gXG4gIGJhc2VsaW5lX3dmbG93ICU+JSBcbiAgZml0X3Jlc2FtcGxlcyhmb2xkcywgdmVyYm9zZSA9IFRSVUUsIGNvbnRyb2wgPSBmaXRfY29udHJvbClcbmBgYCJ9 -->
-<pre class="r"><code>
-# 1. specify the model
-naive_Bayes &lt;-
-  discrim::naive_Bayes() %&gt;%
-  set_engine(&#39;klaR&#39;)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyAxLiBzcGVjaWZ5IHRoZSBtb2RlbFxuc3ZtX2xpbmVhciA8LVxuICBzdm1fbGluZWFyKClcblxuXG4jIDIuIHByZXByb2Nlc3NpbmcgXG5wcmVwcm9jZXNzIDwtIFxuICByZWNpcGUoYm91Z2h0IH4gLiAsIGRhdGEgPSBiYWxhbmNlZF9kYXRhKSAlPiVcbiAgc3RlcF9yYXRpbyhzdGFydHNfd2l0aChcInVuaXF1ZV9cIiksIGRlbm9tID0gZGVub21fdmFycyh2aWV3X3F0eSkpICU+JSBcbiAgc3RlcF9ybShkZXZpY2VfZ3JvdXAsIHVuaXF1ZV9wcm9kdWN0X3F0eSwgdW5pcXVlX2Jyb3dzZV9kZXNpZ25lcl9xdHksIFxuICAgICAgICAgIHVuaXF1ZV9icm93c2VfY2F0ZWdvcnlfcXR5KSAlPiUgXG4gIHN0ZXBfb3RoZXIoY291bnRyeSwgYnJvd3Nlcl9uYW1lLCB0aHJlc2hvbGQgPSAwLjA1KSAlPiVcbiAgc3RlcF9tdXRhdGUoaXNfYm91bmNlID0gaWZlbHNlKHZpZXdfcXR5ID09IDEsIDEsIDApKSAlPiVcbiAgc3RlcF9sb2codmlld19xdHkpICU+JVxuICBzdGVwX2ZpbHRlcihkdXJhdGlvbiA8IDYwICogNjAgKiAyNCkgJT4lXG4gIHN0ZXBfc3RyaW5nMmZhY3RvcihhbGxfbm9taW5hbF9wcmVkaWN0b3JzKCkpICU+JSBcbiAgc3RlcF9pbXB1dGVfa25uKGFsbF9wcmVkaWN0b3JzKCksIG5laWdoYm9ycyA9IDMpICU+JVxuICBzdGVwX3BjYShzdGFydHNfd2l0aChcImhhc19cIiksIG51bV9jb21wID0gMSkgJT4lIFxuICBzdGVwX2NvcnIoYWxsX251bWVyaWNfcHJlZGljdG9ycygpLCB0aHJlc2hvbGQgPSAuNSlcblxucHJlcHJvY2Vzc19tbHBfc3ZtIDwtIFxuICBwcmVwcm9jZXNzICU+JSBcbiAgc3RlcF9ub3JtYWxpemUoYWxsX251bWVyaWNfcHJlZGljdG9ycygpKSAlPiUgXG4gIHN0ZXBfc2NhbGUoYWxsX251bWVyaWNfcHJlZGljdG9ycygpKSAlPiUgXG4gIHN0ZXBfZHVtbXkoYWxsX25vbWluYWxfcHJlZGljdG9ycygpKSBcblxuICBcbiMgMywgQnVpbGR3b3JrZmxvd1xuc3ZtX2xpbmVhcl93ZmxvdyA8LSBcbiAgd29ya2Zsb3coKSAlPiUgXG4gIGFkZF9tb2RlbChzdm1fbGluZWFydCkgJT4lIFxuICBhZGRfcmVjaXBlKHByZXByb2Nlc3NfbWxwX3N2bSlcblxuIzQuIEZpdCBtb2RlbFxuZml0X2NvbnRyb2wgPC0gY29udHJvbF9yZXNhbXBsZXMoc2F2ZV9wcmVkID0gVFJVRSwgc2F2ZV93b3JrZmxvdyA9IFRSVUUpXG5cbnN2bV9saW5lYXJfZml0IDwtIFxuICBzdm1fbGluZWFyX3dmbG93ICU+JSBcbiAgZml0X3Jlc2FtcGxlcyhmb2xkcywgdmVyYm9zZSA9IFRSVUUsIGNvbnRyb2wgPSBmaXRfY29udHJvbClcblxuXG4jNS4gUGVyZm9ybWFuY2UgbWV0cmljcyBvdmVyIHRoZSB2YWxpZGF0aW9uIHNldFxuY29sbGVjdF9tZXRyaWNzKHN2bV9saW5lYXJfZml0KVxuXG5gYGAifQ== -->
+<pre class="r"><code># 1. specify the model
+svm_linear &lt;-
+  svm_linear()
+
 
 # 2. preprocessing 
 preprocess &lt;- 
-  recipe(bought ~ ., data = balanced_data) %&gt;%
+  recipe(bought ~ . , data = balanced_data) %&gt;%
+  step_ratio(starts_with(&quot;unique_&quot;), denom = denom_vars(view_qty)) %&gt;% 
+  step_rm(device_group, unique_product_qty, unique_browse_designer_qty, 
+          unique_browse_category_qty) %&gt;% 
+  step_other(country, browser_name, threshold = 0.05) %&gt;%
+  step_mutate(is_bounce = ifelse(view_qty == 1, 1, 0)) %&gt;%
+  step_log(view_qty) %&gt;%
+  step_filter(duration &lt; 60 * 60 * 24) %&gt;%
   step_string2factor(all_nominal_predictors()) %&gt;% 
   step_impute_knn(all_predictors(), neighbors = 3) %&gt;%
-  step_scale(all_numeric_predictors())
-  
+  step_pca(starts_with(&quot;has_&quot;), num_comp = 1) %&gt;% 
+  step_corr(all_numeric_predictors(), threshold = .5)
 
+preprocess_mlp_svm &lt;- 
+  preprocess %&gt;% 
+  step_normalize(all_numeric_predictors()) %&gt;% 
+  step_scale(all_numeric_predictors()) %&gt;% 
+  step_dummy(all_nominal_predictors()) 
+
+  
 # 3, Buildworkflow
-baseline_wflow &lt;- 
+svm_linear_wflow &lt;- 
   workflow() %&gt;% 
-  add_model(naive_Bayes) %&gt;% 
-  add_recipe(preprocess)
+  add_model(svm_lineart) %&gt;% 
+  add_recipe(preprocess_mlp_svm)
 
 #4. Fit model
 fit_control &lt;- control_resamples(save_pred = TRUE, save_workflow = TRUE)
 
-baseline_fit &lt;- 
-  baseline_wflow %&gt;% 
-  fit_resamples(folds, verbose = TRUE, control = fit_control)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZzogVGhlIGAuLi5gIGFyZSBub3QgdXNlZCBpbiB0aGlzIGZ1bmN0aW9uIGJ1dCBvbmUgb3IgbW9yZSBvYmplY3RzIHdlcmUgcGFzc2VkOiAndmVyYm9zZSdcbiEgRm9sZDAxOiBwcmVwcm9jZXNzb3IgMS8xLCBtb2RlbCAxLzEgKHByZWRpY3Rpb25zKTogTnVtZXJpY2FsIDAgcHJvYmFiaWxpdHkgZm9yIGFsbCBjbGFzc2VzIHdpdGggb2JzZXJ2YXRpb24gMTAsIE51bWVyLi4uXG4hIEZvbGQwMjogcHJlcHJvY2Vzc29yIDEvMSwgbW9kZWwgMS8xIChwcmVkaWN0aW9ucyk6IE51bWVyaWNhbCAwIHByb2JhYmlsaXR5IGZvciBhbGwgY2xhc3NlcyB3aXRoIG9ic2VydmF0aW9uIDE2LCBOdW1lci4uLlxuISBGb2xkMDM6IHByZXByb2Nlc3NvciAxLzEsIG1vZGVsIDEvMSAocHJlZGljdGlvbnMpOiBOdW1lcmljYWwgMCBwcm9iYWJpbGl0eSBmb3IgYWxsIGNsYXNzZXMgd2l0aCBvYnNlcnZhdGlvbiAxMywgTnVtZXIuLi5cbiEgRm9sZDA0OiBwcmVwcm9jZXNzb3IgMS8xLCBtb2RlbCAxLzEgKHByZWRpY3Rpb25zKTogTnVtZXJpY2FsIDAgcHJvYmFiaWxpdHkgZm9yIGFsbCBjbGFzc2VzIHdpdGggb2JzZXJ2YXRpb24gNSwgTnVtZXJpLi4uXG4hIEZvbGQwNTogcHJlcHJvY2Vzc29yIDEvMSwgbW9kZWwgMS8xIChwcmVkaWN0aW9ucyk6IE51bWVyaWNhbCAwIHByb2JhYmlsaXR5IGZvciBhbGwgY2xhc3NlcyB3aXRoIG9ic2VydmF0aW9uIDYsIE51bWVyaS4uLlxuISBGb2xkMDY6IHByZXByb2Nlc3NvciAxLzEsIG1vZGVsIDEvMSAocHJlZGljdGlvbnMpOiBOdW1lcmljYWwgMCBwcm9iYWJpbGl0eSBmb3IgYWxsIGNsYXNzZXMgd2l0aCBvYnNlcnZhdGlvbiAzLCBOdW1lcmkuLi5cbiEgRm9sZDA3OiBwcmVwcm9jZXNzb3IgMS8xLCBtb2RlbCAxLzEgKHByZWRpY3Rpb25zKTogTnVtZXJpY2FsIDAgcHJvYmFiaWxpdHkgZm9yIGFsbCBjbGFzc2VzIHdpdGggb2JzZXJ2YXRpb24gMTYsIE51bWVyLi4uXG4hIEZvbGQwODogcHJlcHJvY2Vzc29yIDEvMSwgbW9kZWwgMS8xIChwcmVkaWN0aW9ucyk6IE51bWVyaWNhbCAwIHByb2JhYmlsaXR5IGZvciBhbGwgY2xhc3NlcyB3aXRoIG9ic2VydmF0aW9uIDUsIE51bWVyaS4uLlxuISBGb2xkMDk6IHByZXByb2Nlc3NvciAxLzEsIG1vZGVsIDEvMSAocHJlZGljdGlvbnMpOiBOdW1lcmljYWwgMCBwcm9iYWJpbGl0eSBmb3IgYWxsIGNsYXNzZXMgd2l0aCBvYnNlcnZhdGlvbiA2LCBOdW1lcmkuLi5cbiEgRm9sZDEwOiBwcmVwcm9jZXNzb3IgMS8xLCBtb2RlbCAxLzEgKHByZWRpY3Rpb25zKTogTnVtZXJpY2FsIDAgcHJvYmFiaWxpdHkgZm9yIGFsbCBjbGFzc2VzIHdpdGggb2JzZXJ2YXRpb24gMSwgTnVtZXJpLi4uXG4ifQ== -->
-<pre><code>Warning: The `...` are not used in this function but one or more objects were passed: &#39;verbose&#39;
-! Fold01: preprocessor 1/1, model 1/1 (predictions): Numerical 0 probability for all classes with observation 10, Numer...
-! Fold02: preprocessor 1/1, model 1/1 (predictions): Numerical 0 probability for all classes with observation 16, Numer...
-! Fold03: preprocessor 1/1, model 1/1 (predictions): Numerical 0 probability for all classes with observation 13, Numer...
-! Fold04: preprocessor 1/1, model 1/1 (predictions): Numerical 0 probability for all classes with observation 5, Numeri...
-! Fold05: preprocessor 1/1, model 1/1 (predictions): Numerical 0 probability for all classes with observation 6, Numeri...
-! Fold06: preprocessor 1/1, model 1/1 (predictions): Numerical 0 probability for all classes with observation 3, Numeri...
-! Fold07: preprocessor 1/1, model 1/1 (predictions): Numerical 0 probability for all classes with observation 16, Numer...
-! Fold08: preprocessor 1/1, model 1/1 (predictions): Numerical 0 probability for all classes with observation 5, Numeri...
-! Fold09: preprocessor 1/1, model 1/1 (predictions): Numerical 0 probability for all classes with observation 6, Numeri...
-! Fold10: preprocessor 1/1, model 1/1 (predictions): Numerical 0 probability for all classes with observation 1, Numeri...</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIzUuIFBlcmZvcm1hbmNlIG1ldHJpY3Mgb3ZlciB0aGUgdmFsaWRhdGlvbiBzZXRcbmNvbGxlY3RfbWV0cmljcyhiYXNlbGluZV9maXQpXG5gYGAifQ== -->
-<pre class="r"><code>#5. Performance metrics over the validation set
-collect_metrics(baseline_fit)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbInRibF9kZiIsInRibCIsImRhdGEuZnJhbWUiXSwibnJvdyI6MiwibmNvbCI6Niwic3VtbWFyeSI6eyJBIHRpYmJsZSI6WyIyIHggNiJdfX0sInJkZiI6Ikg0c0lBQUFBQUFBQUJtMVJ2VTdETUJDKy9OTklGQ1E2SVRFeU5xZzhBQlVTWWtOQ0lLRnV4WFhjRXVIWWxlMEEzWGdGRmg2RWlZZmdDWGdBQmlSV3hnWW5zWkd3R002NSsvTGQzWGQzRnllVHczU1NBb0FQUVJTQUgyZzM5UFhqUVFpOTV2c0FFT3hvSjlhMjNSSzdIeHNJNDBvZ3ZESnhJamllb2dvN3RIaFdNQ1JXVGdUUWJ6amp6NzJYWWY4cUhIOGRKVzhmQjk4YTIyeHpBVkpqSFMvZmZ6MitIcHlPSjAvdnU4K1hvWlprZVY1bmZ6VEhsTndSS28wU2l3N09CVmxxa1VSS0xrYlRNNTRUT25JeUkweVJkQlBqT2NLS0MrMnRYVHBESmJIMDJDNGlLNGtTQlRaaG1oR3BpaEkxRlRva0xBbGlkcjNXU2FUS3AwU0kzeUtZczNteGNCcjJCTC9QYk5OMkJZLzZxZXZhS0F0cVIzdWFJNFd5dWRBcC8raFArRklWbk9saWZuUGl5RW4yaEFOc1ZheHBuZy94VGNWdWh5TnpvK1lHWUFSNTVpN1dqN3VXb1JVVzJhVVN0aWdZc1l1a2FFYW9DZnA2eUhiR2JDa0twdXdrR3BXWjRncFpYb281dFVnN0c2eC9BTythblNMUUFnQUEifQ== -->
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":[".metric"],"name":[1],"type":["chr"],"align":["left"]},{"label":[".estimator"],"name":[2],"type":["chr"],"align":["left"]},{"label":["mean"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["n"],"name":[4],"type":["int"],"align":["right"]},{"label":["std_err"],"name":[5],"type":["dbl"],"align":["right"]},{"label":[".config"],"name":[6],"type":["fctr"],"align":["left"]}],"data":[{"1":"accuracy","2":"binary","3":"0.8161250","4":"10","5":"0.002459392","6":"Preprocessor1_Model1"},{"1":"roc_auc","2":"binary","3":"0.9138221","4":"10","5":"0.001499618","6":"Preprocessor1_Model1"}],"options":{"columns":{"min":{},"max":[10],"total":[6]},"rows":{"min":[10],"max":[10],"total":[2]},"pages":{}}}
-  </script>
-</div>
-<!-- rnb-frame-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuTkFcbmBgYCJ9 -->
-<pre class="r"><code>NA</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>Given its simplicity and flexibility a Naive Bayes classifier will be used as baseline for this project. The preprocess was set to a minimum in order to measure the impact it might have on the final output. The engine used for this algorithm does not accept missing data, therefore we did a 3nn imputation.</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG4jIGxvY2F0aW9uIDwtIGxpc3QoXG4jICAgbG9uZ2l0dWRlID0gU2FsZV9QcmljZSB+IExvbmdpdHVkZSxcbiMgICBsYXRpdHVkZSA9IFNhbGVfUHJpY2UgfiBMYXRpdHVkZSxcbiMgICBjb29yZHMgPSBTYWxlX1ByaWNlIH4gTG9uZ2l0dWRlICsgTGF0aXR1ZGUsXG4jICAgbmVpZ2hib3Job29kID0gU2FsZV9QcmljZSB+IE5laWdoYm9yaG9vZFxuIyApXG4jIFxuIyBsaWJyYXJ5KHdvcmtmbG93c2V0cylcbiMgbG9jYXRpb25fbW9kZWxzIDwtIHdvcmtmbG93X3NldChwcmVwcm9jID0gbG9jYXRpb24sIG1vZGVscyA9IGxpc3QobG0gPSBsbV9tb2RlbCkpXG4jIFxuIyBsb2NhdGlvbl9tb2RlbHMgPC1cbiMgICAgbG9jYXRpb25fbW9kZWxzICU+JVxuIyAgICBtdXRhdGUoZml0ID0gbWFwKGluZm8sIH4gZml0KC54JHdvcmtmbG93W1sxXV0sIGFtZXNfdHJhaW4pKSlcblxuYGBgIn0= -->
-<pre class="r"><code>
-# location &lt;- list(
-#   longitude = Sale_Price ~ Longitude,
-#   latitude = Sale_Price ~ Latitude,
-#   coords = Sale_Price ~ Longitude + Latitude,
-#   neighborhood = Sale_Price ~ Neighborhood
-# )
-# 
-# library(workflowsets)
-# location_models &lt;- workflow_set(preproc = location, models = list(lm = lm_model))
-# 
-# location_models &lt;-
-#    location_models %&gt;%
-#    mutate(fit = map(info, ~ fit(.x$workflow[[1]], ames_train)))
+svm_linear_fit &lt;- 
+  svm_linear_wflow %&gt;% 
+  fit_resamples(folds, verbose = TRUE, control = fit_control)
+
+
+#5. Performance metrics over the validation set
+collect_metrics(svm_linear_fit)
 </code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
 </div>
 </div>
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQojIE1vZGVsaW5nDQoNCmBgYHtyIGxpYnJhcmllc30NCiMgbGlicmFyaWVzDQpsaWJyYXJ5KHRpZHl2ZXJzZSkNCmxpYnJhcnkodGlkeW1vZGVscykNCmxpYnJhcnkoa2VyYXMpDQpsaWJyYXJ5KHdvcmtmbG93c2V0cykNCmxpYnJhcnkoZGlzY3JpbSkNCmxpYnJhcnkoZmFjdG9leHRyYSkNCg0KYGBgDQoNCmBgYHtyIGRhdGEgcHJlcHJvY2VzcywgbWVzc2FnZT1UUlVFLCB3YXJuaW5nPUZBTFNFLCBpbmNsdWRlPUZBTFNFfQ0KIyBpbXBvcnQgZGF0YSBhbmQgcHJlcG9jZXNzDQoNCiMgaW1wb3J0IGFuZCBwcmVwYXJlIGRhdGENCiMgaW1wb3J0IGRhdGENCnVuYmFsYW5jZWRfZGF0YSA8LSByZWFkX2NzdigiLi9kYXRhL3RyYWluX2Z1bGwuY3N2IikgJT4lIA0KICBzZWxlY3QoLS4uLjEsIC1zZXNzaW9uX2lkKSAlPiUgDQogIG11dGF0ZShib3VnaHQgPSBhcy5mYWN0b3IoYm91Z2h0KSkNCmJhbGFuY2VkX2RhdGEgPC0gcmVhZF9jc3YoIi4vZGF0YS90cmFpbl9iYWxhbmNlZC5jc3YiKSAlPiUgDQogIHNlbGVjdCgtLi4uMSwgLXNlc3Npb25faWQpICU+JSANCiAgbXV0YXRlKGJvdWdodCA9IGFzLmZhY3Rvcihib3VnaHQpKQ0KDQpgYGANCg0KYGBge3IgcmVzYW1wbGluZyBmb2xkcywgbWVzc2FnZT1UUlVFLCB3YXJuaW5nPUZBTFNFfQ0KDQojIGN2IDEwIGZvbGRzDQoNCnNldC5zZWVkKDEyMzQpDQojIFRvIGtlZXAgc3BlZWQgb2YgcHJvY2Vzc2luZyBubyByZXBlYXRzIHdpbGwgYmUgdXNlZCBkdXJpbmcgcmVzYW1wbGluZw0KIyBmb2xkcyA8LSB2Zm9sZF9jdihiYWxhbmNlZF9kYXRhLCB2ID0gMTAsIHJlcGVhdHMgPSA1KQ0KDQpmb2xkcyA8LSB2Zm9sZF9jdihiYWxhbmNlZF9kYXRhLCB2ID0gMTApDQoNCg0KYGBgDQoNClRoZSBmb2xsb3dpbmcgcGxhbm5pbmcgd2lsbCBiZSB1c2VkIGZvciBhIGxpc3Qgb2YgY2FuZGlkYXRlIG1vZGVsczoNCg0KMS4gQSBNb2RlbCBiYXNlbGluZSB3aWxsIGJlIGRlZmluZWQgYW5kIHdpbGwgYmUgdXNlZCB0byBjb21wYXJlIGFnYWluc3Qgb3RoZXIgbW9kZWxzDQoyLiBEZWZpbmUgdHJhaW5pbmcgYW5kIGV2YWx1YXRpb24gc2VyaWVzLiBVc2luZyBDcm9zcyBWYWxpZGF0aW9uIHdpdGggMTAgZm9sZHMNCjMuIEluaXRpYWwgZXhwZXJpbWVudCB1c2luZyBwcmVwcm9jZXNzaW5nIHdvcmtmbG93DQo0LiBXaGVuIG5lZWRlZCBnaXZlbiB0aGlzIHByb2plY3Qgb2JqZWN0aXZlcyBoeXBlcnBhcmFtZXRlcnMgd2lsbCBiZSB0dW5lZA0KNS4gUmV0cmFpbiBtb2RlbCB3aXRoIG5ldyBoeXBlcnBhcmFtZXRlcnMNCjYuIE1vZGVsIGNvbXBhcmlzc29uDQoNCkdpdmVuIHRoZSBnb2FscyBzZXQgZm9yIHRoaXMgcHJvamVjdCB3ZSBzaGFsbCBmb2N1cyBvbiBBY2N1cmFjeSBhbmQgQXVjIFJPQyBhcyBtZXRyaWNhcyB0byBjb21wYXJlIG1vZGVscy4gDQoNClRoZSBpbml0aWFsIGV4cGVyaW1lbnQgdXNlcyB0aGUgcHJlcHJvY2VzcyBzY2hlbWEgYW5kIHRoZSBkZWZhdWx0IGh5cGVycGFyYW1ldGVycyBmb3IgZWFjaCBtb2RlbC4NCg0KDQojIyBCYXNlbGluZQ0KDQoNCmBgYHtyfQ0KDQojIDEuIHNwZWNpZnkgdGhlIG1vZGVsDQpuYWl2ZV9CYXllcyA8LQ0KICBkaXNjcmltOjpuYWl2ZV9CYXllcygpICU+JQ0KICBzZXRfZW5naW5lKCdrbGFSJykNCg0KIyAyLiBwcmVwcm9jZXNzaW5nIA0KcHJlcHJvY2VzcyA8LSANCiAgcmVjaXBlKGJvdWdodCB+IC4sIGRhdGEgPSBiYWxhbmNlZF9kYXRhKSAlPiUNCiAgc3RlcF9zdHJpbmcyZmFjdG9yKGFsbF9ub21pbmFsX3ByZWRpY3RvcnMoKSkgJT4lIA0KICBzdGVwX2ltcHV0ZV9rbm4oYWxsX3ByZWRpY3RvcnMoKSwgbmVpZ2hib3JzID0gMykgJT4lDQogIHN0ZXBfc2NhbGUoYWxsX251bWVyaWNfcHJlZGljdG9ycygpKQ0KICANCg0KIyAzLCBCdWlsZHdvcmtmbG93DQpiYXNlbGluZV93ZmxvdyA8LSANCiAgd29ya2Zsb3coKSAlPiUgDQogIGFkZF9tb2RlbChuYWl2ZV9CYXllcykgJT4lIA0KICBhZGRfcmVjaXBlKHByZXByb2Nlc3MpDQoNCiM0LiBGaXQgbW9kZWwNCmZpdF9jb250cm9sIDwtIGNvbnRyb2xfcmVzYW1wbGVzKHNhdmVfcHJlZCA9IFRSVUUsIHNhdmVfd29ya2Zsb3cgPSBUUlVFKQ0KDQpiYXNlbGluZV9maXQgPC0gDQogIGJhc2VsaW5lX3dmbG93ICU+JSANCiAgZml0X3Jlc2FtcGxlcyhmb2xkcywgdmVyYm9zZSA9IFRSVUUsIGNvbnRyb2wgPSBmaXRfY29udHJvbCkNCg0KDQojNS4gUGVyZm9ybWFuY2UgbWV0cmljcyBvdmVyIHRoZSB2YWxpZGF0aW9uIHNldA0KY29sbGVjdF9tZXRyaWNzKGJhc2VsaW5lX2ZpdCkNCg0KYGBgDQoNCkdpdmVuIGl0cyBzaW1wbGljaXR5IGFuZCBmbGV4aWJpbGl0eSBhIE5haXZlIEJheWVzIGNsYXNzaWZpZXIgd2lsbCBiZSB1c2VkIGFzIGJhc2VsaW5lIGZvciB0aGlzIHByb2plY3QuIFRoZSBwcmVwcm9jZXNzIHdhcyBzZXQgdG8gYSBtaW5pbXVtIGluIG9yZGVyIHRvIG1lYXN1cmUgdGhlIGltcGFjdCBpdCBtaWdodCBoYXZlIG9uIHRoZSBmaW5hbCBvdXRwdXQuIFRoZSBlbmdpbmUgdXNlZCBmb3IgdGhpcyBhbGdvcml0aG0gZG9lcyBub3QgYWNjZXB0IG1pc3NpbmcgZGF0YSwgdGhlcmVmb3JlIHdlIGRpZCBhIDNubiBpbXB1dGF0aW9uLg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCg0KDQoNCmBgYHtyfQ0KDQojIGxvY2F0aW9uIDwtIGxpc3QoDQojICAgbG9uZ2l0dWRlID0gU2FsZV9QcmljZSB+IExvbmdpdHVkZSwNCiMgICBsYXRpdHVkZSA9IFNhbGVfUHJpY2UgfiBMYXRpdHVkZSwNCiMgICBjb29yZHMgPSBTYWxlX1ByaWNlIH4gTG9uZ2l0dWRlICsgTGF0aXR1ZGUsDQojICAgbmVpZ2hib3Job29kID0gU2FsZV9QcmljZSB+IE5laWdoYm9yaG9vZA0KIyApDQojIA0KIyBsaWJyYXJ5KHdvcmtmbG93c2V0cykNCiMgbG9jYXRpb25fbW9kZWxzIDwtIHdvcmtmbG93X3NldChwcmVwcm9jID0gbG9jYXRpb24sIG1vZGVscyA9IGxpc3QobG0gPSBsbV9tb2RlbCkpDQojIA0KIyBsb2NhdGlvbl9tb2RlbHMgPC0NCiMgICAgbG9jYXRpb25fbW9kZWxzICU+JQ0KIyAgICBtdXRhdGUoZml0ID0gbWFwKGluZm8sIH4gZml0KC54JHdvcmtmbG93W1sxXV0sIGFtZXNfdHJhaW4pKSkNCg0KYGBgDQoNCg0KDQoNCg0K</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQojIyBXb3JrZmxvdzogU3VwcG9ydCBWZWN0b3IgTWFjaGluZQ0KDQpgYGB7ciBsaWJyYXJpZXN9DQojIGxpYnJhcmllcw0KbGlicmFyeSh0aWR5dmVyc2UpDQpsaWJyYXJ5KHRpZHltb2RlbHMpDQpsaWJyYXJ5KGtlcmFzKQ0KbGlicmFyeSh3b3JrZmxvd3NldHMpDQpsaWJyYXJ5KGRpc2NyaW0pDQpsaWJyYXJ5KGZhY3RvZXh0cmEpDQoNCmBgYA0KDQpgYGB7ciBkYXRhIHByZXByb2Nlc3MsIG1lc3NhZ2U9VFJVRSwgd2FybmluZz1GQUxTRSwgaW5jbHVkZT1GQUxTRX0NCiMgaW1wb3J0IGRhdGEgYW5kIHByZXBvY2Vzcw0KDQojIGltcG9ydCBhbmQgcHJlcGFyZSBkYXRhDQojIGltcG9ydCBkYXRhDQp1bmJhbGFuY2VkX2RhdGEgPC0gcmVhZF9jc3YoIi4vZGF0YS90cmFpbl9mdWxsLmNzdiIpICU+JSANCiAgc2VsZWN0KC0uLi4xLCAtc2Vzc2lvbl9pZCkgJT4lIA0KICBtdXRhdGUoYm91Z2h0ID0gYXMuZmFjdG9yKGJvdWdodCkpDQpiYWxhbmNlZF9kYXRhIDwtIHJlYWRfY3N2KCIuL2RhdGEvdHJhaW5fYmFsYW5jZWQuY3N2IikgJT4lIA0KICBzZWxlY3QoLS4uLjEsIC1zZXNzaW9uX2lkKSAlPiUgDQogIG11dGF0ZShib3VnaHQgPSBhcy5mYWN0b3IoYm91Z2h0KSkNCg0KYGBgDQoNCmBgYHtyIHJlc2FtcGxpbmcgZm9sZHMsIG1lc3NhZ2U9VFJVRSwgd2FybmluZz1GQUxTRX0NCg0KIyBjdiAxMCBmb2xkcw0KDQpzZXQuc2VlZCgxMjM0KQ0KIyBUbyBrZWVwIHNwZWVkIG9mIHByb2Nlc3Npbmcgbm8gcmVwZWF0cyB3aWxsIGJlIHVzZWQgZHVyaW5nIHJlc2FtcGxpbmcNCiMgZm9sZHMgPC0gdmZvbGRfY3YoYmFsYW5jZWRfZGF0YSwgdiA9IDEwLCByZXBlYXRzID0gNSkNCg0KZm9sZHMgPC0gdmZvbGRfY3YoYmFsYW5jZWRfZGF0YSwgdiA9IDEwKQ0KDQpgYGANCg0KIyMjIExpbmVhciBLZXJuZWwNCg0KYGBge3J9DQojIDEuIHNwZWNpZnkgdGhlIG1vZGVsDQpzdm1fbGluZWFyIDwtDQogIHN2bV9saW5lYXIoKQ0KDQoNCiMgMi4gcHJlcHJvY2Vzc2luZyANCnByZXByb2Nlc3MgPC0gDQogIHJlY2lwZShib3VnaHQgfiAuICwgZGF0YSA9IGJhbGFuY2VkX2RhdGEpICU+JQ0KICBzdGVwX3JhdGlvKHN0YXJ0c193aXRoKCJ1bmlxdWVfIiksIGRlbm9tID0gZGVub21fdmFycyh2aWV3X3F0eSkpICU+JSANCiAgc3RlcF9ybShkZXZpY2VfZ3JvdXAsIHVuaXF1ZV9wcm9kdWN0X3F0eSwgdW5pcXVlX2Jyb3dzZV9kZXNpZ25lcl9xdHksIA0KICAgICAgICAgIHVuaXF1ZV9icm93c2VfY2F0ZWdvcnlfcXR5KSAlPiUgDQogIHN0ZXBfb3RoZXIoY291bnRyeSwgYnJvd3Nlcl9uYW1lLCB0aHJlc2hvbGQgPSAwLjA1KSAlPiUNCiAgc3RlcF9tdXRhdGUoaXNfYm91bmNlID0gaWZlbHNlKHZpZXdfcXR5ID09IDEsIDEsIDApKSAlPiUNCiAgc3RlcF9sb2codmlld19xdHkpICU+JQ0KICBzdGVwX2ZpbHRlcihkdXJhdGlvbiA8IDYwICogNjAgKiAyNCkgJT4lDQogIHN0ZXBfc3RyaW5nMmZhY3RvcihhbGxfbm9taW5hbF9wcmVkaWN0b3JzKCkpICU+JSANCiAgc3RlcF9pbXB1dGVfa25uKGFsbF9wcmVkaWN0b3JzKCksIG5laWdoYm9ycyA9IDMpICU+JQ0KICBzdGVwX3BjYShzdGFydHNfd2l0aCgiaGFzXyIpLCBudW1fY29tcCA9IDEpICU+JSANCiAgc3RlcF9jb3JyKGFsbF9udW1lcmljX3ByZWRpY3RvcnMoKSwgdGhyZXNob2xkID0gLjUpDQoNCnByZXByb2Nlc3NfbWxwX3N2bSA8LSANCiAgcHJlcHJvY2VzcyAlPiUgDQogIHN0ZXBfbm9ybWFsaXplKGFsbF9udW1lcmljX3ByZWRpY3RvcnMoKSkgJT4lIA0KICBzdGVwX3NjYWxlKGFsbF9udW1lcmljX3ByZWRpY3RvcnMoKSkgJT4lIA0KICBzdGVwX2R1bW15KGFsbF9ub21pbmFsX3ByZWRpY3RvcnMoKSkgDQoNCiAgDQojIDMsIEJ1aWxkd29ya2Zsb3cNCnN2bV9saW5lYXJfd2Zsb3cgPC0gDQogIHdvcmtmbG93KCkgJT4lIA0KICBhZGRfbW9kZWwoc3ZtX2xpbmVhcnQpICU+JSANCiAgYWRkX3JlY2lwZShwcmVwcm9jZXNzX21scF9zdm0pDQoNCiM0LiBGaXQgbW9kZWwNCmZpdF9jb250cm9sIDwtIGNvbnRyb2xfcmVzYW1wbGVzKHNhdmVfcHJlZCA9IFRSVUUsIHNhdmVfd29ya2Zsb3cgPSBUUlVFKQ0KDQpzdm1fbGluZWFyX2ZpdCA8LSANCiAgc3ZtX2xpbmVhcl93ZmxvdyAlPiUgDQogIGZpdF9yZXNhbXBsZXMoZm9sZHMsIHZlcmJvc2UgPSBUUlVFLCBjb250cm9sID0gZml0X2NvbnRyb2wpDQoNCg0KIzUuIFBlcmZvcm1hbmNlIG1ldHJpY3Mgb3ZlciB0aGUgdmFsaWRhdGlvbiBzZXQNCmNvbGxlY3RfbWV0cmljcyhzdm1fbGluZWFyX2ZpdCkNCg0KYGBgDQo=</div>
 
 
 
@@ -393,7 +349,7 @@ $(document).ready(function () {
 <!-- code folding -->
 <script>
 $(document).ready(function () {
-  window.initializeSourceEmbed("04-modeling.Rmd");
+  window.initializeSourceEmbed("04.7-svm.Rmd");
   window.initializeCodeFolding("show" === "show");
 });
 </script>

@@ -11,6 +11,8 @@ library(tidyverse)
 library(tidymodels)
 library(keras)
 library(workflowsets)
+library(discrim)
+library(factoextra)
 
 ```
 
@@ -19,272 +21,115 @@ library(workflowsets)
 
 # import and prepare data
 # import data
-unbalanced_data <- read_csv("./data/train_full.csv") %>% select(-...1, -session_id)
-balanced_data <- read_csv("./data/train_balanced.csv") %>% select(-...1, -session_id)
+unbalanced_data <- read_csv("./data/train_full.csv") %>% 
+  select(-...1, -session_id) %>% 
+  mutate(bought = as.factor(bought))
+balanced_data <- read_csv("./data/train_balanced.csv") %>% 
+  select(-...1, -session_id) %>% 
+  mutate(bought = as.factor(bought))
 
-# For balanced data and to be used generically for all models
+```
+
+```{r resampling folds, message=TRUE, warning=FALSE}
+
+# cv 10 folds
+
+set.seed(1234)
+# To keep speed of processing no repeats will be used during resampling
+# folds <- vfold_cv(balanced_data, v = 10, repeats = 5)
+
+folds <- vfold_cv(balanced_data, v = 10)
+
+
+```
+
+The following planning will be used for a list of candidate models:
+
+1. A Model baseline will be defined and will be used to compare against other models
+2. Define training and evaluation series. Using Cross Validation with 10 folds
+3. Initial experiment using preprocessing workflow
+4. When needed given this project objectives hyperparameters will be tuned
+5. Retrain model with new hyperparameters
+6. Model comparisson
+
+Given the goals set for this project we shall focus on Accuracy and Auc ROC as metricas to compare models. 
+
+The initial experiment uses the preprocess schema and the default hyperparameters for each model.
+
+
+## Baseline
+
+
+```{r}
+
+# 1. specify the model
+naive_Bayes <-
+  discrim::naive_Bayes() %>%
+  set_engine('klaR')
+
+# 2. preprocessing 
 preprocess <- 
-  recipe( bought ~ . , data = balanced_data) %>% 
-  step_log(duration, view_qty, unique_qty, unique_browse_designer_qty) %>% 
-  step_filter(duration > 60 * 60 * 24) %>% 
-  step_impute_knn(all_predictors(), neighbors = 3) %>% 
-  step_pca(starts_with("has_")) %>% 
-  step_other(country, treshdold = 0.01) %>% 
-  step_other(browser_name, treshold = 0.01) %>% 
-  step_mutate_at(starts_with("unique_"), fn = ~ ./view_qty) %>% 
-  step_mutate(is_bounce = ifelse(view_qty == 1, 1, 0))  
-
-preprocess_logit_nn <- 
-  preprocess %>% 
-  step_dummy(all_nominal_predictors()) %>% 
+  recipe(bought ~ ., data = balanced_data) %>%
+  step_string2factor(all_nominal_predictors()) %>% 
+  step_impute_knn(all_predictors(), neighbors = 3) %>%
   step_scale(all_numeric_predictors())
+  
 
-preprocess_mlp_svm <- 
-  preprocess %>% 
-  step_dummy(all_nominal_predictors()) %>% 
-  step_normalize(all_numeric_predictors()) %>% 
-  step_scale(all_numeric_predictors())
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-Using a simple random sample may haphazardly allocate these infrequent samples disproportionately into the training or test set. To avoid this, stratified sampling can be used. The training/test split is conducted separately within each class and then these subsamples are combined into the overall training and test set. For regression problems, the outcome data can be artificially binned into quartiles and then stratified sampling conducted four separate times. This is an effective method for keeping the distributions of the outcome similar between the training and test set.
-
-```{r}
-# reproduced later. 
-set.seed(123)
-
-# Save the split information for an 80/20 split of the data
-ames_split <- initial_split(ames, prop = 0.80)
-ames_split
-
-ames_train <- training(ames_split)
-ames_test  <-  testing(ames_split)
-
-```
-
-
-
-Specify the type of model based on its mathematical structure (e.g., linear regression, random forest, K-nearest neighbors, etc).
-
-Specify the engine for fitting the model. Most often this reflects the software package that should be used.
-
-When required, declare the mode of the model. The mode reflects the type of prediction outcome. For numeric outcomes, the mode is regression; for qualitative outcomes, it is classification10. If a model can only create one type of model, such as linear regression, the mode is already set.
-
-
-
-    For predictive models, it is advisable to evaluate a variety of different model types. This requires the user to create multiple model specifications.
-
-    Sequential testing of models typically starts with an expanded set of predictors. This “full model” is compared to a sequence of the same model that removes each predictor in turn. Using basic hypothesis testing methods or empirical validation, the effect of each predictor can be isolated and assessed.
-
-```{r}
-
-location <- list(
-  longitude = Sale_Price ~ Longitude,
-  latitude = Sale_Price ~ Latitude,
-  coords = Sale_Price ~ Longitude + Latitude,
-  neighborhood = Sale_Price ~ Neighborhood
-)
-
-library(workflowsets)
-location_models <- workflow_set(preproc = location, models = list(lm = lm_model))
-
-location_models <-
-   location_models %>%
-   mutate(fit = map(info, ~ fit(.x$workflow[[1]], ames_train)))
-
-```
-
-
-
-```{r}
-library(tidymodels)  # Includes the workflows package
-tidymodels_prefer()
-
-lm_model <- 
-  linear_reg() %>% 
-  set_engine("lm")
-
-lm_wflow <- 
+# 3, Buildworkflow
+baseline_wflow <- 
   workflow() %>% 
-  add_model(lm_model)
+  add_model(naive_Bayes) %>% 
+  add_recipe(preprocess)
 
-# preprocess
-lm_wflow <- 
-  lm_wflow %>% 
-  add_formula(Sale_Price ~ Longitude + Latitude)
+#4. Fit model
+fit_control <- control_resamples(save_pred = TRUE, save_workflow = TRUE)
 
-lm_fit <- fit(lm_wflow, ames_train)
-predict(lm_fit, ames_test %>% slice(1:3))
-
-```
+baseline_fit <- 
+  baseline_wflow %>% 
+  fit_resamples(folds, verbose = TRUE, control = fit_control)
 
 
-
-## Workflow: Generalized Linear Model
-
-
-```{r}
-lm_form_fit %>% extract_fit_engine()
-#> 
-#> Call:
-#> stats::lm(formula = Sale_Price ~ Longitude + Latitude, data = data)
-#> 
-#> Coefficients:
-#> (Intercept)    Longitude     Latitude  
-#>     -300.25        -2.01         2.78
-
-model_res <- 
-  lm_form_fit %>% 
-  extract_fit_engine() %>% 
-  summary()
-
-# The model coefficient table is accessible via the `coef` method.
-param_est <- coef(model_res)
-class(param_est)
-#> [1] "matrix" "array"
-param_est
-#>             Estimate Std. Error t value  Pr(>|t|)
-#> (Intercept) -300.251    14.5815  -20.59 1.023e-86
-#> Longitude     -2.013     0.1297  -15.53 8.126e-52
-#> Latitude       2.782     0.1817   15.31 1.639e-50
-#> 
-
-tidy(lm_form_fit)
-     
-ames_test_small %>% 
-  select(Sale_Price) %>% 
-  bind_cols(predict(lm_form_fit, ames_test_small)) %>% 
-  # Add 95% prediction intervals to the results:
-  bind_cols(predict(lm_form_fit, ames_test_small, type = "pred_int")) 
-
-library(tidymodels) # Includes the recipes package
-tidymodels_prefer()
-
-simple_ames <- 
-  recipe(Sale_Price ~ Neighborhood + Gr_Liv_Area + Year_Built + Bldg_Type,
-         data = ames_train) %>%
-  step_log(Gr_Liv_Area, base = 10) %>% 
-  step_dummy(all_nominal_predictors())
-simple_ames
-
-lm_wflow <- 
-  lm_wflow %>% 
-  remove_variables() %>% 
-  add_recipe(simple_ames)
-lm_wflow
-
-simple_ames <- 
-  recipe(Sale_Price ~ Neighborhood + Gr_Liv_Area + Year_Built + Bldg_Type,
-         data = ames_train) %>%
-  step_log(Gr_Liv_Area, base = 10) %>% 
-  step_other(Neighborhood, threshold = 0.01) %>% 
-  step_dummy(all_nominal_predictors()) %>% 
-  # Gr_Liv_Area is on the log scale from a previous step
-  step_interact( ~ Gr_Liv_Area:starts_with("Bldg_Type_") )
+#5. Performance metrics over the validation set
+collect_metrics(baseline_fit)
 
 ```
 
-## Workflow: Naive Bayes Classifier
-
-```{r}
-naive_Bayes(
-  mode = "classification",
-  engine = "klaR",
-  smoothness = NULL,
-  Laplace = NULL
-)
-
-https://discrim.tidymodels.org/reference/naive_Bayes.html
-https://discrim.tidymodels.org/reference/details_naive_Bayes_klaR.html
-
-```
+Given its simplicity and flexibility a Naive Bayes classifier will be used as baseline for this project. The preprocess was set to a minimum in order to measure the impact it might have on the final output. The engine used for this algorithm does not accept missing data, therefore we did a 3nn imputation.
 
 
 
-## Workflow: Knn
 
 
-## Workflow: Rpart
-
-Most packages for tree-based models use the formula interface but do not encode the categorical predictors as dummy variables.
-
-```{r}
-tree_model <- 
-  decision_tree(min_n = 2) %>% 
-  set_engine("rpart") %>% 
-  set_mode("regression")
-
-tree_fit <- 
-  tree_model %>% 
-  fit(Sale_Price ~ Longitude + Latitude, data = ames_train)
-
-ames_test_small %>% 
-  select(Sale_Price) %>% 
-  bind_cols(predict(tree_fit, ames_test_small))
-```
 
 
-## Workflow: Random Forest
-
-```{r}
-rand_forest(trees = 1000, min_n = 5) %>% 
-  set_engine("ranger") %>% 
-  set_mode("regression") %>% 
-  translate()
 
 
-rand_forest(trees = 1000, min_n = 5) %>% 
-  set_engine("ranger", verbose = TRUE) %>% 
-  set_mode("regression")
-```
 
 
-## Workflow: Support Vector Machine
-
-As a counter example, a boosted tree created with the xgboost package requires the user to create dummy variables from factor predictors (since xgboost::xgb.train() will not). This requirement is embedded into the model specification object and a workflow using xgboost will create the indicator columns for this engine.
 
 
-## Workflow: Neural Network
+
+
 
 
 ```{r}
 
-nnn_rec <- 
-  formula_rec %>% 
-  step_log(duration) %>% 
-  step_normalize(all_numeric()) %>% 
-  prep(training = balanced_data, retain = TRUE)
+# location <- list(
+#   longitude = Sale_Price ~ Longitude,
+#   latitude = Sale_Price ~ Latitude,
+#   coords = Sale_Price ~ Longitude + Latitude,
+#   neighborhood = Sale_Price ~ Neighborhood
+# )
+# 
+# library(workflowsets)
+# location_models <- workflow_set(preproc = location, models = list(lm = lm_model))
+# 
+# location_models <-
+#    location_models %>%
+#    mutate(fit = map(info, ~ fit(.x$workflow[[1]], ames_train)))
 
 ```
 
-
-```{r}
-set.seed(57974)
-nnet_fit <-
-  mlp(epochs = 100, hidden_units = 5, dropout = 0.1) %>%
-  set_mode("classification") %>% 
-  # Also set engine-specific `verbose` argument to prevent logging the results: 
-  set_engine("keras", verbose = 0) %>%
-  fit(bought ~ ., data = bake(nnn_rec, new_data = NULL))
-
-nnet_fit
-```
-
-In parsnip, the predict() function can be used to characterize performance on the validation set. Since parsnip always produces tibble outputs, these can just be column bound to the original data:
-
-https://www.tidymodels.org/learn/models/parsnip-nnet/
 
 
 

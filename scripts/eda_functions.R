@@ -76,7 +76,7 @@ eda_continuous <- function(data, x, t = "bought") {
   
   summary <- data %>% select(all_of(x)) %>% summary()
   
-  grid <- grid.arrange(qqplot, boxplot,tableGrob(summary), density,
+  grid <- arrangeGrob(qqplot, boxplot,tableGrob(summary), density,
                layout_matrix = layout)  
   
   return(grid)
@@ -138,7 +138,7 @@ eda_discrete <- function(data, x, t = "bought") {
 
   summary <- data %>% select(all_of(x)) %>% summary()
 
-  grid <- grid.arrange(qqplot, boxplot,tableGrob(summary), histogram, freq_plot,
+  grid <- arrangeGrob(qqplot, boxplot,tableGrob(summary), histogram, freq_plot,
                layout_matrix = layout)
   
   return(grid)
@@ -163,7 +163,7 @@ eda_categorical <- function(data, x, t = "bought") {
     c(1,2),
     c(3,3)
   )
-  
+
   freq_plot <- ggplot(data, aes(x = .data[[x]])) +
     geom_bar(fill="darkblue", color="black") +
     theme_masterDS() +
@@ -172,8 +172,8 @@ eda_categorical <- function(data, x, t = "bought") {
       y = "",
       title = "Frequency"
     )
-  
-  freq_plot_compare <- ggplot(data, aes( x = .data[[x]], fill = as.factor(.data[[t]]) )) +
+
+  freq_plot_compare <- ggplot(data, aes( x = .data[[x]], fill = .data[[t]] )) +
     geom_bar() +
     theme_masterDS() +
     labs(
@@ -181,13 +181,13 @@ eda_categorical <- function(data, x, t = "bought") {
       y = "",
       title = "Frequency bought vs no bought"
     )
-
+  
 
   summary <- data %>% select(all_of(x)) %>% summary()
 
-  grid <- grid.arrange(freq_plot, tableGrob(summary), freq_plot_compare,
+  grid <- arrangeGrob(freq_plot, tableGrob(summary), freq_plot_compare,
                        layout_matrix = layout)
 
-  return(grid)
+  return( grid )
   
 }

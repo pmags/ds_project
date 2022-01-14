@@ -7,8 +7,8 @@ library(tidyverse)
 
 # import and prepare data
 # import data
-unbalanced_data <- read_csv("./data/train_full.csv") %>% select(-...1, -session_id)
-balanced_data <- read_csv("./data/train_balanced.csv") %>% select(-...1, -session_id)
+unbalanced_data <- read_csv("./data/train_full.csv") %>% dplyr::select(-...1, -session_id)
+balanced_data <- read_csv("./data/train_balanced.csv") %>% dplyr::select(-...1, -session_id)
 
 ```
 
@@ -30,7 +30,7 @@ A number of key prepocess transformations are considered:
 The following transformations were indentified during the EDA stage:
 
 - Features *Device Group* and *Platform* showed a strong relationship between them. Given that *Platform* provides more information *Device Group will be removed*
-- Features starting with *"has_"* refere to milestones on customer journey, therefore the need to include all of them should be taken in consideration. We will use PCA to merge this into one feature and experimente between the use of them individual or together,
+- Features starting with *"has_"* refere to milestones on customer journey, therefore the need to include all of them should be taken in consideration. We will use PCA to merge this into one feature and experiment between the use of them individual or together,
 - *Duration* feature is Right Skewed and contains observations which lack business sense. To avoid any impact on the model, specially on ones more sensible to variance, it will be log transformed and observations above 24hours will be removed
 - Replace all *Missing values* on *country*, *browser_name* and *is_subscribed* using Nearest Neighbors imputation with a very a k of 3,
 - Reduce the number of observations of class country and browser_name by compressing smaller ones into a generic class named others. This will be done because some models do not manage very well the fact that some dummy variables only have one level
@@ -42,26 +42,30 @@ The following transformations were indentified during the EDA stage:
 
 # For balanced data and to be used generically for all models
 preprocess <- 
-  recipe( bought ~ . , data = balanced_data) %>% 
-  step_log(duration, view_qty, unique_qty, unique_browse_designer_qty) %>% 
-  step_filter(duration > 60 * 60 * 24) %>% 
-  step_impute_knn(all_predictors(), neighbors = 3) %>% 
-  step_pca(starts_with("has_")) %>% 
-  step_other(country, treshdold = 0.01) %>% 
-  step_other(browser_name, treshold = 0.01) %>% 
-  step_mutate_at(starts_with("unique_"), fn = ~ ./view_qty) %>% 
-  step_mutate(is_bounce = ifelse(view_qty == 1, 1, 0))  
+  recipe(bought ~ . , data = balanced_data) %>%
+  step_ratio(starts_with("unique_"), denom = denom_vars(view_qty)) %>% 
+  step_rm(device_group, unique_product_qty, unique_browse_designer_qty, 
+          unique_browse_category_qty) %>% 
+  step_other(country, browser_name, threshold = 0.05) %>%
+  step_mutate(is_bounce = ifelse(view_qty == 1, 1, 0)) %>%
+  step_log(view_qty) %>%
+  step_filter(duration < 60 * 60 * 24) %>%
+  step_string2factor(all_nominal_predictors()) %>% 
+  step_impute_knn(all_predictors(), neighbors = 3) %>%
+  step_pca(starts_with("has_"), treshold = 0.8) %>% 
+  step_corr(all_numeric_predictors(), threshold = .5)
 
 preprocess_logit_nn <- 
   preprocess %>% 
-  step_dummy(all_nominal_predictors()) %>% 
-  step_scale(all_numeric_predictors())
+  step_scale(all_numeric_predictors()) %>% 
+  step_dummy(all_nominal_predictors()) 
+  
 
 preprocess_mlp_svm <- 
   preprocess %>% 
-  step_dummy(all_nominal_predictors()) %>% 
   step_normalize(all_numeric_predictors()) %>% 
-  step_scale(all_numeric_predictors())
+  step_scale(all_numeric_predictors()) %>% 
+  step_dummy(all_nominal_predictors()) 
 
 ```
 
@@ -84,3 +88,25 @@ tidy(preprocess_logit_nn)
 tidy(preprocess_mlp_svm)
 
 ``` 
+
+
+```{r}
+t <-  recipe(bought ~ . , data = balanced_data) %>%
+  #step_mutate_at(starts_with("unique_"), fn = ~ ifelse(view_qty == 0, 0, ./view_qty)) %>%
+  step_ratio(starts_with("unique_"), denom = denom_vars(view_qty)) %>% 
+  step_rm(device_group, unique_product_qty, unique_browse_designer_qty, 
+          unique_browse_category_qty) %>% 
+  step_other(country, browser_name, threshold = 0.05) %>%
+  step_mutate(is_bounce = ifelse(view_qty == 1, 1, 0)) %>%
+  step_log(view_qty) %>%
+  step_filter(duration < 60 * 60 * 24) %>%
+  step_string2factor(all_nominal_predictors()) %>% 
+  step_impute_knn(all_predictors(), neighbors = 3) %>%
+  step_pca(starts_with("has_")) %>% 
+  step_corr(all_numeric_predictors(), threshold = .5) %>% 
+  step_scale(all_numeric_predictors()) %>% 
+  step_dummy(all_nominal_predictors()) %>% 
+  prep() %>% 
+  bake(new_data = NULL)
+
+```
