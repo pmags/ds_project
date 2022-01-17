@@ -1,18 +1,22 @@
 # Data transformations
 
-```{r libraries and data, message=TRUE, warning=FALSE}
+```{r , message=TRUE, warning=FALSE}
 # improt libraries
 library(tidymodels)
 library(tidyverse)
 
 # import and prepare data
 # import data
-unbalanced_data <- read_csv("./data/train_full.csv") %>% dplyr::select(-...1, -session_id)
-balanced_data <- read_csv("./data/train_balanced.csv") %>% dplyr::select(-...1, -session_id)
+unbalanced_data <- read_csv("./data/train_full.csv") %>% 
+  select(-...1, -session_id) %>% 
+  mutate(bought = as.factor(bought))
+balanced_data <- read_csv("./data/train_balanced.csv") %>% 
+  select(-...1, -session_id) %>% 
+  mutate(bought = as.factor(bought))
 
 ```
 
-The findings from the data exploration stage will be used to preprocess the data to be used for each model. Each model requires a set of specific transformation and each algorithm treats imputs differently (eg: Nearest Neigbors are sensible to scale, while naives bayes is not) so the pre process should be consider on a model experiment base.
+The findings from the data exploration stage will be used to preprocess the data to be used for each model. Each model requires a set of specific transformation and each algorithm treats inputs differently (eg: Nearest Neigbors are sensible to scale, while naives bayes is not) so the pre process should be consider on a model experiment base.
 
 Post-processing and model definition will be done on the next stage.
 
@@ -27,16 +31,17 @@ A number of key prepocess transformations are considered:
 
 ## Summary of transformation steps identified during EDA
 
-The following transformations were indentified during the EDA stage:
+The following transformations were identified during the EDA stage:
 
 - Features *Device Group* and *Platform* showed a strong relationship between them. Given that *Platform* provides more information *Device Group will be removed*
-- Features starting with *"has_"* refere to milestones on customer journey, therefore the need to include all of them should be taken in consideration. We will use PCA to merge this into one feature and experiment between the use of them individual or together,
+- Features starting with *"has_"* refers to milestones on customer journey, therefore the need to include all of them should be taken in consideration. We will use PCA to merge this into one feature and experiment between the use of them individual or together,
 - *Duration* feature is Right Skewed and contains observations which lack business sense. To avoid any impact on the model, specially on ones more sensible to variance, it will be log transformed and observations above 24hours will be removed
 - Replace all *Missing values* on *country*, *browser_name* and *is_subscribed* using Nearest Neighbors imputation with a very a k of 3,
-- Reduce the number of observations of class country and browser_name by compressing smaller ones into a generic class named others. This will be done because some models do not manage very well the fact that some dummy variables only have one level
+- Reduce the number of observations of class country and browser_name by compressing smaller ones into a generic class named others. This will be done because some models do not manage very well the fact that some dummy variables only have one level,
+- Reduce the number of levels of Segment by re factoring into a class of has or not segment, 
 - Specially for the use of Neural Networks and Supervisor Vector Machines, numeric variables will be normalized and scaled
-- Converts unique_browse_designer_qty, unique_product_qty, unique_browse_designer_qty, unique_browse_category_qty to ratios over Total Pageviews (view_qty) which provides information on the ammount of page views actually related to that category,
-- Adds new variable to classify a session as bounce. A bounce is defined commonly as a session with a single page view (or one hit)
+- Converts *unique_browse_designer_qty, unique_product_qty, unique_browse_designer_qty, unique_browse_category_qty* to ratios over Total Pageviews (view_qty) which provides information on the amount of page views actually related to that category and subsequently log transform,
+- Sessions with duration lower than 2 seconds and a total page view of 0 or 1 will be removed
 
 ```{r}
 
@@ -46,10 +51,14 @@ preprocess <-
   step_ratio(starts_with("unique_"), denom = denom_vars(view_qty)) %>% 
   step_rm(device_group, unique_product_qty, unique_browse_designer_qty, 
           unique_browse_category_qty) %>% 
-  step_other(country, browser_name, threshold = 0.05) %>%
-  step_mutate(is_bounce = ifelse(view_qty == 1, 1, 0)) %>%
+  step_other(country, browser_name, threshold = 0.05) %>% 
   step_log(view_qty) %>%
-  step_filter(duration < 60 * 60 * 24) %>%
+  step_filter(
+    duration < 60 * 60 * 24,
+    !((view_qty <= 1) & (duration <= 2))
+    ) %>%
+  step_mutate(is_segment = ifelse(segment == "without_segment", 0, 1)) %>% 
+  step_rm(segment) %>% 
   step_string2factor(all_nominal_predictors()) %>% 
   step_impute_knn(all_predictors(), neighbors = 3) %>%
   step_pca(starts_with("has_"), treshold = 0.8) %>% 
@@ -91,23 +100,35 @@ tidy(preprocess_mlp_svm)
 ``` 
 
 
-```{r}
-t <-  recipe(bought ~ . , data = balanced_data) %>%
-  #step_mutate_at(starts_with("unique_"), fn = ~ ifelse(view_qty == 0, 0, ./view_qty)) %>%
+```{r preprocess workflow}
+
+preprocess_data <-  recipe(bought ~ . , data = balanced_data) %>%
   step_ratio(starts_with("unique_"), denom = denom_vars(view_qty)) %>% 
   step_rm(device_group, unique_product_qty, unique_browse_designer_qty, 
           unique_browse_category_qty) %>% 
   step_other(country, browser_name, threshold = 0.05) %>%
   step_mutate(is_bounce = ifelse(view_qty == 1, 1, 0)) %>%
   step_log(view_qty) %>%
-  step_filter(duration < 60 * 60 * 24) %>%
+  step_filter(duration < 60 * 60 * 24,
+    !((view_qty <= 1) & (duration <= 2))) %>%
+  step_mutate(is_segment = ifelse(segment == "without_segment", 0, 1)) %>% 
+  step_rm(segment) %>% 
   step_string2factor(all_nominal_predictors()) %>% 
   step_impute_knn(all_predictors(), neighbors = 3) %>%
-  step_pca(starts_with("has_")) %>% 
+  step_pca(starts_with("has_"), num_comp = 1) %>% 
   step_corr(all_numeric_predictors(), threshold = .5) %>% 
+  step_normalize(all_numeric_predictors()) %>% 
   step_scale(all_numeric_predictors()) %>% 
   step_dummy(all_nominal_predictors()) %>% 
+  step_zv(all_predictors()) %>% 
   prep() %>% 
-  bake(new_data = NULL)
+  bake(new_data = NULL) 
 
 ```
+
+```{r}
+
+summary(preprocess_data)
+
+```
+

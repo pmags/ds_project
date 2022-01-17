@@ -5,32 +5,35 @@ output: html_notebook
 
 ## Knn
 
-```{r libraries}
+```{r }
 # libraries
 library(tidyverse)
 library(tidymodels)
-library(keras)
 library(workflowsets)
 library(discrim)
 library(factoextra)
 
 ```
 
-```{r data preprocess, message=TRUE, warning=FALSE, include=FALSE}
+```{r , message=TRUE, warning=FALSE, include=FALSE}
 # import data and prepocess
 
 # import and prepare data
 # import data
 unbalanced_data <- read_csv("./data/train_full.csv") %>% 
-  select(-...1, -session_id) %>% 
-  mutate(bought = as.factor(bought))
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
 balanced_data <- read_csv("./data/train_balanced.csv") %>% 
-  select(-...1, -session_id) %>% 
-  mutate(bought = as.factor(bought))
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
+
+# script with visual functions
+source("scripts/eda_functions.r")
+
 
 ```
 
-```{r resampling folds, message=TRUE, warning=FALSE}
+```{r , message=TRUE, warning=FALSE}
 
 # cv 10 folds
 
@@ -59,20 +62,23 @@ preprocess <-
   step_ratio(starts_with("unique_"), denom = denom_vars(view_qty)) %>% 
   step_rm(device_group, unique_product_qty, unique_browse_designer_qty, 
           unique_browse_category_qty) %>% 
-  step_other(country, browser_name, threshold = 0.05) %>%
-  step_mutate(is_bounce = ifelse(view_qty == 1, 1, 0)) %>%
+  step_other(country, browser_name, threshold = 0.05) %>% 
   step_log(view_qty) %>%
-  step_filter(duration < 60 * 60 * 24) %>%
+  step_filter(
+    duration < 60 * 60 * 24,
+    !((view_qty <= 1) & (duration <= 2))
+    ) %>%
   step_string2factor(all_nominal_predictors()) %>% 
   step_impute_knn(all_predictors(), neighbors = 3) %>%
   step_pca(starts_with("has_"), num_comp = 1) %>% 
-  step_corr(all_numeric_predictors(), threshold = .5)
+  step_corr(all_numeric_predictors(), threshold = .5) 
+  
   
 
 preprocess_logit_nn <- 
   preprocess %>% 
-  step_dummy(all_nominal_predictors()) %>% 
-  step_scale(all_numeric_predictors())
+  step_scale(all_numeric_predictors()) %>% 
+  step_dummy(all_nominal_predictors()) 
 
 # 3, Buildworkflow
 kknn_wflow <- 
@@ -91,4 +97,62 @@ kknn_fit <-
 #5. Performance metrics over the validation set
 collect_metrics(kknn_fit)
 
+```
+
+```{r }
+
+kknn_fit %>% 
+  collect_predictions() %>% 
+  group_by(id) %>% 
+  roc_curve(bought, .pred_0) %>% 
+  ggplot(aes(1- specificity, sensitivity, color = id)) +
+  geom_abline(lty = 3, color = "gray80", size = 1) +
+  geom_path(show.legend = FALSE, alpha = 0.6, size = 1) +
+  theme_masterDS() +
+  coord_equal()
+
+```
+
+### Fitting multiple models using grid search
+
+```{r }
+
+#1. list model to inject into workflow
+kknn_grid<-
+  nearest_neighbor(neighbors = tune()) %>%
+  set_engine('kknn') %>%
+  set_mode('classification')
+
+
+models_flow <- 
+  workflow_set(
+    preproc = list(recipe = preprocess_logit_nn),
+    models = list(kknn_grid),
+    cross = TRUE 
+    )
+
+kknn_wf_fit <- 
+  models_flow %>%
+  workflow_map(
+    fn ="tune_grid",
+    resamples = folds,
+    grid = 10 ,
+    metrics = metric_set(yardstick::roc_auc, yardstick::accuracy, yardstick::sens),
+    verbose = TRUE
+    ) 
+
+```
+
+```{r}
+
+autoplot(kknn_wf_fit) +
+  theme_masterDS()
+
+```
+
+```{r}
+# export files
+
+save(kknn_fit, file = "_models/kknn_fit.RData")
+save(kknn_wf_fit, file = "_models/kknn_wf_grid.RData")
 ```

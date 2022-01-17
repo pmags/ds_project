@@ -1,4 +1,4 @@
-delete_merged_file: true
+delete_merged_file: false
 before_chapter_script: ["scripts/pre_render.R"]
 language:
   ui:
@@ -9,7 +9,20 @@ rmd_files:
     "01-business_understanding.Rmd",
     "02-Data_aquisition_and_understanding.Rmd",
     "02.1-Customer_behavior.Rmd",
-    "02.2-customer_journey_related.Rmd"]
+    "02.2-customer_journey_related.Rmd",
+    "02.3-Client_Segment_related_Features.Rmd",
+    "02.4-Device_and_Geography_related_Features.Rmd",
+    "03-data_transformations.Rmd",
+    "04-modeling.Rmd",
+    "04.1-Naive_Bayes_Classifier.Rmd",
+    "04.2-logistic_regression.Rmd",
+    "04.3-naive_bayes.Rmd",
+    "04.4-decision_tree.Rmd",
+    "04.5-random_forest.Rmd",
+    "04.6-nn.Rmd",
+    "04.7-svm.Rmd",
+    "05-evaluation_conclusion.Rmd"
+    ]
   latex: [
     "index.Rmd", 
     "01-business_understanding.Rmd",

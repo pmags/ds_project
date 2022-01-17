@@ -1,90 +1,143 @@
 ## Device and Geography related Features
 
+```{r, message=FALSE, warning=FALSE, include=FALSE}
 
-*browser_name:* categorical variable representing the browser used as source for each session. From the available information from the unbalanced data we have 52 different browsers present on this dataset. 
+library(tidyverse)
+library(corrplot)
+library(car)
+library(tidymodels)
+library(mice)
+library(forecast)
 
-```{r}
+# script with visual functions
+source("scripts/eda_functions.r")
+
+# import data
+unbalanced_data <- read_csv("./data/train_full.csv") %>% select(-...1)
+balanced_data <- read_csv("./data/train_balanced.csv") %>% select(-...1)
+
+# convert categorical and dummy to factor variable
+unbalanced_data <- unbalanced_data %>% 
+  mutate_at(vars(
+    !contains(c("duration", "view_qty", "unique_product_qty",
+                "unique_browse_designer_qty", "unique_browse_category_qty"))
+    ), ~ as.factor(.))
+
+balanced_data <- balanced_data %>% 
+  mutate_at(vars(
+    !contains(c("duration", "view_qty", "unique_product_qty",
+                "unique_browse_designer_qty", "unique_browse_category_qty"))
+    ), ~ as.factor(.))
+
+```
+
+```{r unbalanced data eda plots journey, include=FALSE, include=FALSE}
+
+continuous <- unbalanced_data %>% 
+  select(duration) %>% 
+  names() %>% 
+  set_names()
+ 
+discrete <- unbalanced_data %>% 
+  select(view_qty, unique_product_qty, unique_browse_designer_qty) %>% 
+  names() %>% 
+  set_names()
+
+categorical <- unbalanced_data %>% 
+  select(-duration, -view_qty, -unique_product_qty, 
+         -unique_browse_designer_qty, -session_id, -bought) %>% 
+  names() %>% 
+  set_names()
+
+eda_cont <- map(continuous, ~eda_continuous(unbalanced_data, .x))
+
+eda_dis <- map(discrete, ~eda_discrete(unbalanced_data, .x))
+
+eda_cat <- map(categorical, ~eda_categorical(unbalanced_data, .x))
+
+eda_unbalanced <- c(eda_cont, eda_dis, eda_cat)
+rm(eda_cont,eda_dis, eda_cat)
+
+```
+
+```{r balanced data eda plots journey, balanced data, include=FALSE, include=FALSE}
+
+continuous <- balanced_data %>% 
+  select(duration) %>% 
+  names() %>% 
+  set_names()
+
+discrete <- balanced_data %>% 
+  select(view_qty, unique_product_qty, unique_browse_designer_qty) %>% 
+  names() %>% 
+  set_names()
+
+categorical <- balanced_data %>% 
+  select(-duration, -view_qty, -unique_product_qty, 
+         -unique_browse_designer_qty, -session_id, -bought) %>% 
+  names() %>% 
+  set_names()
+
+eda_cont <- map(continuous, ~eda_continuous(balanced_data, .x))
+
+eda_dis <- map(discrete, ~eda_discrete(balanced_data, .x))
+
+eda_cat <- map(categorical, ~eda_categorical(balanced_data, .x))
+
+eda_balanced <- c(eda_cont, eda_dis, eda_cat)
+rm(eda_cont,eda_dis, eda_cat)
+
+```
+
+```{r correlation plot journey, correlation plot, include=FALSE}
+
+M <- cor(unbalanced_data %>% 
+           select_if(is.numeric))
+corrplot(M, type = "upper", method = "number", diag = FALSE, 
+         order = 'hclust', addrect = 2)
+
+```
+
+```{r Chi-squared hipothesis test journey, message=FALSE, warning=FALSE, include=FALSE}
+
+unbalanced_chi <- unbalanced_data %>% 
+  select_if(is.factor) %>% 
+  map(function(x) chisq.test(x, unbalanced_data$bought))
+
+balanced_chi <- balanced_data %>% 
+  select_if(is.factor) %>% 
+  map(function(x) chisq.test(x, balanced_data$bought))
+
+unbalanced_chi_numeric <- unbalanced_data %>% 
+  select_if(is.numeric) %>% 
+  map(function(x) chisq.test(x, as.factor(unbalanced_data$bought)))
+
+balanced_chi_numeric <- balanced_data %>% 
+  select_if(is.numeric) %>% 
+  map(function(x) chisq.test(x, as.factor(balanced_data$bought)))
+
+```
+
+
+### Browser name
+
+Categorical variable representing the browser used as source for each session. From the available information from the unbalanced data we have 52 different browsers present on this dataset. Most of this levels have only a small number of sessions and will be colapsed during the preprocess
+
+```{r echo=FALSE}
 
 unique(unbalanced_data$browser_name)
 
 ```
 
-*country:* categorical variable containing the country of origin for each session.
 
-```{r}
-
-unique(unbalanced_data$country)
-
-```
-
-### Device Group
-
-```{r}
-
-grid.draw(eda_unbalanced$device_group)
-
-```
-
-```{r}
-
-unbalanced_chi["device_group"]
-
-```
-
-
-```{r}
-
-grid.draw(eda_balanced$device_group)
-
-```
-
-```{r}
-
-balanced_chi["device_group"]
-
-```
-
-The graphical analysis of the data tells us that the majority of sessions have been done using Mobile Web platform, although, when taking into account the actual conversion it suggests that a higher conversion rate exists on application or desktop than compared with Majority class.
-
-This same conclusions can be extracted from the balanced dataset although the differences are not as evident. The $\chi ^2$ tests for both dataset leads into refusing the null hypothesis so it suggests that a degree of relation ship exists between both variables.
-
-
-```{r}
-
-ggplot(unbalanced_data, aes(x = device_group, fill = plaform)) + 
-  geom_bar(stat = "count") + 
-  theme_masterDS() +
-    labs(
-      x = "",
-      y = "",
-      title = "Device Group x Platform"
-    )
-
-```
-
-This dataset includes a variable named platform that suggest that most sessions were done using website. At first glance it seems counter intuitive that most access be done through website and Mobile web but the above plot show that in reality most users opt to access using the mobile version of the website instead of the app. 
-
-The $\chi ^2$ test between this 2 variables confirms what we could already suspect from visual inspection, both variable seem to have a degree of relation leading to not refuting the null hiopothesis of dependeny. This implies interaction (or sinergy on marketing terms) between features which can impact how modeling efforts specially for models dependent on linear transformations (least squares regression) as is the case of logit.
-
-During the modeling step one might consider removing one of the variables or generate a new compound feature.
-
-```{r}
-
-chisq.test(as.character(unbalanced_data$plaform), as.character(unbalanced_data$device_group))
-
-```
-
-### Browser name
-
-
-```{r}
+```{r echo=FALSE}
 
 grid.draw(eda_unbalanced$browser_name)
 
 ```
 
 
-```{r}
+```{r echo=FALSE}
 
 grid.draw(eda_balanced$browser_name)
 
@@ -92,58 +145,52 @@ grid.draw(eda_balanced$browser_name)
 
 ### Country
 
+Categorical variable containing the country of origin for each session.Most of this levels have only a small number of sessions and will be colapsed during the preprocess
 
-```{r}
+```{r echo=FALSE}
+
+unique(unbalanced_data$country)
+
+```
+
+
+```{r echo=FALSE}
 
 grid.draw(eda_unbalanced$country)
 
 ```
 
 
-```{r}
+```{r echo=FALSE}
 
 grid.draw(eda_balanced$country)
 
 ```
 
+### Dealing with Missing Data
 
-remove rows withna
+Somo missing data was identified and will be imputed using statistical imputation (refer to customer type analysis)
 
-```{r}
-correct_data <- select(unbalanced_data, -session_id)
-summary(correct_data)
-
-rec <- recipe(bought ~ ., data = correct_data)
-
-ratio_recipe <- rec %>% 
-  step_impute_knn(all_predictors(), neighbors = 3)
-ratio_recipe2 <- prep(ratio_recipe, training = unbalanced_data, verbose = TRUE, retain = TRUE)
-imputed <- bake(ratio_recipe2,new_data = NULL)
-summary(imputed)
-
-```
-
-## Assess data quality & transformations to be made
-
-```{r}
+```{r echo=TRUE}
 md.pattern(unbalanced_data, rotate.names = TRUE)
 ```
 
-```{r}
+```{r echo=TRUE}
 md.pattern(balanced_data,rotate.names = TRUE)
 ```
 
+
+
 ## Summary of findings
 
-- REmove sessions with duration lower than 2secons and 10 to 1 page view
-- Log transform duration
-- Convert to ratio and log transform  after
-- For id should be againts unique product
-- Device group and platform have a strong relationship and should be taken into consideration during transformations.
-- Features conserning journey can have strong intereactions between then which should be taken into consideration during the model
-- The graphical analysis already provides a important insight given the business objectives. From the unbalanced data available we can conclude that around of 46% shopping carts are lost on that session. That raises a question of how are this recovered (example on a next session) or if this means that all this sales are lost right at the end of the sales funnel.
-- Log transform duration
-- Log transform view_qty and remove below or after tukeys value
-- Log transform unique_qty remove below or after tukeys value
-- Log transform nique browse designer quantity remove below or after tukeys value
-- remove rows with na country
+- Features *Device Group* and *Platform* showed a strong relationship between them. Given that *Platform* provides more information *Device Group will be removed*
+- Features starting with *"has_"* refere to milestones on customer journey, therefore the need to include all of them should be taken in consideration. We will use PCA to merge this into one feature and experiment between the use of them individual or together,
+- *Duration* feature is Right Skewed and contains observations which lack business sense. To avoid any impact on the model, specially on ones more sensible to variance, it will be log transformed and observations above 24hours will be removed
+- Replace all *Missing values* on *country*, *browser_name* and *is_subscribed* using Nearest Neighbors imputation with a very a k of 3,
+- Reduce the number of observations of class country and browser_name by compressing smaller ones into a generic class named others. This will be done because some models do not manage very well the fact that some dummy variables only have one level,
+- Reduce the number of levels of Segment by re factoring into a class of has or not segment, 
+- Specially for the use of Neural Networks and Supervisor Vector Machines, numeric variables will be normalized and scaled
+- Converts *unique_browse_designer_qty, unique_product_qty, unique_browse_designer_qty, unique_browse_category_qty* to ratios over Total Pageviews (view_qty) which provides information on the amount of page views actually related to that category and subsquently log transform,
+- Sessions with duration lower than 2 seconds and a total page view of 0 or 1 will be removed,
+- *The graphical analysis already provides a important insight given the business objectives. From the unbalanced data available we can conclude that around of 46% shopping carts are lost on that session. That raises a question of how are this recovered (example on a next session) or if this means that all this sales are lost right at the end of the sales funnel*.
+

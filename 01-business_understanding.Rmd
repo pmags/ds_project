@@ -59,7 +59,7 @@ There aren't any specific needs for hardware or data infrastructure. Data will b
 
 Based on the available information the project is **binary classification problem with a focus on inference.**. The company is looking to identify session variables which signal users which will convert or not in order to redefine marketing strategies and approaches. There are only to available states, either the user "bought" or it didn't. 
 
-No information is provide regarding the expected use of this project. Therefore it will be assumed through this project that the main stakeholders is the marketing team and are human. Therefore, a bigger focus on the modeling process and coefficients is needed and is considered part of the deliver. The assumption is relevant since it impacts the final conclusions and the final model chosen. Given 2 similar models with sensible the same target metric the more interpretable one will be choosen.
+No information is provide regarding the expected use of this project. Therefore it will be assumed through this project that the main stakeholders is the marketing team and are human. Therefore, a bigger focus on the modeling process and coefficients is needed and is considered part of the deliver. The assumption is relevant since it impacts the final conclusions and the final model chosen. Given 2 similar models with sensible the same target metric the more interpretable one will be chosen.
 
 :::{.title}
 **Target metrics**
@@ -82,15 +82,15 @@ During this project the following questions will be addressed
 
 ## Project Plan
 
-Due to time restrictions the present project follows a hibryd approach of CRISP-DM and TDSF and is organized in the following stages:
+Due to time restrictions the present project follows a hybrid approach of CRISP-DM and TDSF and is organized in the following stages:
 
-Stage 1 - Undertand Business and Its environment
+Stage 1 - Understand Business and Its environment
 
 Stage 2 - Understand and explore data: study of distribution and relationship among available data
 
-Stage 3 - Data preparation for modeing: Preprocessing workflow
+Stage 3 - Data preparation for modeling: Preprocessing workflow
 
-Stage 4 - Modeling: Model definition, initial experiments and hyperparamete tunning
+Stage 4 - Modeling: Model definition, initial experiments and hyperparameter tunning
 
 Stage 5 - Delivery: Conclusions of the project
 

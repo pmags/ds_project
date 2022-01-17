@@ -112,7 +112,8 @@ eda_discrete <- function(data, x, t = "bought") {
       x = "",
       y = "",
       title = "Histogram"
-    )
+    ) +
+    theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1))
   
   boxplot <- ggplot(data, aes(x = 1, y = .data[[x]])) +
     geom_boxplot() +
@@ -171,7 +172,8 @@ eda_categorical <- function(data, x, t = "bought") {
       x = "",
       y = "",
       title = "Frequency"
-    )
+    ) +
+    theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1))
 
   freq_plot_compare <- ggplot(data, aes( x = .data[[x]], fill = .data[[t]] )) +
     geom_bar() +

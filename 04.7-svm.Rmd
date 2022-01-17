@@ -5,7 +5,7 @@ output: html_notebook
 
 ## Support Vector Machine
 
-```{r libraries, include=FALSE}
+```{r , include=FALSE}
 # libraries
 library(tidyverse)
 library(tidymodels)
@@ -17,21 +17,25 @@ doParallel::registerDoParallel()
 
 ```
 
-```{r data preprocess, message=TRUE, warning=FALSE, include=FALSE}
+```{r , message=TRUE, warning=FALSE, include=FALSE}
 # import data and prepocess
 
 # import and prepare data
 # import data
 unbalanced_data <- read_csv("./data/train_full.csv") %>% 
-  select(-...1, -session_id) %>% 
-  mutate(bought = as.factor(bought))
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
 balanced_data <- read_csv("./data/train_balanced.csv") %>% 
-  select(-...1, -session_id) %>% 
-  mutate(bought = as.factor(bought))
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
+
+# script with visual functions
+source("scripts/eda_functions.r")
+
 
 ```
 
-```{r resampling folds, message=TRUE, warning=FALSE, include=FALSE}
+```{r, message=TRUE, warning=FALSE, include=FALSE}
 
 # cv 10 folds
 
@@ -47,7 +51,7 @@ folds <- vfold_cv(balanced_data, v = 10)
 
 A Linear Kernel with default parameters will be used as the basis for
 
-```{r linear kernel}
+```{r }
 # 1. specify the model
 svm_linear <-
   svm_linear(cost = 0.5) %>% 
@@ -61,14 +65,17 @@ preprocess <-
   step_ratio(starts_with("unique_"), denom = denom_vars(view_qty)) %>% 
   step_rm(device_group, unique_product_qty, unique_browse_designer_qty, 
           unique_browse_category_qty) %>% 
-  step_other(country, browser_name, threshold = 0.05) %>%
-  step_mutate(is_bounce = ifelse(view_qty == 1, 1, 0)) %>%
+  step_other(country, browser_name, threshold = 0.05) %>% 
   step_log(view_qty) %>%
-  step_filter(duration < 60 * 60 * 24) %>%
+  step_filter(
+    duration < 60 * 60 * 24,
+    !((view_qty <= 1) & (duration <= 2))
+    ) %>%
   step_string2factor(all_nominal_predictors()) %>% 
   step_impute_knn(all_predictors(), neighbors = 3) %>%
   step_pca(starts_with("has_"), num_comp = 1) %>% 
   step_corr(all_numeric_predictors(), threshold = .5) 
+  
 
 preprocess_mlp_svm <- 
   preprocess %>% 
@@ -91,7 +98,7 @@ svm_linear_fit <-
   fit_resamples(
     resamples = folds, 
     verbose = TRUE, 
-    metrics = metric_set(roc_auc, accuracy, sens),
+    metrics = metric_set(yardstick::roc_auc, yardstick::accuracy, yardstick::sens,yardstick::specificity),
     control = fit_control)
 
 
@@ -106,7 +113,7 @@ conf_mat_resampled(svm_linear_fit)
 
 ```
 
-```{r linear kernel roc curve}
+```{r }
 
 svm_linear_fit %>% 
   collect_predictions() %>% 
@@ -124,11 +131,11 @@ svm_linear_fit %>%
 
 ### Fitting multiple models
 
-```{r setup workflow svm}
+```{r }
 
 #1. list model to inject into workflow
 svm_linear <-
-  svm_rbf(cost = 0.5) %>% 
+  svm_rbf(cost = tune()) %>% 
   set_engine("kernlab") %>% 
   set_mode("classification")
 
@@ -145,7 +152,7 @@ svm_rbf_kernlab_spec <-
 models_flow <- 
   workflow_set(
     preproc = list(recipe = preprocess_mlp_svm),
-    models = list(svm_ploy = svm_poly_kernlab_spec, svm_rbf = svm_rbf_kernlab_spec),
+    models = list(svm_ploy = svm_poly_kernlab_spec, svm_rbf = svm_rbf_kernlab_spec, linear = svm_linear),
     cross = TRUE 
     )
 
@@ -153,12 +160,13 @@ models_flow <-
 
 ```{r}
 
-wf_fit <- 
+svm_wf_fit <- 
   models_flow %>%
   workflow_map(
     fn ="tune_grid",
     resamples = folds,
-    metrics = metric_set(roc_auc, accuracy, sens),
+    grid = 5,
+    metrics = metric_set(yardstick::roc_auc, yardstick::accuracy, yardstick::sens, yardstick::spec),
     verbose = TRUE
     ) 
 
@@ -166,36 +174,37 @@ wf_fit <-
 
 ```{r}
 
-autoplot(wf_fit) +
+autoplot(svm_wf_fit) +
   theme_masterDS()
 
 ```
 
 ```{r}
-autoplot(wf_fit, select_best = TRUE) +
+autoplot(svm_wf_fit, select_best = TRUE) +
   theme_masterDS()
 ```
 
 ```{r}
-rank_results(wf_fit, rank_metric = "sens", select_best = TRUE) %>% 
-   select(rank, mean, model, wflow_id, .config)
-```
+rank_results(svm_wf_fit, rank_metric = "sens", select_best = TRUE) 
 
-```{r}
-rank_results(wf_fit, rank_metric = "accuracy", select_best = TRUE) %>% 
-   select(rank, mean, model, wflow_id, .config)
 ```
 
 ```{r}
 
-autoplot(wf_fit, metric = "accuracy",id = "recipe_svm_ploy")
+rank_results(svm_wf_fit, rank_metric = "accuracy", select_best = TRUE) 
+
+```
+
+```{r}
+
+autoplot(svm_wf_fit, metric = "accuracy",id = "recipe_svm_ploy")
 
 ```
 
 
 ```{r}
 # export files
-save(wf_fit,file="_models/svm_wf_fit.RData")
+save(svm_wf_fit,file="_models/svm_wf_fit.RData")
 save(svm_linear_fit, file = "_models/svm_linear_fit.RData")
 ```
 

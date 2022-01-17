@@ -5,7 +5,7 @@ output: html_notebook
 
 ## Workflow: Random Forest
 
-```{r libraries}
+```{r }
 # libraries
 library(tidyverse)
 library(tidymodels)
@@ -16,21 +16,24 @@ library(factoextra)
 
 ```
 
-```{r data preprocess, message=TRUE, warning=FALSE, include=FALSE}
+```{r, message=TRUE, warning=FALSE, include=FALSE}
 # import data and prepocess
 
 # import and prepare data
 # import data
 unbalanced_data <- read_csv("./data/train_full.csv") %>% 
-  select(-...1, -session_id) %>% 
-  mutate(bought = as.factor(bought))
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
 balanced_data <- read_csv("./data/train_balanced.csv") %>% 
-  select(-...1, -session_id) %>% 
-  mutate(bought = as.factor(bought))
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
+# script with visual functions
+source("scripts/eda_functions.r")
+
 
 ```
 
-```{r resampling folds, message=TRUE, warning=FALSE}
+```{r , message=TRUE, warning=FALSE}
 
 # cv 10 folds
 
@@ -59,14 +62,17 @@ preprocess <-
   step_ratio(starts_with("unique_"), denom = denom_vars(view_qty)) %>% 
   step_rm(device_group, unique_product_qty, unique_browse_designer_qty, 
           unique_browse_category_qty) %>% 
-  step_other(country, browser_name, threshold = 0.05) %>%
-  step_mutate(is_bounce = ifelse(view_qty == 1, 1, 0)) %>%
+  step_other(country, browser_name, threshold = 0.05) %>% 
   step_log(view_qty) %>%
-  step_filter(duration < 60 * 60 * 24) %>%
+  step_filter(
+    duration < 60 * 60 * 24,
+    !((view_qty <= 1) & (duration <= 2))
+    ) %>%
   step_string2factor(all_nominal_predictors()) %>% 
   step_impute_knn(all_predictors(), neighbors = 3) %>%
   step_pca(starts_with("has_"), num_comp = 1) %>% 
-  step_corr(all_numeric_predictors(), threshold = .5)
+  step_corr(all_numeric_predictors(), threshold = .5) 
+  
   
 # 3, Buildworkflow
 forest_wflow <- 
@@ -78,11 +84,73 @@ forest_wflow <-
 fit_control <- control_resamples(save_pred = TRUE, save_workflow = TRUE)
 
 forest_fit <- 
-  tree_wflow %>% 
+  forest_wflow %>% 
   fit_resamples(folds, verbose = TRUE, control = fit_control)
 
 
 #5. Performance metrics over the validation set
 collect_metrics(forest_fit)
+
+
+```
+
+```{r }
+
+forest_fit %>% 
+  collect_predictions() %>% 
+  group_by(id) %>% 
+  roc_curve(bought, .pred_0) %>% 
+  ggplot(aes(1- specificity, sensitivity, color = id)) +
+  geom_abline(lty = 3, color = "gray80", size = 1) +
+  geom_path(show.legend = FALSE, alpha = 0.6, size = 1) +
+  theme_masterDS() +
+  coord_equal()
+
+```
+
+### Fitting multiple models using grid search
+
+```{r }
+
+#1. list model to inject into workflow
+rand_forest_grid <-
+  rand_forest(mtry = tune(), trees = tune(), min_n = tune()) %>%
+  set_engine('ranger') %>%
+  set_mode('classification')
+
+
+models_flow <- 
+  workflow_set(
+    preproc = list(recipe = preprocess),
+    models = list(rand_forest_grid),
+    cross = TRUE 
+    )
+
+forest_wf_fit <- 
+  models_flow %>%
+  workflow_map(
+    fn ="tune_grid",
+    resamples = folds,
+    grid = 10 ,
+    metrics = metric_set(yardstick::roc_auc, yardstick::accuracy, yardstick::sens),
+    verbose = TRUE
+    ) 
+
+```
+
+```{r}
+
+autoplot(forest_wf_fit) +
+  theme_masterDS()
+
+```
+
+
+
+```{r}
+# export files
+
+save(forest_fit, file = "_models/forest_fit.RData")
+save(forest_wf_fit, file = "_models/forest_wf_grif.RData")
 
 ```

@@ -36,7 +36,7 @@ balanced_data <- balanced_data %>%
 
 ```
 
-```{r unbalanced data eda plots, include=FALSE, include=FALSE}
+```{r, include=FALSE, include=FALSE}
 
 continuous <- unbalanced_data %>% 
   select(duration) %>% 
@@ -65,7 +65,7 @@ rm(eda_cont,eda_dis, eda_cat)
 
 ```
 
-```{r balanced data eda plots, balanced data, include=FALSE, include=FALSE}
+```{r balanced data eda plots journey, include=FALSE, include=FALSE}
 
 continuous <- balanced_data %>% 
   select(duration) %>% 
@@ -94,7 +94,7 @@ rm(eda_cont,eda_dis, eda_cat)
 
 ```
 
-```{r correlation plot, correlation plot, include=FALSE}
+```{r correlation plot journey, include=FALSE}
 
 M <- cor(unbalanced_data %>% 
            select_if(is.numeric))
@@ -103,7 +103,7 @@ corrplot(M, type = "upper", method = "number", diag = FALSE,
 
 ```
 
-```{r Chi-squared hipothesis test, message=FALSE, warning=FALSE, include=FALSE}
+```{r , message=FALSE, warning=FALSE, include=FALSE}
 
 unbalanced_chi <- unbalanced_data %>% 
   select_if(is.factor) %>% 
@@ -123,60 +123,91 @@ balanced_chi_numeric <- balanced_data %>%
 
 ```
 
+### Device Group
+
+Categorical variable with 3 levels each representing the device source for each session. `r  levels(unbalanced_data$device_group)`  
 
 
-*device group:* category variable with 3 levels each representing the device source for each session.  
+```{r echo=FALSE}
 
-```{r}
-unique(unbalanced_data$device_group)
+grid.draw(eda_unbalanced$device_group)
+
+```
+
+```{r echo=FALSE}
+
+unbalanced_chi["device_group"]
+
 ```
 
 
-*has_listing, has_used_search, has_recommendation, has_add_to_wishlist, has_add_to_bag:* are all boolean variables representing key milestones on business customer journey. They are TRUE/ 1 if a given session includes that step. 
+```{r echo=FALSE}
+
+grid.draw(eda_balanced$device_group)
+
+```
+
+```{r echo=FALSE}
+
+balanced_chi["device_group"]
+
+```
+
+The majority of sessions had origin on a Mobile Web Platform, nonetheless, depite the traffic, graphical analysis sugests that Mobile Appliction has in factr higher convertion rates.
+
+This same conclusions can be extracted from the balanced dataset although the differences are not as evident. The $\chi ^2$ tests for both dataset leads into refusing the null hypothesis so it suggests that a degree of relation ship exists between both variables.
 
 
+```{r echo=FALSE}
+
+ggplot(unbalanced_data, aes(x = device_group, fill = plaform)) + 
+  geom_bar(stat = "count") + 
+  theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Device Group x Platform"
+    )
+
+```
+
+This dataset includes a variable named platform that suggest that most sessions were done using website. At first glance it seems counter intuitive that most access be done through website and Mobile web but the above plot show that in reality most users opt to access using the mobile version of the website instead of the app. 
+
+The $\chi ^2$ test between this 2 variables confirms that both variable seem to have a degree of relation leading to not refuting the null hypothesis of dependency. This implies interaction (or synergy on marketing terms) between features which can impact how modeling efforts specially for models dependent on linear transformations (least squares regression) as is the case of logit.
+
+During the modeling step one might consider removing one of the variables or generate a new compound feature. The chi-test confirms the strong relationship between the two since refute the null hypothesis.
+
+```{r echo=FALSE}
+
+chisq.test(as.character(unbalanced_data$plaform), as.character(unbalanced_data$device_group))
+
+```
 
 
 ### Platform
 
-```{r}
-grid.draw(eda_unbalanced$platform)
+Categorical variable with `r  levels(unbalanced_data$plaform)` representing the platform of origin of the session.
+
+```{r echo=FALSE}
+
+grid.draw(eda_unbalanced$plaform)
+
 ```
 
-```{r}
-ggplot(unbalanced_data, aes(x = plaform)) +
-    geom_bar(fill="darkblue", color="black") +
-    theme_masterDS() +
-    labs(
-      x = "",
-      y = "",
-      title = "Frequency"
-    )
-```
 
-```{r}
-ggplot(unbalanced_data, aes( x = plaform, fill = bought )) +
-    geom_bar() +
-    theme_masterDS() +
-    labs(
-      x = "",
-      y = "",
-      title = "Frequency bought vs no bought"
-    )
-```
 
 ```{r}
 prop.table(table(unbalanced_data[["plaform"]]))
 ```
 
 
-```{r}
+```{r echo=FALSE}
 unbalanced_chi["plaform"]
 ```
 
 
-```{r}
-grid.draw(eda_balanced$platform)
+```{r echo=FALSE}
+grid.draw(eda_balanced$plaform)
 ```
 
 ```{r}
@@ -187,23 +218,23 @@ prop.table(table(balanced_data[["plaform"]]))
 balanced_chi["plaform"]
 ```
 
-The graphical analysis show us that the majority of sessions (around 72% on the unbalanced dataset and 61% on the balanced ) were accessed through the website. Despite the inbalance between platforms we notice that the amount of conversion is comparable suggesting implying a higher conversion rate on mobile app compared to website. 
+The above graphical analysis suggests that the majority of sessions (around 72% on the unbalanced dataset and 61% on the balanced ) were accessed through the website. Despite the inbalance between platforms the difference on conversion rate is visible between platforms.
 
 The $\chi ^2$ for both unbalanced and balanced datasets do not allow for the rejection of the null hypothesis implying the existence of a degree of linear regression between the 2 variables.
-
-
 
 
 ### Journey milestones
 (has_listings) > has_add_to_bag
 
-```{r}
+```{r echo=TRUE}
+
 grid.draw(eda_unbalanced$has_add_to_wishlist)
 
 ```
 
 
 ```{r}
+
 grid.draw(eda_unbalanced$has_listing)
 
 ```
@@ -225,7 +256,7 @@ grid.draw(eda_unbalanced$has_add_to_bag)
 
 ```
 
-This features are plotted together because they give insights into the journey a user made inside the website. We can conclude over a conversion funnel but it makes sense to explore the interactions between then while modeling because its known that normally strong effects exist between then (a user had a recommendation and added to the bag might be together a strong signal for conversion).
+These features are plotted together because they give insights into the journey a user made inside the website. We can conclude over a conversion funnel but it makes sense to explore the interactions between then while modeling because its known that normally strong effects exist between then (a user had a recommendation and added to the bag might be together a strong signal for conversion).
 
 The graphical analysis already provides a important insight given the business objectives. From the unbalanced data available we can conclude that around of 46% shopping carts are lost on that session. That raises a question of how are this recovered (example on a next session) or if this means that all this sales are lost right at the end of the sales funnel.
 

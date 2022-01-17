@@ -1,0 +1,3220 @@
+--- 
+title: "Long Project: Model convertion for a Luxury Brand e-commerce"
+subtitle: "Introduction to Data Science [Masted Data Science]"
+author: "Pedro Miguel de Sousa Magalhães"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+documentclass: book
+---
+```{r include=FALSE, cache=FALSE}
+rm(list = ls(all = TRUE))
+```
+
+# Introduction {-}
+
+:::{.title}
+**Students commitment**
+:::
+
+:::{.yellowbox}
+
+Declaro que o presente relatório é de minha autoria e não foi utilizado previamente noutro curso ou unidade curricular, desta ou de outra instituição. As referências a outros autores (afirmações,ideias, pensamentos) respeitam escrupulosamente as regras da atribuição, e encontramse devidamente indicadas no texto e nas referências bibliográficas, de acordo com as normas dereferenciação. Tenho consciência de que a prática de plágio e auto-plágio constitui um ilícito académico.
+
+:::
+
+
+:::{.title}
+**R session information**
+:::
+
+The R session information when building this project is has shown below:
+
+
+```{r}
+sessionInfo()
+```
+
+
+<!--chapter:end:index.Rmd-->
+
+```{r include=FALSE, cache=FALSE}
+rm(list = ls(all = TRUE))
+```
+# Business Understanding
+
+## Business objectives
+
+
+:::{style="color: blue;"}
+*What is the company wishing to achieve?*
+:::
+
+A Luxury high end Brand sells its goods online using its own e-commerce platform and wishes to **increase its conversion rate**.
+
+No further information is available about the companies business like other sale channel or product category, although from the available information we can conclude the brand has a global reach.
+
+```{r Conversion rate, echo=FALSE, message=TRUE, warning=FALSE}
+source("scripts/eda_functions.r")
+data <- read.csv("data/train_full.csv")
+
+ggplot(data, aes(x = factor(bought), 
+                 y = prop.table(stat(count)), 
+                 label = scales::percent(prop.table(stat(count))) )) +
+    geom_bar(fill="darkblue", color="black") +
+    geom_text(stat = 'count',
+                position = position_dodge(.9), 
+                vjust = -0.5, 
+                size = 3) +
+    scale_y_continuous(labels = scales::percent) +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Conversion Rate",
+      caption = "Calculation based on data set train-full"
+    ) 
+
+```
+
+The available sample data shows a 8% top of funnel conversion rate ( substantially higher than e-commerce benchmark which is around 2% ). Conversion top of funnel uses landing touchpoints as index. No information is given about any goal or additional metrics tracked by the company, therefore it won't be take into consideration during this project.
+
+
+## Assess Situation
+
+:::{style="color: blue;"}
+*What is available for the project?*
+:::
+
+A sample of balanced and unbalanced information was made available containing information about individual sessions. No information is provided about session definitions (eg: cap session duration. Industries norm is between 25 ~ 30 min) and about user anonymous ids. There isn't therefore, enough information to analyse potential impacts of different customer journeys. Additionally no information is provided concerning the date each session accured, which invalidate any seasonal analysis.
+
+Given the generaly accepted impact that multitudinous has on conversion it will be assume henceforward that **sessions are independent and identically distributed**
+
+### Hardware and environment special needs
+
+There aren't any specific needs for hardware or data infrastructure. Data will be ingested directly from csv files and all transformation will be done on development machine. Environment information available on `.renv` file
+
+## Data Mining Goals
+
+:::{style="color: blue;"}
+*How will Data team achieve Business Goals?*
+:::
+
+Based on the available information the project is **binary classification problem with a focus on inference.**. The company is looking to identify session variables which signal users which will convert or not in order to redefine marketing strategies and approaches. There are only to available states, either the user "bought" or it didn't. 
+
+No information is provide regarding the expected use of this project. Therefore it will be assumed through this project that the main stakeholders is the marketing team and are human. Therefore, a bigger focus on the modeling process and coefficients is needed and is considered part of the deliver. The assumption is relevant since it impacts the final conclusions and the final model chosen. Given 2 similar models with sensible the same target metric the more interpretable one will be chosen.
+
+:::{.title}
+**Target metrics**
+:::
+
+Given the goals of this project stated before on Business Objectives the focus will be on maximizing *Accuracy*. The business is looking for the model which more accurately explains session conversion.
+
+:::{.title}
+**Data questions**
+:::
+
+During this project the following questions will be addressed
+
+- Is there a relationship between a conversion and information available related to that session ?
+- Which is the contribution of each of the variables to conversion?
+- How accurately can we estimate the effect on conversion?
+- Is there synergy among each session elements?
+- Does a model surpass a naive baseline approach of assuming the most shown class?
+- Does Data imbalance impact output?
+
+## Project Plan
+
+Due to time restrictions the present project follows a hybrid approach of CRISP-DM and TDSF and is organized in the following stages:
+
+Stage 1 - Understand Business and Its environment
+
+Stage 2 - Understand and explore data: study of distribution and relationship among available data
+
+Stage 3 - Data preparation for modeling: Preprocessing workflow
+
+Stage 4 - Modeling: Model definition, initial experiments and hyperparameter tunning
+
+Stage 5 - Delivery: Conclusions of the project
+
+## Terms
+
+The following terms will be used during this project with the following meaning:
+
+**User:** any unique IP which has reached the store. One individual can have more than one ip,
+
+**Client:** a user that converted, this means, it bought from the shop,
+
+**Touchpoints:** represents any interaction between the user and the online store of any sort,
+
+**Session:** a period of time (normally of 30 min max) during which the user interacted with the shop. Every session starts with a touchpoint. Under some conditions depending on the website metrics collection a session can have more than one touchpoint. 
+
+<!--chapter:end:01-business_understanding.Rmd-->
+
+```{r include=FALSE, cache=FALSE}
+rm(list = ls(all = TRUE))
+```
+# Data aquisition and understanding
+
+## Description
+
+```{r libraries and scripts, message=FALSE, warning=FALSE, include=FALSE}
+
+library(tidyverse)
+library(corrplot)
+library(car)
+library(tidymodels)
+library(mice)
+library(forecast)
+
+# script with visual functions
+source("scripts/eda_functions.r")
+
+# import data
+unbalanced_data <- read_csv("./data/train_full.csv") %>% select(-...1)
+balanced_data <- read_csv("./data/train_balanced.csv") %>% select(-...1)
+
+# convert categorical and dummy to factor variable
+unbalanced_data <- unbalanced_data %>% 
+  mutate_at(vars(
+    !contains(c("duration", "view_qty", "unique_product_qty","unique_browse_designer_qty"))
+    ), ~ as.factor(.))
+
+balanced_data <- balanced_data %>% 
+  mutate_at(vars(
+    !contains(c("duration", "view_qty", "unique_product_qty","unique_browse_designer_qty"))
+    ), ~ as.factor(.))
+
+```
+
+Two datasets were made available for analysis. One with a balanced class for the target variable and the other raw. This analysis focus on the full dataset. 
+
+From the available description the available columns follow into one of the following categories:
+
+1. Irrelevant for the project;
+
+2. Target or dependent Variable: what will be studied;
+
+3. Customer Behavior related Features: potential features which reflect how users behaved on each session and can explain the target variable;
+
+4. Customer Journey related Features: potential features contain information on how uses interacted with the on-line shop;
+
+5. Client Segment related Features: potential features which provide information on how a user might be classified from a marketing perspective;
+
+6. Device and Geography related Features: provide information regarding location and access device used by a user.
+
+```{r data structure, message=FALSE, warning=FALSE}
+
+str(unbalanced_data)
+
+```
+
+## Irrelevant or technical information
+
+`Session_id` is a unique key which sole purpose is to uniquely identify each sessions and contains no exploratory power, therefore it will be removed from future analysis.
+
+```{r}
+
+# test if a single session can have more than one row
+length( unique(unbalanced_data$session_id) ) == nrow(unbalanced_data)
+
+```
+## Target Variable: To buy or not to buy ...
+
+**Boolean variable** which assumes the values of 1 when a transaction happened on the session and zero other wise. Its the objective variable of this project.
+
+The available dataset with full data presents a severe class imbalance towards `not buy` which can and will Bias model output (a model assuming that nobody buys on each session is already "92% of the times right"). This bias is corrected on the balanced dataset at the expanse of some changes on 
+
+```{r target variable, echo=FALSE, include=FALSE}
+
+# unbalanced eda
+unbalanced_bar <- ggplot(unbalanced_data, aes(x = as.numeric(bought))) +
+    geom_bar(fill="darkblue", color="black", aes(y = ..prop..), stat = "count") +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Frequency"
+    ) +
+  scale_y_continuous(labels=scales::percent) +
+  geom_text(aes( label = scales::percent(..prop..),
+                   y= ..prop.. ), stat= "count", vjust = -.5)
+
+unbalanced_summary <- unbalanced_data %>% select(bought) %>% summary()
+
+unbalanced_grid <- grid.arrange(unbalanced_bar, tableGrob(unbalanced_summary), 
+                                nrow = 1, top=textGrob("Unbalanced dataset"))
+
+# balanced eda
+balanced_bar <- ggplot(balanced_data, aes(x = as.numeric(bought) )) +
+    geom_bar(fill="darkblue", color="black", aes(y = ..prop..), stat = "count") +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Frequency"
+    ) +
+  scale_y_continuous(labels=scales::percent) +
+  geom_text(aes( label = scales::percent(..prop..),
+                   y= ..prop.. ), stat= "count", vjust = -.5)
+
+balanced_summary <- balanced_data %>% select(bought) %>% summary()
+
+balanced_grid <- grid.arrange(balanced_bar, tableGrob(balanced_summary), nrow = 1, top=textGrob("Unbalanced dataset"))
+
+```
+
+```{r target unbalanced grid, echo=FALSE}
+
+grid.draw(unbalanced_grid) 
+
+```
+
+```{r target balanced grid}
+
+grid.draw(balanced_grid)
+
+```
+
+
+
+<!--chapter:end:02-Data_aquisition_and_understanding.Rmd-->
+
+```{r include=FALSE, cache=FALSE}
+rm(list = ls(all = TRUE))
+```
+## Customer Behavior Features
+
+In this section we will explore the variables available using both unbalanced and balanced data. In special we will focus on the following questions:
+
+- What type of variation occurs within my variables?
+- What type of covariation occurs between my variables?
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+
+library(tidyverse)
+library(corrplot)
+library(car)
+library(tidymodels)
+library(mice)
+library(forecast)
+
+# script with visual functions
+source("scripts/eda_functions.r")
+
+# import data
+unbalanced_data <- read_csv("./data/train_full.csv") %>% select(-...1)
+balanced_data <- read_csv("./data/train_balanced.csv") %>% select(-...1)
+
+# convert categorical and dummy to factor variable
+unbalanced_data <- unbalanced_data %>% 
+  mutate_at(vars(
+    !contains(c("duration", "view_qty", "unique_product_qty",
+                "unique_browse_designer_qty", "unique_browse_category_qty"))
+    ), ~ as.factor(.))
+
+balanced_data <- balanced_data %>% 
+  mutate_at(vars(
+    !contains(c("duration", "view_qty", "unique_product_qty",
+                "unique_browse_designer_qty", "unique_browse_category_qty"))
+    ), ~ as.factor(.))
+
+```
+
+```{r unbalanced data eda plots, include=FALSE, include=FALSE}
+
+continuous <- unbalanced_data %>% 
+  select(duration) %>% 
+  names() %>% 
+  set_names()
+ 
+discrete <- unbalanced_data %>% 
+  select(view_qty, unique_product_qty, unique_browse_designer_qty) %>% 
+  names() %>% 
+  set_names()
+
+categorical <- unbalanced_data %>% 
+  select(-duration, -view_qty, -unique_product_qty, 
+         -unique_browse_designer_qty, -session_id, -bought) %>% 
+  names() %>% 
+  set_names()
+
+eda_cont <- map(continuous, ~eda_continuous(unbalanced_data, .x))
+
+eda_dis <- map(discrete, ~eda_discrete(unbalanced_data, .x))
+
+eda_cat <- map(categorical, ~eda_categorical(unbalanced_data, .x))
+
+eda_unbalanced <- c(eda_cont, eda_dis, eda_cat)
+rm(eda_cont,eda_dis, eda_cat)
+
+```
+
+```{r balanced data eda plots, balanced data, include=FALSE, include=FALSE}
+
+continuous <- balanced_data %>% 
+  select(duration) %>% 
+  names() %>% 
+  set_names()
+
+discrete <- balanced_data %>% 
+  select(view_qty, unique_product_qty, unique_browse_designer_qty) %>% 
+  names() %>% 
+  set_names()
+
+categorical <- balanced_data %>% 
+  select(-duration, -view_qty, -unique_product_qty, 
+         -unique_browse_designer_qty, -session_id, -bought) %>% 
+  names() %>% 
+  set_names()
+
+eda_cont <- map(continuous, ~eda_continuous(balanced_data, .x))
+
+eda_dis <- map(discrete, ~eda_discrete(balanced_data, .x))
+
+eda_cat <- map(categorical, ~eda_categorical(balanced_data, .x))
+
+eda_balanced <- c(eda_cont, eda_dis, eda_cat)
+rm(eda_cont,eda_dis, eda_cat)
+
+```
+
+```{r correlation plot, correlation plot, include=FALSE}
+
+M <- cor(unbalanced_data %>% 
+           select_if(is.numeric))
+corrplot(M, type = "upper", method = "number", diag = FALSE, 
+         order = 'hclust', addrect = 2)
+
+```
+
+```{r Chi-squared hipothesis test, message=FALSE, warning=FALSE, include=FALSE}
+
+unbalanced_chi <- unbalanced_data %>% 
+  select_if(is.factor) %>% 
+  map(function(x) chisq.test(x, unbalanced_data$bought))
+
+balanced_chi <- balanced_data %>% 
+  select_if(is.factor) %>% 
+  map(function(x) chisq.test(x, balanced_data$bought))
+
+unbalanced_chi_numeric <- unbalanced_data %>% 
+  select_if(is.numeric) %>% 
+  map(function(x) chisq.test(x, as.factor(unbalanced_data$bought)))
+
+balanced_chi_numeric <- balanced_data %>% 
+  select_if(is.numeric) %>% 
+  map(function(x) chisq.test(x, as.factor(balanced_data$bought)))
+
+```
+
+### Duration
+
+Continuous variable representing the time a user was on a particular sessions. Values measured in seconds. No specifics are given regarding the concept of session used. The market standard is to limit session duration to an engagement window between 25 to 30 minutes. Above that time cap, a new session would start (even if the user is still navigating the site).
+It will assumed that no such cap exist and therefore extreme values are **not due to technical issues on web metrics**.
+
+```{r plot duration unbalanced, echo=FALSE}
+
+grid.draw(eda_unbalanced$duration) 
+
+```
+
+```{r plot duration balanced, echo=FALSE}
+
+grid.draw(eda_balanced$duration) 
+
+```
+
+Distribution information shows a severely left skewed distribution which is confirmed by the behavior of the qq_plot. This is present on both raw and balanced data. The max duration of `r max(unbalanced_data$duration)` means that at least one session was `{r} max(unbalanced_data$duration)/(60 * 60)` hours long, which, given what was said regarding session cap won't be considered as an outlier due to error.
+
+Data shows that visit duration is a long tail with a great majority of users staying just a fraction but a long line of users (power users?) which stay for longer. This distribution does not allow for a good analysis of outliers of the distribution given its nature and might prove to be tricky during modeling due to its non Gaussian nature. 
+
+```{r log transform duration, echo=TRUE}
+
+  density <- ggplot(unbalanced_data, aes(x = duration)) +
+    geom_density(color="darkblue") +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Density"
+    )
+  
+  boxplot <- ggplot(unbalanced_data, aes(x = 1, y = duration)) + 
+    geom_boxplot() + 
+    theme_masterDS()+
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot"
+    )   
+
+  density_log <- ggplot(unbalanced_data, aes(x = log(duration))) +
+    geom_density(color="darkblue") +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Density (log transform)"
+    )
+  
+  boxplot_log <- ggplot(unbalanced_data, aes(x = 1, y = log(duration))) + 
+    geom_boxplot() + 
+    theme_masterDS()+
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot (log transform)"
+    ) 
+
+grid.arrange(density, boxplot, density_log, boxplot_log,  layout_matrix = rbind(c(1,2),c(3,4)))
+
+```
+
+**As a preprocess step this feature will be log transformed.** No more complex Box-Cox transformation will be used given that good results can already be achieved with the current transformation. No missing values were found. 
+
+```{r duration vs bought, echo=FALSE}
+
+ggplot(unbalanced_data, aes(x = bought, y = log(duration))) + 
+    geom_boxplot() + 
+    theme_masterDS()+
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot by Conversion",
+      caption = "Data from unbalanced dataset.Log transformed"
+    ) 
+
+```
+
+```{r duration vs bought balanced, echo=FALSE}
+
+ggplot(balanced_data, aes(x = bought, y = log(duration))) + 
+    geom_boxplot() + 
+    theme_masterDS()+
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot by Conversion",
+      caption = "Data from balanced dataset. Log transformed"
+    ) 
+
+```
+
+Ploted against the target variable it seems to imply a positive relationship between duration and conversion. From the sample sessions that converted had on median a higher duration. 
+
+
+### Page View Quantity
+
+Discrete variable measuring the number of views during a session. 
+
+```{r page view unbalanced, echo=FALSE}
+
+grid.draw(eda_unbalanced$view_qty)
+
+```
+
+
+```{r page view balanced, echo=FALSE}
+
+grid.draw(eda_balanced$view_qty)
+
+```
+
+Distribution information shows a severely left skewed distribution which is confirmed by the behavior of the qq_plot. This is present on both raw and balanced data. The max duration is of `r max(unbalanced_data$view_qty)`. 
+
+Despite is distribution the data shows a median of 10 page views which suggest an interesting engagement for a e-commerce provided other indicators regarding navigation are solid (if a user is jumping between pages because they don't load properly, an increase on page views might no be beneficial).
+
+Given the available information we cannot conclude that outliers due to errors exist. In an attempt to normalize the distribution a Box-Cox transformation will be used with a Optimized Lambda. 
+
+```{r view_qty box cox unbalanced, echo=FALSE, message=TRUE, warning=FALSE}
+lambda <- BoxCox.lambda(unbalanced_data$view_qty, method = "guerrero") 
+
+histogram_log <- ggplot(unbalanced_data, aes(x = bcPower(view_qty, lambda = lambda))) +
+    geom_histogram(fill="darkblue", color="black") +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Histogram"
+    )
+  
+boxplot_log <- ggplot(unbalanced_data, aes(x = 1, y = bcPower(view_qty, lambda = lambda))) +
+    geom_boxplot() +
+    theme_masterDS()+
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot",
+      caption = "unbalanced data"
+    )
+
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
+
+```
+
+
+```{r view_qty box cox balanced, echo=FALSE, message=TRUE, warning=FALSE}
+
+lambda <- BoxCox.lambda(balanced_data$view_qty, method = "guerrero") 
+
+histogram_log <- ggplot(balanced_data, aes(x = bcPower(view_qty, lambda = lambda))) +
+    geom_histogram(fill="darkblue", color="black") +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Histogram"
+    )
+  
+boxplot_log <- ggplot(balanced_data, aes(x = 1, y = bcPower(view_qty, lambda = lambda))) +
+    geom_boxplot() +
+    theme_masterDS()+
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot",
+      caption = "unbalanced data"
+    )
+
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
+
+```
+With this transformation it is now visible 2 segments of sessions which deserve attention, sessions with zero views or just 1 view. 
+
+The information available provides no information whatsoever regardingt definition of view. The standard (defined by google) is the first hit at log to be a pageview. Therefore, technically all sessions would have a view. Using the same approach, a 1 view session is technically called a **bounce**. Once again assuming Googles standard (it owns 97% of the analytics market ...) a bounce is a session with just a starting hit but not information regarding log out (duration is a difference based calculation). 
+
+On a standard scenario the approach would be to remove all observations with a zero pageviews (technical errors) and session with 1 page view (if not other information regarding duration is available). In the scenario in analysis, given the available information we can't assume zero page views to be a technical error and therefore will filter the **dataset for observations with zero or one page views and a session duration smaller than 2 seconds.**
+
+
+```{r unbalanced no outlier, echo=FALSE, message=TRUE, warning=FALSE}
+
+lambda <- BoxCox.lambda(balanced_data$view_qty, method = "guerrero") 
+
+data <- unbalanced_data %>% 
+  filter( !((view_qty <= 1) & (duration <= 2)))
+
+histogram_log <- ggplot(data, aes(x = bcPower(view_qty, lambda = lambda))) +
+    geom_histogram(fill="darkblue", color="black", bins = 15) +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Histogram"
+    )
+  
+boxplot_log <- ggplot(data, aes(x = 1, y = bcPower(view_qty, lambda = lambda))) +
+    geom_boxplot() +
+    theme_masterDS()+
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot",
+      caption = "balanced data"
+    )
+
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
+
+```
+
+
+```{r balanced no outlier, echo=FALSE, message=TRUE, warning=FALSE}
+
+lambda <- BoxCox.lambda(balanced_data$view_qty, method = "guerrero") 
+
+data <- balanced_data %>% 
+  filter( !((view_qty <= 1) & (duration <= 2)))
+
+histogram_log <- ggplot(data, aes(x = bcPower(view_qty, lambda = lambda))) +
+    geom_histogram(fill="darkblue", color="black", bins = 15) +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Histogram"
+    )
+  
+boxplot_log <- ggplot(data, aes(x = 1, y = bcPower(view_qty, lambda = lambda))) +
+    geom_boxplot() +
+    theme_masterDS()+
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot",
+      caption = "balanced data"
+    )
+
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
+
+```
+
+The balanced data to be used with modeling is already close to normal distribution.
+
+
+```{r pageview vs bought balanced, echo=FALSE}
+
+ggplot(data, aes(x = bought, y = log(view_qty))) + 
+    geom_boxplot() + 
+    theme_masterDS()+
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot by Conversion",
+      caption = "Data from balanced dataset. Log transformed"
+    ) 
+
+```
+Compared by conversion the data seems to suggest that sessions with conversion had a higher number of page views.
+
+### Product Pages unique page views
+
+Discrete variable measuring the visits product related pages had. 
+
+```{r eda_unique_product unbalanced}
+
+grid.draw(eda_unbalanced$unique_product_qty)
+
+```
+
+
+```{r eda_unique_product balanced}
+
+grid.draw(eda_balanced$unique_product_qty)
+
+```
+
+The initial graphic analysis shows a right skewed distribution similar to was seen on before on Pageviews. Nonetheless, in this scenario zero page views is a acceptable outcome. When the target class is taken into consideration it seems to sugest a teneous impact albeit its true effects might be hidden by the distribution skew. 
+
+```{r pageviews vs product, echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot(data = unbalanced_data, 
+       aes(x = unique_product_qty, y = view_qty, 
+           shape = bought, color = bought)) +
+  geom_point(alpha = 0.5, position = position_jitter()) +
+  stat_smooth(method = lm, level = 0.95, se = TRUE, size = 0.5) +
+  scale_shape_manual(values = c(1,2)) +
+  scale_colour_brewer(palette = "Set1") +
+  theme_masterDS() +
+    labs(
+      x = "Pageviews product pages",
+      y = "Pageviews" ,
+      title = "Pageviews and product pageviews",
+      caption = "Data from unbalanced dataset"
+    ) 
+
+```
+
+Ploted together target, pageviews and product pageviews it becomes more evident that the relationship between target and product pageviews is not very visable but the Chi test lets us renouce the null hypothesis. 
+
+```{r echo=FALSE}
+
+unbalanced_chi_numeric$unique_product_qty
+
+```
+
+On the other hand, there seems to have a strong relation positive relation between pageviews and pagevies product. This may suggest an interaction between both features. Given the nature of this feature we will explore the impact of converting into a ratio using page views as denominator since product page view is in fact a subgroup of pageviews.
+
+
+
+```{r pageviews vs product ratio, echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot(data = unbalanced_data, 
+       aes(x = unique_product_qty / view_qty, y = view_qty, 
+           shape = bought, color = bought)) +
+  geom_point(alpha = 0.5, position = position_jitter()) +
+  scale_shape_manual(values = c(1,2)) +
+  scale_colour_brewer(palette = "Set1") +
+  theme_masterDS() +
+    labs(
+      x = "Pageviews product pages",
+      y = "Pageviews" ,
+      title = "Pageviews and product/pageview ",
+      caption = "Data from unbalanced dataset"
+    ) 
+
+```
+
+```{r unbalanced with ratio product, echo=FALSE, message=TRUE, warning=FALSE}
+
+data <- unbalanced_data %>% 
+  filter( !((view_qty <= 1) & (duration <= 2)))
+
+histogram_log <- ggplot(data, aes(x = log (unique_product_qty / view_qty ))) +
+    geom_histogram(fill="darkblue", color="black", bins = 15) +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Histogram"
+    )
+  
+boxplot_log <- ggplot(data, aes(x = 1, y = log(unique_product_qty / view_qty ))) +
+    geom_boxplot() +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot",
+      caption = "unbalanced data"
+    )
+
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
+
+```
+```{r balanced with ratio product, echo=FALSE, message=TRUE, warning=FALSE}
+
+data <- balanced_data %>% 
+  filter( !((view_qty <= 1) & (duration <= 2)))
+
+histogram_log <- ggplot(data, aes(x = log(unique_product_qty / view_qty ))) +
+    geom_histogram(fill="darkblue", color="black", bins = 15) +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Histogram"
+    )
+  
+boxplot_log <- ggplot(data, aes(x = 1, y = log( unique_product_qty / view_qty ))) +
+    geom_boxplot() +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot",
+      caption = "balanced data"
+    )
+
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
+
+```
+This transformation provides more insights into the behaviour of the average user indicating that on average 25% of page navigation is done on product related pages (from and into). Simultaneously it smooths the skewed effect reported earlier
+
+```{r ratio product view vs bought balanced, echo=FALSE}
+
+ggplot(data, aes(x = bought, y = log(unique_product_qty / view_qty ))) + 
+    geom_boxplot() + 
+    theme_masterDS()+
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot by Conversion",
+      caption = "Data from balanced dataset. Log transformed"
+    ) 
+
+```
+
+If the e-commecer has a more transactional focus it might not come as surprice the above plot and it seems to imply that user might already know what they want to buy prior to visit.
+
+Similar transformation will be done to the subsquent variables-
+
+### Designer Browsing unique page views
+
+Discrete variable measuring the number of Designers researched.
+
+
+```{r}
+
+grid.draw(eda_unbalanced$unique_browse_designer_qty)
+
+```
+
+
+```{r}
+
+grid.draw(eda_balanced$unique_browse_designer_qty)
+
+```
+
+Similar approach done before
+
+
+```{r pageviews vs designer, echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot(data = unbalanced_data, 
+       aes(x = unique_browse_designer_qty, y = view_qty, 
+           shape = bought, color = bought)) +
+  geom_point(alpha = 0.5, position = position_jitter()) +
+  stat_smooth(method = lm, level = 0.95, se = TRUE, size = 0.5) +
+  scale_shape_manual(values = c(1,2)) +
+  scale_colour_brewer(palette = "Set1") +
+  theme_masterDS() +
+    labs(
+      x = "Pageviews product pages",
+      y = "Pageviews" ,
+      title = "Pageviews and designer pageviews",
+      caption = "Data from unbalanced dataset"
+    ) 
+
+```
+
+```{r unbalanced with ratio designer, echo=FALSE, message=TRUE, warning=FALSE}
+
+data <- unbalanced_data %>% 
+  filter( !((view_qty <= 1) & (duration <= 2)))
+
+histogram_log <- ggplot(data, aes(x = log(unique_browse_designer_qty / view_qty ))) +
+    geom_histogram(fill="darkblue", color="black", bins = 15) +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Histogram"
+    )
+  
+boxplot_log <- ggplot(data, aes(x = 1, y = log(unique_browse_designer_qty / view_qty ))) +
+    geom_boxplot() +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot",
+      caption = "unbalanced data"
+    )
+
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
+
+```
+
+```{r balanced with ratio designer, echo=FALSE, message=TRUE, warning=FALSE}
+
+data <- balanced_data %>% 
+  filter( !((view_qty <= 1) & (duration <= 2)))
+
+histogram_log <- ggplot(data, aes(x = log(unique_browse_designer_qty / view_qty ))) +
+    geom_histogram(fill="darkblue", color="black", bins = 15) +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Histogram"
+    )
+  
+boxplot_log <- ggplot(data, aes(x = 1, y = log(unique_browse_designer_qty / view_qty ))) +
+    geom_boxplot() +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot",
+      caption = "balanced data"
+    )
+
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
+
+```
+
+This transformation provides more insights into the behaviour of the average user indicating that on average 25% of page navigation is done on product related pages (from and into). Simultaneously it smooths the skewed effect reported earlier
+
+```{r ratio designer view vs bought balanced, echo=FALSE}
+
+ggplot(data, aes(x = bought, y = log(unique_browse_designer_qty / view_qty ))) + 
+    geom_boxplot() + 
+    theme_masterDS() +
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot by Conversion",
+      caption = "Data from balanced dataset. Log transformed"
+    ) 
+
+```
+
+### Products categories unique id
+
+Discrete variable measuring the visits Designer related pages had.
+
+
+```{r}
+
+grid.draw(eda_unbalanced$unique_browse_category_qty)
+
+```
+
+
+```{r}
+
+grid.draw(eda_balanced$unique_browse_category_qty)
+
+```
+
+Similar approach done before
+
+
+```{r pageviews vs category, echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot(data = unbalanced_data, 
+       aes(x = unique_browse_category_qty, y =  view_qty , 
+           shape = bought, color = bought)) +
+  geom_point(alpha = 0.5, position = position_jitter()) +
+  stat_smooth(method = lm, level = 0.95, se = TRUE, size = 0.5) +
+  scale_shape_manual(values = c(1,2)) +
+  scale_colour_brewer(palette = "Set1") +
+  theme_masterDS() +
+    labs(
+      x = "Pageviews product pages",
+      y = "Pageviews" ,
+      title = "Pageviews and designer pageviews",
+      caption = "Data from unbalanced dataset"
+    ) 
+
+```
+
+```{r echo=FALSE}
+
+unbalanced_chi$unique_browse_category_qty
+
+
+```
+
+
+
+```{r unbalanced with ratio category, echo=FALSE, message=TRUE, warning=FALSE}
+
+data <- unbalanced_data %>% 
+  filter( !((view_qty <= 1) & (duration <= 2)))
+
+histogram_log <- ggplot(data, aes(x = log(unique_browse_category_qty / view_qty ))) +
+    geom_histogram(fill="darkblue", color="black", bins = 15) +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Histogram"
+    )
+  
+boxplot_log <- ggplot(data, aes(x = 1, y = log(unique_browse_category_qty  / view_qty ))) +
+    geom_boxplot() +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot",
+      caption = "unbalanced data"
+    )
+
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
+
+```
+
+```{r balanced with ratio category, echo=FALSE, message=TRUE, warning=FALSE}
+
+data <- balanced_data %>% 
+  filter( !((view_qty <= 1) & (duration <= 2)))
+
+histogram_log <- ggplot(data, aes(x = log(unique_browse_category_qty / view_qty ))) +
+    geom_histogram(fill="darkblue", color="black", bins = 15) +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Histogram"
+    )
+  
+boxplot_log <- ggplot(data, aes(x = 1, y = log(unique_browse_category_qty / view_qty ))) +
+    geom_boxplot() +
+    theme_masterDS() +
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot",
+      caption = "balanced data"
+    )
+
+grid.arrange(histogram_log, boxplot_log, nrow = 1)
+
+```
+
+This transformation provides more insights into the behaviour of the average user indicating that on average 25% of page navigation is done on product related pages (from and into). Simultaneously it smooths the skewed effect reported earlier
+
+```{r ratio category view vs bought balanced, echo=FALSE}
+
+ggplot(data, aes(x = bought, y = log(unique_browse_category_qty / view_qty ))) + 
+    geom_boxplot() + 
+    theme_masterDS()+
+    labs(
+      x = "",
+      y="",
+      title = "Boxplot by Conversion",
+      caption = "Data from balanced dataset. Log transformed"
+    ) 
+
+```
+
+
+### Potential ideas for feature engineering which were not implemented
+
+- The available data could synthesized using a non-supervised cluster algorithm which would help identify subsets of behaviors to be used during modeling. This approach has the advantage of possible reduce 4 variables into one.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--chapter:end:02.1-Customer_behavior.Rmd-->
+
+```{r include=FALSE, cache=FALSE}
+rm(list = ls(all = TRUE))
+```
+## Customer Journey related Features
+
+In this section we will explore the variables available using both unbalanced and balanced data. In special we will focus on the following questions:
+
+- What type of variation occurs within my variables?
+- What type of covariation occurs between my variables?
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+
+library(tidyverse)
+library(corrplot)
+library(car)
+library(tidymodels)
+library(mice)
+library(forecast)
+
+# script with visual functions
+source("scripts/eda_functions.r")
+
+# import data
+unbalanced_data <- read_csv("./data/train_full.csv") %>% select(-...1)
+balanced_data <- read_csv("./data/train_balanced.csv") %>% select(-...1)
+
+# convert categorical and dummy to factor variable
+unbalanced_data <- unbalanced_data %>% 
+  mutate_at(vars(
+    !contains(c("duration", "view_qty", "unique_product_qty",
+                "unique_browse_designer_qty", "unique_browse_category_qty"))
+    ), ~ as.factor(.))
+
+balanced_data <- balanced_data %>% 
+  mutate_at(vars(
+    !contains(c("duration", "view_qty", "unique_product_qty",
+                "unique_browse_designer_qty", "unique_browse_category_qty"))
+    ), ~ as.factor(.))
+
+```
+
+```{r, include=FALSE, include=FALSE}
+
+continuous <- unbalanced_data %>% 
+  select(duration) %>% 
+  names() %>% 
+  set_names()
+ 
+discrete <- unbalanced_data %>% 
+  select(view_qty, unique_product_qty, unique_browse_designer_qty) %>% 
+  names() %>% 
+  set_names()
+
+categorical <- unbalanced_data %>% 
+  select(-duration, -view_qty, -unique_product_qty, 
+         -unique_browse_designer_qty, -session_id, -bought) %>% 
+  names() %>% 
+  set_names()
+
+eda_cont <- map(continuous, ~eda_continuous(unbalanced_data, .x))
+
+eda_dis <- map(discrete, ~eda_discrete(unbalanced_data, .x))
+
+eda_cat <- map(categorical, ~eda_categorical(unbalanced_data, .x))
+
+eda_unbalanced <- c(eda_cont, eda_dis, eda_cat)
+rm(eda_cont,eda_dis, eda_cat)
+
+```
+
+```{r balanced data eda plots journey, include=FALSE, include=FALSE}
+
+continuous <- balanced_data %>% 
+  select(duration) %>% 
+  names() %>% 
+  set_names()
+
+discrete <- balanced_data %>% 
+  select(view_qty, unique_product_qty, unique_browse_designer_qty) %>% 
+  names() %>% 
+  set_names()
+
+categorical <- balanced_data %>% 
+  select(-duration, -view_qty, -unique_product_qty, 
+         -unique_browse_designer_qty, -session_id, -bought) %>% 
+  names() %>% 
+  set_names()
+
+eda_cont <- map(continuous, ~eda_continuous(balanced_data, .x))
+
+eda_dis <- map(discrete, ~eda_discrete(balanced_data, .x))
+
+eda_cat <- map(categorical, ~eda_categorical(balanced_data, .x))
+
+eda_balanced <- c(eda_cont, eda_dis, eda_cat)
+rm(eda_cont,eda_dis, eda_cat)
+
+```
+
+```{r correlation plot journey, include=FALSE}
+
+M <- cor(unbalanced_data %>% 
+           select_if(is.numeric))
+corrplot(M, type = "upper", method = "number", diag = FALSE, 
+         order = 'hclust', addrect = 2)
+
+```
+
+```{r , message=FALSE, warning=FALSE, include=FALSE}
+
+unbalanced_chi <- unbalanced_data %>% 
+  select_if(is.factor) %>% 
+  map(function(x) chisq.test(x, unbalanced_data$bought))
+
+balanced_chi <- balanced_data %>% 
+  select_if(is.factor) %>% 
+  map(function(x) chisq.test(x, balanced_data$bought))
+
+unbalanced_chi_numeric <- unbalanced_data %>% 
+  select_if(is.numeric) %>% 
+  map(function(x) chisq.test(x, as.factor(unbalanced_data$bought)))
+
+balanced_chi_numeric <- balanced_data %>% 
+  select_if(is.numeric) %>% 
+  map(function(x) chisq.test(x, as.factor(balanced_data$bought)))
+
+```
+
+### Device Group
+
+Categorical variable with 3 levels each representing the device source for each session. `r  levels(unbalanced_data$device_group)`  
+
+
+```{r echo=FALSE}
+
+grid.draw(eda_unbalanced$device_group)
+
+```
+
+```{r echo=FALSE}
+
+unbalanced_chi["device_group"]
+
+```
+
+
+```{r echo=FALSE}
+
+grid.draw(eda_balanced$device_group)
+
+```
+
+```{r echo=FALSE}
+
+balanced_chi["device_group"]
+
+```
+
+The majority of sessions had origin on a Mobile Web Platform, nonetheless, depite the traffic, graphical analysis sugests that Mobile Appliction has in factr higher convertion rates.
+
+This same conclusions can be extracted from the balanced dataset although the differences are not as evident. The $\chi ^2$ tests for both dataset leads into refusing the null hypothesis so it suggests that a degree of relation ship exists between both variables.
+
+
+```{r echo=FALSE}
+
+ggplot(unbalanced_data, aes(x = device_group, fill = plaform)) + 
+  geom_bar(stat = "count") + 
+  theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Device Group x Platform"
+    )
+
+```
+
+This dataset includes a variable named platform that suggest that most sessions were done using website. At first glance it seems counter intuitive that most access be done through website and Mobile web but the above plot show that in reality most users opt to access using the mobile version of the website instead of the app. 
+
+The $\chi ^2$ test between this 2 variables confirms that both variable seem to have a degree of relation leading to not refuting the null hypothesis of dependency. This implies interaction (or synergy on marketing terms) between features which can impact how modeling efforts specially for models dependent on linear transformations (least squares regression) as is the case of logit.
+
+During the modeling step one might consider removing one of the variables or generate a new compound feature. The chi-test confirms the strong relationship between the two since refute the null hypothesis.
+
+```{r echo=FALSE}
+
+chisq.test(as.character(unbalanced_data$plaform), as.character(unbalanced_data$device_group))
+
+```
+
+
+### Platform
+
+Categorical variable with `r  levels(unbalanced_data$plaform)` representing the platform of origin of the session.
+
+```{r echo=FALSE}
+
+grid.draw(eda_unbalanced$plaform)
+
+```
+
+
+
+```{r}
+prop.table(table(unbalanced_data[["plaform"]]))
+```
+
+
+```{r echo=FALSE}
+unbalanced_chi["plaform"]
+```
+
+
+```{r echo=FALSE}
+grid.draw(eda_balanced$plaform)
+```
+
+```{r}
+prop.table(table(balanced_data[["plaform"]]))
+```
+
+```{r}
+balanced_chi["plaform"]
+```
+
+The above graphical analysis suggests that the majority of sessions (around 72% on the unbalanced dataset and 61% on the balanced ) were accessed through the website. Despite the inbalance between platforms the difference on conversion rate is visible between platforms.
+
+The $\chi ^2$ for both unbalanced and balanced datasets do not allow for the rejection of the null hypothesis implying the existence of a degree of linear regression between the 2 variables.
+
+
+### Journey milestones
+(has_listings) > has_add_to_bag
+
+```{r echo=TRUE}
+
+grid.draw(eda_unbalanced$has_add_to_wishlist)
+
+```
+
+
+```{r}
+
+grid.draw(eda_unbalanced$has_listing)
+
+```
+
+
+```{r}
+grid.draw(eda_unbalanced$has_recommendation)
+```
+
+
+```{r}
+grid.draw(eda_unbalanced$has_used_search)
+```
+
+
+```{r}
+
+grid.draw(eda_unbalanced$has_add_to_bag)
+
+```
+
+These features are plotted together because they give insights into the journey a user made inside the website. We can conclude over a conversion funnel but it makes sense to explore the interactions between then while modeling because its known that normally strong effects exist between then (a user had a recommendation and added to the bag might be together a strong signal for conversion).
+
+The graphical analysis already provides a important insight given the business objectives. From the unbalanced data available we can conclude that around of 46% shopping carts are lost on that session. That raises a question of how are this recovered (example on a next session) or if this means that all this sales are lost right at the end of the sales funnel.
+
+
+```{r}
+prop.table(table(unbalanced_data[unbalanced_data$has_add_to_bag == 1,]$bought, unbalanced_data[unbalanced_data$has_add_to_bag == 1,]$has_add_to_bag)) [,2]
+```
+
+
+
+
+
+<!--chapter:end:02.2-customer_journey_related.Rmd-->
+
+```{r include=FALSE, cache=FALSE}
+rm(list = ls(all = TRUE))
+```
+## Client Segment related Features
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+
+library(tidyverse)
+library(corrplot)
+library(car)
+library(tidymodels)
+library(mice)
+library(forecast)
+
+# script with visual functions
+source("scripts/eda_functions.r")
+
+# import data
+unbalanced_data <- read_csv("./data/train_full.csv") %>% select(-...1)
+balanced_data <- read_csv("./data/train_balanced.csv") %>% select(-...1)
+
+# convert categorical and dummy to factor variable
+unbalanced_data <- unbalanced_data %>% 
+  mutate_at(vars(
+    !contains(c("duration", "view_qty", "unique_product_qty",
+                "unique_browse_designer_qty", "unique_browse_category_qty"))
+    ), ~ as.factor(.))
+
+balanced_data <- balanced_data %>% 
+  mutate_at(vars(
+    !contains(c("duration", "view_qty", "unique_product_qty",
+                "unique_browse_designer_qty", "unique_browse_category_qty"))
+    ), ~ as.factor(.))
+
+```
+
+```{r , include=FALSE, include=FALSE}
+
+continuous <- unbalanced_data %>% 
+  select(duration) %>% 
+  names() %>% 
+  set_names()
+ 
+discrete <- unbalanced_data %>% 
+  select(view_qty, unique_product_qty, unique_browse_designer_qty) %>% 
+  names() %>% 
+  set_names()
+
+categorical <- unbalanced_data %>% 
+  select(-duration, -view_qty, -unique_product_qty, 
+         -unique_browse_designer_qty, -session_id, -bought) %>% 
+  names() %>% 
+  set_names()
+
+eda_cont <- map(continuous, ~eda_continuous(unbalanced_data, .x))
+
+eda_dis <- map(discrete, ~eda_discrete(unbalanced_data, .x))
+
+eda_cat <- map(categorical, ~eda_categorical(unbalanced_data, .x))
+
+eda_unbalanced <- c(eda_cont, eda_dis, eda_cat)
+rm(eda_cont,eda_dis, eda_cat)
+
+```
+
+```{r , include=FALSE, include=FALSE}
+
+continuous <- balanced_data %>% 
+  select(duration) %>% 
+  names() %>% 
+  set_names()
+
+discrete <- balanced_data %>% 
+  select(view_qty, unique_product_qty, unique_browse_designer_qty) %>% 
+  names() %>% 
+  set_names()
+
+categorical <- balanced_data %>% 
+  select(-duration, -view_qty, -unique_product_qty, 
+         -unique_browse_designer_qty, -session_id, -bought) %>% 
+  names() %>% 
+  set_names()
+
+eda_cont <- map(continuous, ~eda_continuous(balanced_data, .x))
+
+eda_dis <- map(discrete, ~eda_discrete(balanced_data, .x))
+
+eda_cat <- map(categorical, ~eda_categorical(balanced_data, .x))
+
+eda_balanced <- c(eda_cont, eda_dis, eda_cat)
+rm(eda_cont,eda_dis, eda_cat)
+
+```
+
+```{r , include=FALSE}
+
+M <- cor(unbalanced_data %>% 
+           select_if(is.numeric))
+corrplot(M, type = "upper", method = "number", diag = FALSE, 
+         order = 'hclust', addrect = 2)
+
+```
+
+```{r , message=FALSE, warning=FALSE, include=FALSE}
+
+unbalanced_chi <- unbalanced_data %>% 
+  select_if(is.factor) %>% 
+  map(function(x) chisq.test(x, unbalanced_data$bought))
+
+balanced_chi <- balanced_data %>% 
+  select_if(is.factor) %>% 
+  map(function(x) chisq.test(x, balanced_data$bought))
+
+unbalanced_chi_numeric <- unbalanced_data %>% 
+  select_if(is.numeric) %>% 
+  map(function(x) chisq.test(x, as.factor(unbalanced_data$bought)))
+
+balanced_chi_numeric <- balanced_data %>% 
+  select_if(is.numeric) %>% 
+  map(function(x) chisq.test(x, as.factor(balanced_data$bought)))
+
+```
+
+
+### Customer type
+
+Categorical variable with `r levels(unbalanced_data$customer_type)`.
+
+```{r echo=FALSE}
+grid.draw(eda_unbalanced$customer_type)
+```
+
+```{r echo=FALSE}
+grid.draw(eda_balanced$customer_type)
+```
+
+The graphical analysis shows inbalance towards prospect clients. When plotted together with target class it suggests a potential relationship with customers have a higher propency to buy again (happy customers?) 
+
+The results from the $\chi^2$ hypothesis test does not refuse the null hypothesis reinforcing the graphical analysis that a relationship might exist between this 2 variables that implies that recurrent customers buy more.
+
+```{r}
+unbalanced_chi["customer_type"]
+```
+
+```{r}
+balanced_chi["customer_type"]
+```
+
+### Segment
+
+Categorical variable with `r levels(unbalanced_data$segment)` levels. No information is provided regarding how this segment is generated and is highly unbalanced towards no segment.
+
+```{r echo=FALSE}
+grid.draw(eda_unbalanced$segment)
+```
+
+```{r}
+unbalanced_chi["segment"]
+```
+
+
+```{r echo=FALSE}
+grid.draw(eda_balanced$segment)
+```
+
+```{r}
+balanced_chi["segment"]
+```
+
+Despite the low number of sessions made by users with a segment the ones which have seem to have a very high conversion rate despite their level. The number of levels on a categorical variable affects the model, and in this case the extra information doesn't seem to be bringing any new impute therefore, **it will be collapses into a new variable with just two levels, has segment or it has no segment.**
+
+
+### Visitor type
+
+Categorical variable with 2 levels representing if a given user is a new or recurring user. It differs from customer type because it focus on visits and not actual conversion, therefore a returning user can be a prospect.
+
+```{r echo=FALSE}
+grid.draw(eda_unbalanced$visitor_type)
+```
+
+```{r echo=FALSE}
+unbalanced_chi["visitor_type"]
+```
+
+```{r echo=FALSE}
+grid.draw(eda_balanced$visitor_type)
+```
+
+```{r echo=FALSE}
+balanced_chi["visitor_type"]
+
+```
+
+
+This feature focus on the Visitors. The unbalanced data available shows almost a 50% split, situations that changes on the balanced dataset which has a inbalance towards returning visitors. The graphical analysis suggests a higher conversion rate for returning visitor that for new one, suggesting that continuous visits (engagment) plays a role in conversion.
+
+The current dataset has information regarding customer type crossed with visitor type can provide us with interesting information
+
+
+```{r}
+
+ggplot(unbalanced_data, aes(x = visitor_type, fill = customer_type)) + 
+  geom_bar(stat = "count") + 
+  theme_masterDS() +
+    labs(
+      x = "",
+      y = "",
+      title = "Visitor Type x Custor Type"
+    )
+
+```
+
+Has expected only a fraction of new visitors actually buy on the first session hinting that the conversion journey is longer than one session, meaning than several visits are needed before a first conversion. We don't have enough information to conclude about the number of sessions needed (journey lenght) and neither the session index given a time window (eg: the current session is the #3 in the last 28 days) which is know to have a impact on conversion.
+
+
+### Is subscribed
+
+
+```{r}
+
+grid.draw(eda_unbalanced$is_subscribed)
+
+```
+
+
+```{r}
+
+grid.draw(eda_balanced$is_subscribed)
+
+```
+
+For both datasets the class majority is NA. From the information given we cannot conclude that we can remove this feature from the model, and given the number of observations affected we will look for imputation alternatives.
+
+If a particular variable is having more missing values that rest of the variables in the dataset, and, if by removing that one variable you can save many observations then is advisable to remove. But in this case, the fact a user is subscribed is a strong signal and one of the few (apart from segment) which provides insight about the companies marketing strategy. Removing this feature would mean removing signal regarding an ongoing engagement strategy. A concervative approach would be to consider all missing values as non subscribers. Given the context of this project an alternative root of statistical imputation will be used relying on a knn algorithm with a small number of neighbors (3 = 2 levels + 1)
+
+
+
+
+
+<!--chapter:end:02.3-Client_Segment_related_Features.Rmd-->
+
+```{r include=FALSE, cache=FALSE}
+rm(list = ls(all = TRUE))
+```
+## Device and Geography related Features
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+
+library(tidyverse)
+library(corrplot)
+library(car)
+library(tidymodels)
+library(mice)
+library(forecast)
+
+# script with visual functions
+source("scripts/eda_functions.r")
+
+# import data
+unbalanced_data <- read_csv("./data/train_full.csv") %>% select(-...1)
+balanced_data <- read_csv("./data/train_balanced.csv") %>% select(-...1)
+
+# convert categorical and dummy to factor variable
+unbalanced_data <- unbalanced_data %>% 
+  mutate_at(vars(
+    !contains(c("duration", "view_qty", "unique_product_qty",
+                "unique_browse_designer_qty", "unique_browse_category_qty"))
+    ), ~ as.factor(.))
+
+balanced_data <- balanced_data %>% 
+  mutate_at(vars(
+    !contains(c("duration", "view_qty", "unique_product_qty",
+                "unique_browse_designer_qty", "unique_browse_category_qty"))
+    ), ~ as.factor(.))
+
+```
+
+```{r unbalanced data eda plots journey, include=FALSE, include=FALSE}
+
+continuous <- unbalanced_data %>% 
+  select(duration) %>% 
+  names() %>% 
+  set_names()
+ 
+discrete <- unbalanced_data %>% 
+  select(view_qty, unique_product_qty, unique_browse_designer_qty) %>% 
+  names() %>% 
+  set_names()
+
+categorical <- unbalanced_data %>% 
+  select(-duration, -view_qty, -unique_product_qty, 
+         -unique_browse_designer_qty, -session_id, -bought) %>% 
+  names() %>% 
+  set_names()
+
+eda_cont <- map(continuous, ~eda_continuous(unbalanced_data, .x))
+
+eda_dis <- map(discrete, ~eda_discrete(unbalanced_data, .x))
+
+eda_cat <- map(categorical, ~eda_categorical(unbalanced_data, .x))
+
+eda_unbalanced <- c(eda_cont, eda_dis, eda_cat)
+rm(eda_cont,eda_dis, eda_cat)
+
+```
+
+```{r balanced data eda plots journey, balanced data, include=FALSE, include=FALSE}
+
+continuous <- balanced_data %>% 
+  select(duration) %>% 
+  names() %>% 
+  set_names()
+
+discrete <- balanced_data %>% 
+  select(view_qty, unique_product_qty, unique_browse_designer_qty) %>% 
+  names() %>% 
+  set_names()
+
+categorical <- balanced_data %>% 
+  select(-duration, -view_qty, -unique_product_qty, 
+         -unique_browse_designer_qty, -session_id, -bought) %>% 
+  names() %>% 
+  set_names()
+
+eda_cont <- map(continuous, ~eda_continuous(balanced_data, .x))
+
+eda_dis <- map(discrete, ~eda_discrete(balanced_data, .x))
+
+eda_cat <- map(categorical, ~eda_categorical(balanced_data, .x))
+
+eda_balanced <- c(eda_cont, eda_dis, eda_cat)
+rm(eda_cont,eda_dis, eda_cat)
+
+```
+
+```{r correlation plot journey, correlation plot, include=FALSE}
+
+M <- cor(unbalanced_data %>% 
+           select_if(is.numeric))
+corrplot(M, type = "upper", method = "number", diag = FALSE, 
+         order = 'hclust', addrect = 2)
+
+```
+
+```{r Chi-squared hipothesis test journey, message=FALSE, warning=FALSE, include=FALSE}
+
+unbalanced_chi <- unbalanced_data %>% 
+  select_if(is.factor) %>% 
+  map(function(x) chisq.test(x, unbalanced_data$bought))
+
+balanced_chi <- balanced_data %>% 
+  select_if(is.factor) %>% 
+  map(function(x) chisq.test(x, balanced_data$bought))
+
+unbalanced_chi_numeric <- unbalanced_data %>% 
+  select_if(is.numeric) %>% 
+  map(function(x) chisq.test(x, as.factor(unbalanced_data$bought)))
+
+balanced_chi_numeric <- balanced_data %>% 
+  select_if(is.numeric) %>% 
+  map(function(x) chisq.test(x, as.factor(balanced_data$bought)))
+
+```
+
+
+### Browser name
+
+Categorical variable representing the browser used as source for each session. From the available information from the unbalanced data we have 52 different browsers present on this dataset. Most of this levels have only a small number of sessions and will be colapsed during the preprocess
+
+```{r echo=FALSE}
+
+unique(unbalanced_data$browser_name)
+
+```
+
+
+```{r echo=FALSE}
+
+grid.draw(eda_unbalanced$browser_name)
+
+```
+
+
+```{r echo=FALSE}
+
+grid.draw(eda_balanced$browser_name)
+
+```
+
+### Country
+
+Categorical variable containing the country of origin for each session.Most of this levels have only a small number of sessions and will be colapsed during the preprocess
+
+```{r echo=FALSE}
+
+unique(unbalanced_data$country)
+
+```
+
+
+```{r echo=FALSE}
+
+grid.draw(eda_unbalanced$country)
+
+```
+
+
+```{r echo=FALSE}
+
+grid.draw(eda_balanced$country)
+
+```
+
+### Dealing with Missing Data
+
+Somo missing data was identified and will be imputed using statistical imputation (refer to customer type analysis)
+
+```{r echo=TRUE}
+md.pattern(unbalanced_data, rotate.names = TRUE)
+```
+
+```{r echo=TRUE}
+md.pattern(balanced_data,rotate.names = TRUE)
+```
+
+
+
+## Summary of findings
+
+- Features *Device Group* and *Platform* showed a strong relationship between them. Given that *Platform* provides more information *Device Group will be removed*
+- Features starting with *"has_"* refere to milestones on customer journey, therefore the need to include all of them should be taken in consideration. We will use PCA to merge this into one feature and experiment between the use of them individual or together,
+- *Duration* feature is Right Skewed and contains observations which lack business sense. To avoid any impact on the model, specially on ones more sensible to variance, it will be log transformed and observations above 24hours will be removed
+- Replace all *Missing values* on *country*, *browser_name* and *is_subscribed* using Nearest Neighbors imputation with a very a k of 3,
+- Reduce the number of observations of class country and browser_name by compressing smaller ones into a generic class named others. This will be done because some models do not manage very well the fact that some dummy variables only have one level,
+- Reduce the number of levels of Segment by re factoring into a class of has or not segment, 
+- Specially for the use of Neural Networks and Supervisor Vector Machines, numeric variables will be normalized and scaled
+- Converts *unique_browse_designer_qty, unique_product_qty, unique_browse_designer_qty, unique_browse_category_qty* to ratios over Total Pageviews (view_qty) which provides information on the amount of page views actually related to that category and subsquently log transform,
+- Sessions with duration lower than 2 seconds and a total page view of 0 or 1 will be removed,
+- *The graphical analysis already provides a important insight given the business objectives. From the unbalanced data available we can conclude that around of 46% shopping carts are lost on that session. That raises a question of how are this recovered (example on a next session) or if this means that all this sales are lost right at the end of the sales funnel*.
+
+
+<!--chapter:end:02.4-Device_and_Geography_related_Features.Rmd-->
+
+```{r include=FALSE, cache=FALSE}
+rm(list = ls(all = TRUE))
+```
+# Data transformations
+
+```{r , message=TRUE, warning=FALSE}
+# improt libraries
+library(tidymodels)
+library(tidyverse)
+
+# import and prepare data
+# import data
+unbalanced_data <- read_csv("./data/train_full.csv") %>% 
+  select(-...1, -session_id) %>% 
+  mutate(bought = as.factor(bought))
+balanced_data <- read_csv("./data/train_balanced.csv") %>% 
+  select(-...1, -session_id) %>% 
+  mutate(bought = as.factor(bought))
+
+```
+
+The findings from the data exploration stage will be used to preprocess the data to be used for each model. Each model requires a set of specific transformation and each algorithm treats inputs differently (eg: Nearest Neigbors are sensible to scale, while naives bayes is not) so the pre process should be consider on a model experiment base.
+
+Post-processing and model definition will be done on the next stage.
+
+A number of key prepocess transformations are considered:
+- feature selection and reducion. This is made using domain knowledge and looking at correlation between features. Nonetheless there is a test using full model. If not based on domain knowledge will use PCA transform.
+
+- imputation of missing data when needed
+
+- Scale and center features when required by the model
+
+- Transform skwed features specially for models where variance plays a role or rely on gaussian (linear model). Given the business focus of interpreting the model (focus on inference) when possible will use log transform instead of more complex Box Plot transforms $\lambda$.
+
+## Summary of transformation steps identified during EDA
+
+The following transformations were identified during the EDA stage:
+
+- Features *Device Group* and *Platform* showed a strong relationship between them. Given that *Platform* provides more information *Device Group will be removed*
+- Features starting with *"has_"* refers to milestones on customer journey, therefore the need to include all of them should be taken in consideration. We will use PCA to merge this into one feature and experiment between the use of them individual or together,
+- *Duration* feature is Right Skewed and contains observations which lack business sense. To avoid any impact on the model, specially on ones more sensible to variance, it will be log transformed and observations above 24hours will be removed
+- Replace all *Missing values* on *country*, *browser_name* and *is_subscribed* using Nearest Neighbors imputation with a very a k of 3,
+- Reduce the number of observations of class country and browser_name by compressing smaller ones into a generic class named others. This will be done because some models do not manage very well the fact that some dummy variables only have one level,
+- Reduce the number of levels of Segment by re factoring into a class of has or not segment, 
+- Specially for the use of Neural Networks and Supervisor Vector Machines, numeric variables will be normalized and scaled
+- Converts *unique_browse_designer_qty, unique_product_qty, unique_browse_designer_qty, unique_browse_category_qty* to ratios over Total Pageviews (view_qty) which provides information on the amount of page views actually related to that category and subsequently log transform,
+- Sessions with duration lower than 2 seconds and a total page view of 0 or 1 will be removed
+
+```{r}
+
+# For balanced data and to be used generically for all models
+preprocess <- 
+  recipe(bought ~ . , data = balanced_data) %>%
+  step_ratio(starts_with("unique_"), denom = denom_vars(view_qty)) %>% 
+  step_rm(device_group, unique_product_qty, unique_browse_designer_qty, 
+          unique_browse_category_qty) %>% 
+  step_other(country, browser_name, threshold = 0.05) %>% 
+  step_log(view_qty) %>%
+  step_filter(
+    duration < 60 * 60 * 24,
+    !((view_qty <= 1) & (duration <= 2))
+    ) %>%
+  step_mutate(is_segment = ifelse(segment == "without_segment", 0, 1)) %>% 
+  step_rm(segment) %>% 
+  step_string2factor(all_nominal_predictors()) %>% 
+  step_impute_knn(all_predictors(), neighbors = 3) %>%
+  step_pca(starts_with("has_"), treshold = 0.8) %>% 
+  step_corr(all_numeric_predictors(), threshold = .5) 
+
+preprocess_logit_nn <- 
+  preprocess %>% 
+  step_scale(all_numeric_predictors()) %>% 
+  step_dummy(all_nominal_predictors()) 
+  
+
+preprocess_mlp_svm <- 
+  preprocess %>% 
+  step_normalize(all_numeric_predictors()) %>% 
+  step_scale(all_numeric_predictors()) %>% 
+  step_dummy(all_nominal_predictors()) %>% 
+  step_zv(all_predictors())
+
+```
+
+```{r}
+
+tidy(preprocess)
+
+``` 
+
+
+```{r}
+
+tidy(preprocess_logit_nn)
+
+```
+
+
+```{r}
+
+tidy(preprocess_mlp_svm)
+
+``` 
+
+
+```{r preprocess workflow}
+
+preprocess_data <-  recipe(bought ~ . , data = balanced_data) %>%
+  step_ratio(starts_with("unique_"), denom = denom_vars(view_qty)) %>% 
+  step_rm(device_group, unique_product_qty, unique_browse_designer_qty, 
+          unique_browse_category_qty) %>% 
+  step_other(country, browser_name, threshold = 0.05) %>%
+  step_mutate(is_bounce = ifelse(view_qty == 1, 1, 0)) %>%
+  step_log(view_qty) %>%
+  step_filter(duration < 60 * 60 * 24,
+    !((view_qty <= 1) & (duration <= 2))) %>%
+  step_mutate(is_segment = ifelse(segment == "without_segment", 0, 1)) %>% 
+  step_rm(segment) %>% 
+  step_string2factor(all_nominal_predictors()) %>% 
+  step_impute_knn(all_predictors(), neighbors = 3) %>%
+  step_pca(starts_with("has_"), num_comp = 1) %>% 
+  step_corr(all_numeric_predictors(), threshold = .5) %>% 
+  step_normalize(all_numeric_predictors()) %>% 
+  step_scale(all_numeric_predictors()) %>% 
+  step_dummy(all_nominal_predictors()) %>% 
+  step_zv(all_predictors()) %>% 
+  prep() %>% 
+  bake(new_data = NULL) 
+
+```
+
+```{r}
+
+summary(preprocess_data)
+
+```
+
+
+<!--chapter:end:03-data_transformations.Rmd-->
+
+```{r include=FALSE, cache=FALSE}
+rm(list = ls(all = TRUE))
+```
+# Modeling
+
+```{r libraries}
+# libraries
+library(tidyverse)
+library(tidymodels)
+library(keras)
+library(workflowsets)
+library(discrim)
+library(factoextra)
+
+```
+
+```{r data preprocess, message=TRUE, warning=FALSE, include=FALSE}
+# import data and prepocess
+
+# import and prepare data
+# import data
+unbalanced_data <- read_csv("./data/train_full.csv") %>% 
+  select(-...1, -session_id) %>% 
+  mutate(bought = as.factor(bought))
+balanced_data <- read_csv("./data/train_balanced.csv") %>% 
+  select(-...1, -session_id) %>% 
+  mutate(bought = as.factor(bought))
+
+```
+
+```{r resampling folds, message=TRUE, warning=FALSE}
+
+# cv 10 folds
+
+set.seed(1234)
+# To keep speed of processing no repeats will be used during resampling
+# folds <- vfold_cv(balanced_data, v = 10, repeats = 5)
+
+folds <- vfold_cv(balanced_data, v = 10)
+
+
+```
+
+The following planning will be used for a list of candidate models:
+
+1. A Model baseline will be defined and will be used to compare against other models
+2. Define training and evaluation series. Using Cross Validation with 10 folds
+3. Initial experiment using preprocessing workflow
+4. When needed given this project objectives hyperparameters will be tuned
+5. Retrain model with new hyperparameters
+6. Model comparison
+
+Given the goals set for this project we shall focus on Accuracy and Auc ROC as metrics to compare models. 
+
+The initial experiment uses the preprocess schema and the default hyperparameters for each model.
+
+:::{.yellowbox}
+
+Given the name of the files available and since no more information is available, the subsquent teste will be done assuming that a test split was already made and the available information is only for trainning. Therefore, the cross validation resampling will be done over this training dataset.
+
+:::
+
+
+
+## Baseline
+
+Given its simplicity and flexibility a Naive Bayes classifier will be used as baseline for this project. The preprocess was set to a minimum in order to measure the impact it might have on the final output. The engine used for this algorithm does not accept missing data, therefore we did a 3nn imputation.
+
+```{r}
+
+# 1. specify the model
+naive_Bayes <-
+  discrim::naive_Bayes() %>%
+  set_engine('klaR')
+
+# 2. preprocessing 
+preprocess <- 
+  recipe(bought ~ ., data = balanced_data) %>%
+  step_string2factor(all_nominal_predictors()) %>% 
+  step_impute_knn(all_predictors(), neighbors = 3) %>%
+  step_scale(all_numeric_predictors())
+  
+
+# 3, Buildworkflow
+baseline_wflow <- 
+  workflow() %>% 
+  add_model(naive_Bayes) %>% 
+  add_recipe(preprocess)
+
+#4. Fit model
+fit_control <- control_resamples(save_pred = TRUE, save_workflow = TRUE)
+
+baseline_fit <- 
+  baseline_wflow %>% 
+  fit_resamples(folds, verbose = TRUE, control = fit_control)
+
+
+#5. Performance metrics over the validation set
+collect_metrics(baseline_fit)
+
+```
+
+```{r}
+
+conf_mat_resampled(baseline_fit)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--chapter:end:04-modeling.Rmd-->
+
+```{r include=FALSE, cache=FALSE}
+rm(list = ls(all = TRUE))
+```
+## Naive Bayes Classifier
+
+```{r }
+# libraries
+library(tidyverse)
+library(tidymodels)
+library(keras)
+library(workflowsets)
+library(discrim)
+library(factoextra)
+
+```
+
+```{r , message=TRUE, warning=FALSE, include=FALSE}
+# import data and prepocess
+
+# import and prepare data
+# import data
+unbalanced_data <- read_csv("./data/train_full.csv") %>% 
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
+balanced_data <- read_csv("./data/train_balanced.csv") %>% 
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
+
+# script with visual functions
+source("scripts/eda_functions.r")
+
+
+```
+
+```{r , message=TRUE, warning=FALSE}
+
+# cv 10 folds
+
+set.seed(1234)
+# To keep speed of processing no repeats will be used during resampling
+# folds <- vfold_cv(balanced_data, v = 10, repeats = 5)
+
+folds <- vfold_cv(balanced_data, v = 10)
+
+
+```
+
+### Initial experiments
+
+Following the baseline but introducing pre-processing
+
+```{r}
+
+# 1. specify the model
+naive_Bayes <-
+  discrim::naive_Bayes() %>%
+  set_engine('klaR')
+
+# 2. preprocessing 
+preprocess <- 
+  recipe(bought ~ . , data = balanced_data) %>%
+  step_ratio(starts_with("unique_"), denom = denom_vars(view_qty)) %>% 
+  step_rm(device_group, unique_product_qty, unique_browse_designer_qty, 
+          unique_browse_category_qty) %>% 
+  step_other(country, browser_name, threshold = 0.05) %>% 
+  step_log(view_qty) %>%
+  step_filter(
+    duration < 60 * 60 * 24,
+    !((view_qty <= 1) & (duration <= 2))
+    ) %>%
+  step_string2factor(all_nominal_predictors()) %>% 
+  step_impute_knn(all_predictors(), neighbors = 3) %>%
+  step_pca(starts_with("has_"), num_comp = 1) %>% 
+  step_corr(all_numeric_predictors(), threshold = .5) 
+  
+
+preprocess_logit_nn <- 
+  preprocess %>% 
+  step_dummy(all_nominal_predictors()) %>% 
+  step_scale(all_numeric_predictors())
+
+# 3, Buildworkflow
+nbayes_wflow <- 
+  workflow() %>% 
+  add_model(naive_Bayes) %>% 
+  add_recipe(preprocess_logit_nn)
+
+#4. Fit model
+fit_control <- control_resamples(save_pred = TRUE, save_workflow = TRUE)
+
+nbayes_fit <- 
+  nbayes_wflow %>% 
+  fit_resamples(folds, verbose = TRUE, control = fit_control)
+
+
+#5. Performance metrics over the validation set
+collect_metrics(nbayes_fit)
+
+```
+
+
+```{r}
+# export files
+
+save(nbayes_fit, file = "_models/nbayes_fit.RData")
+```
+
+<!--chapter:end:04.1-Naive_Bayes_Classifier.Rmd-->
+
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r include=FALSE, cache=FALSE}
+rm(list = ls(all = TRUE))
+```
+
+## Logistic Regression
+
+
+```{r }
+# libraries
+library(tidyverse)
+library(tidymodels)
+library(keras)
+library(workflowsets)
+library(discrim)
+library(factoextra)
+
+```
+
+```{r , message=TRUE, warning=FALSE, include=FALSE}
+# import data and prepocess
+
+# import and prepare data
+# import data
+unbalanced_data <- read_csv("./data/train_full.csv") %>% 
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
+balanced_data <- read_csv("./data/train_balanced.csv") %>% 
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
+
+# script with visual functions
+source("scripts/eda_functions.r")
+
+
+```
+
+```{r , message=TRUE, warning=FALSE}
+
+# cv 10 folds
+
+set.seed(1234)
+# To keep speed of processing no repeats will be used during resampling
+# folds <- vfold_cv(balanced_data, v = 10, repeats = 5)
+
+folds <- vfold_cv(balanced_data, v = 10)
+
+```
+
+### Initial experiments
+
+Using library glml
+
+```{r}
+
+# 1. specify the model
+logistic_reg_glm_spec <-
+  logistic_reg() %>%
+  set_engine('glm') 
+
+# 2. preprocessing 
+preprocess <- 
+  recipe(bought ~ . , data = balanced_data) %>%
+  step_ratio(starts_with("unique_"), denom = denom_vars(view_qty)) %>% 
+  step_rm(device_group, unique_product_qty, unique_browse_designer_qty, 
+          unique_browse_category_qty) %>% 
+  step_other(country, browser_name, threshold = 0.05) %>% 
+  step_log(view_qty) %>%
+  step_filter(
+    duration < 60 * 60 * 24,
+    !((view_qty <= 1) & (duration <= 2))
+    ) %>%
+  step_string2factor(all_nominal_predictors()) %>% 
+  step_impute_knn(all_predictors(), neighbors = 3) %>%
+  step_pca(starts_with("has_"), num_comp = 1) %>% 
+  step_corr(all_numeric_predictors(), threshold = .5) 
+  
+  
+
+preprocess_logit_nn <- 
+  preprocess %>% 
+  step_dummy(all_nominal_predictors()) %>% 
+  step_scale(all_numeric_predictors())
+
+# 3, Buildworkflow
+logit_wflow <- 
+  workflow() %>% 
+  add_model(logistic_reg_glm_spec) %>% 
+  add_recipe(preprocess_logit_nn)
+
+#4. Fit model
+fit_control <- control_resamples(save_pred = TRUE, save_workflow = TRUE)
+
+logit_fit <- 
+  logit_wflow %>% 
+  fit_resamples(folds, verbose = TRUE, control = fit_control)
+
+
+#5. Performance metrics over the validation set
+collect_metrics(logit_fit)
+
+```
+
+```{r}
+# export files
+
+save(logit_fit, file = "_models/logit_fit.RData")
+```
+
+<!--chapter:end:04.2-logistic_regression.Rmd-->
+
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r include=FALSE, cache=FALSE}
+rm(list = ls(all = TRUE))
+```
+
+## Knn
+
+```{r }
+# libraries
+library(tidyverse)
+library(tidymodels)
+library(workflowsets)
+library(discrim)
+library(factoextra)
+
+```
+
+```{r , message=TRUE, warning=FALSE, include=FALSE}
+# import data and prepocess
+
+# import and prepare data
+# import data
+unbalanced_data <- read_csv("./data/train_full.csv") %>% 
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
+balanced_data <- read_csv("./data/train_balanced.csv") %>% 
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
+
+# script with visual functions
+source("scripts/eda_functions.r")
+
+
+```
+
+```{r , message=TRUE, warning=FALSE}
+
+# cv 10 folds
+
+set.seed(1234)
+# To keep speed of processing no repeats will be used during resampling
+# folds <- vfold_cv(balanced_data, v = 10, repeats = 5)
+
+folds <- vfold_cv(balanced_data, v = 10)
+
+
+```
+
+### Initial experiment
+
+
+```{r}
+# 1. specify the model
+kknn <-
+  nearest_neighbor(neighbors = 3) %>%
+  set_engine('kknn') %>%
+  set_mode('classification')
+
+# 2. preprocessing 
+preprocess <- 
+  recipe(bought ~ . , data = balanced_data) %>%
+  step_ratio(starts_with("unique_"), denom = denom_vars(view_qty)) %>% 
+  step_rm(device_group, unique_product_qty, unique_browse_designer_qty, 
+          unique_browse_category_qty) %>% 
+  step_other(country, browser_name, threshold = 0.05) %>% 
+  step_log(view_qty) %>%
+  step_filter(
+    duration < 60 * 60 * 24,
+    !((view_qty <= 1) & (duration <= 2))
+    ) %>%
+  step_string2factor(all_nominal_predictors()) %>% 
+  step_impute_knn(all_predictors(), neighbors = 3) %>%
+  step_pca(starts_with("has_"), num_comp = 1) %>% 
+  step_corr(all_numeric_predictors(), threshold = .5) 
+  
+  
+
+preprocess_logit_nn <- 
+  preprocess %>% 
+  step_scale(all_numeric_predictors()) %>% 
+  step_dummy(all_nominal_predictors()) 
+
+# 3, Buildworkflow
+kknn_wflow <- 
+  workflow() %>% 
+  add_model(kknn) %>% 
+  add_recipe(preprocess_logit_nn)
+
+#4. Fit model
+fit_control <- control_resamples(save_pred = TRUE, save_workflow = TRUE)
+
+kknn_fit <- 
+  kknn_wflow %>% 
+  fit_resamples(folds, verbose = TRUE, control = fit_control)
+
+
+#5. Performance metrics over the validation set
+collect_metrics(kknn_fit)
+
+```
+
+```{r }
+
+kknn_fit %>% 
+  collect_predictions() %>% 
+  group_by(id) %>% 
+  roc_curve(bought, .pred_0) %>% 
+  ggplot(aes(1- specificity, sensitivity, color = id)) +
+  geom_abline(lty = 3, color = "gray80", size = 1) +
+  geom_path(show.legend = FALSE, alpha = 0.6, size = 1) +
+  theme_masterDS() +
+  coord_equal()
+
+```
+
+### Fitting multiple models using grid search
+
+```{r }
+
+#1. list model to inject into workflow
+kknn_grid<-
+  nearest_neighbor(neighbors = tune()) %>%
+  set_engine('kknn') %>%
+  set_mode('classification')
+
+
+models_flow <- 
+  workflow_set(
+    preproc = list(recipe = preprocess_logit_nn),
+    models = list(kknn_grid),
+    cross = TRUE 
+    )
+
+kknn_wf_fit <- 
+  models_flow %>%
+  workflow_map(
+    fn ="tune_grid",
+    resamples = folds,
+    grid = 10 ,
+    metrics = metric_set(yardstick::roc_auc, yardstick::accuracy, yardstick::sens),
+    verbose = TRUE
+    ) 
+
+```
+
+```{r}
+
+autoplot(kknn_wf_fit) +
+  theme_masterDS()
+
+```
+
+```{r}
+# export files
+
+save(kknn_fit, file = "_models/kknn_fit.RData")
+save(kknn_wf_fit, file = "_models/kknn_wf_grid.RData")
+```
+
+<!--chapter:end:04.3-naive_bayes.Rmd-->
+
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r include=FALSE, cache=FALSE}
+rm(list = ls(all = TRUE))
+```
+
+## Workflow: Rpart
+
+```{r }
+# libraries
+library(tidyverse)
+library(tidymodels)
+library(keras)
+library(workflowsets)
+library(discrim)
+library(factoextra)
+
+```
+
+```{r, message=TRUE, warning=FALSE, include=FALSE}
+# import data and prepocess
+
+# import and prepare data
+# import data
+unbalanced_data <- read_csv("./data/train_full.csv") %>% 
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
+balanced_data <- read_csv("./data/train_balanced.csv") %>% 
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
+
+# script with visual functions
+source("scripts/eda_functions.r")
+
+
+```
+
+```{r , message=TRUE, warning=FALSE}
+
+# cv 10 folds
+
+set.seed(1234)
+# To keep speed of processing no repeats will be used during resampling
+# folds <- vfold_cv(balanced_data, v = 10, repeats = 5)
+
+folds <- vfold_cv(balanced_data, v = 10)
+
+
+```
+
+### Initial experiment
+
+Most packages for tree-based models use the formula interface but do not encode the categorical predictors as dummy variables.
+
+```{r}
+
+# 1. specify the model
+tree_model <- 
+  decision_tree(min_n = 2) %>% 
+  set_engine("rpart") %>% 
+  set_mode("classification")
+
+# 2. preprocessing 
+preprocess <- 
+  recipe(bought ~ . , data = balanced_data) %>%
+  step_ratio(starts_with("unique_"), denom = denom_vars(view_qty)) %>% 
+  step_rm(device_group, unique_product_qty, unique_browse_designer_qty, 
+          unique_browse_category_qty) %>% 
+  step_other(country, browser_name, threshold = 0.05) %>% 
+  step_log(view_qty) %>%
+  step_filter(
+    duration < 60 * 60 * 24,
+    !((view_qty <= 1) & (duration <= 2))
+    ) %>%
+  step_string2factor(all_nominal_predictors()) %>% 
+  step_impute_knn(all_predictors(), neighbors = 3) %>%
+  step_pca(starts_with("has_"), num_comp = 1) %>% 
+  step_corr(all_numeric_predictors(), threshold = .5) 
+  
+  
+# 3, Buildworkflow
+tree_wflow <- 
+  workflow() %>% 
+  add_model(tree_model) %>% 
+  add_recipe(preprocess)
+
+#4. Fit model
+fit_control <- control_resamples(save_pred = TRUE, save_workflow = TRUE)
+
+tree_fit <- 
+  tree_wflow %>% 
+  fit_resamples(folds, verbose = TRUE, control = fit_control)
+
+
+#5. Performance metrics over the validation set
+collect_metrics(tree_fit)
+
+```
+
+```{r}
+
+tree_fit %>% 
+  collect_predictions() %>% 
+  group_by(id) %>% 
+  roc_curve(bought, .pred_0) %>% 
+  ggplot(aes(1- specificity, sensitivity, color = id)) +
+  geom_abline(lty = 3, color = "gray80", size = 1) +
+  geom_path(show.legend = FALSE, alpha = 0.6, size = 1) +
+  theme_masterDS() +
+  coord_equal()
+
+```
+
+```{r}
+# export files
+
+save(tree_fit, file = "_models/tree_fit.RData")
+```
+
+<!--chapter:end:04.4-decision_tree.Rmd-->
+
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r include=FALSE, cache=FALSE}
+rm(list = ls(all = TRUE))
+```
+
+## Workflow: Random Forest
+
+```{r }
+# libraries
+library(tidyverse)
+library(tidymodels)
+library(keras)
+library(workflowsets)
+library(discrim)
+library(factoextra)
+
+```
+
+```{r, message=TRUE, warning=FALSE, include=FALSE}
+# import data and prepocess
+
+# import and prepare data
+# import data
+unbalanced_data <- read_csv("./data/train_full.csv") %>% 
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
+balanced_data <- read_csv("./data/train_balanced.csv") %>% 
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
+# script with visual functions
+source("scripts/eda_functions.r")
+
+
+```
+
+```{r , message=TRUE, warning=FALSE}
+
+# cv 10 folds
+
+set.seed(1234)
+# To keep speed of processing no repeats will be used during resampling
+# folds <- vfold_cv(balanced_data, v = 10, repeats = 5)
+
+folds <- vfold_cv(balanced_data, v = 10)
+
+```
+
+
+### Initial experiment
+
+```{r}
+
+# 1. specify the model
+rand_forest <-
+  rand_forest(mtry = 1000) %>%
+  set_engine('ranger') %>%
+  set_mode('classification')
+
+# 2. preprocessing 
+preprocess <- 
+  recipe(bought ~ . , data = balanced_data) %>%
+  step_ratio(starts_with("unique_"), denom = denom_vars(view_qty)) %>% 
+  step_rm(device_group, unique_product_qty, unique_browse_designer_qty, 
+          unique_browse_category_qty) %>% 
+  step_other(country, browser_name, threshold = 0.05) %>% 
+  step_log(view_qty) %>%
+  step_filter(
+    duration < 60 * 60 * 24,
+    !((view_qty <= 1) & (duration <= 2))
+    ) %>%
+  step_string2factor(all_nominal_predictors()) %>% 
+  step_impute_knn(all_predictors(), neighbors = 3) %>%
+  step_pca(starts_with("has_"), num_comp = 1) %>% 
+  step_corr(all_numeric_predictors(), threshold = .5) 
+  
+  
+# 3, Buildworkflow
+forest_wflow <- 
+  workflow() %>% 
+  add_model(rand_forest) %>% 
+  add_recipe(preprocess)
+
+#4. Fit model
+fit_control <- control_resamples(save_pred = TRUE, save_workflow = TRUE)
+
+forest_fit <- 
+  forest_wflow %>% 
+  fit_resamples(folds, verbose = TRUE, control = fit_control)
+
+
+#5. Performance metrics over the validation set
+collect_metrics(forest_fit)
+
+
+```
+
+```{r }
+
+forest_fit %>% 
+  collect_predictions() %>% 
+  group_by(id) %>% 
+  roc_curve(bought, .pred_0) %>% 
+  ggplot(aes(1- specificity, sensitivity, color = id)) +
+  geom_abline(lty = 3, color = "gray80", size = 1) +
+  geom_path(show.legend = FALSE, alpha = 0.6, size = 1) +
+  theme_masterDS() +
+  coord_equal()
+
+```
+
+### Fitting multiple models using grid search
+
+```{r }
+
+#1. list model to inject into workflow
+rand_forest_grid <-
+  rand_forest(mtry = tune(), trees = tune(), min_n = tune()) %>%
+  set_engine('ranger') %>%
+  set_mode('classification')
+
+
+models_flow <- 
+  workflow_set(
+    preproc = list(recipe = preprocess),
+    models = list(rand_forest_grid),
+    cross = TRUE 
+    )
+
+forest_wf_fit <- 
+  models_flow %>%
+  workflow_map(
+    fn ="tune_grid",
+    resamples = folds,
+    grid = 10 ,
+    metrics = metric_set(yardstick::roc_auc, yardstick::accuracy, yardstick::sens),
+    verbose = TRUE
+    ) 
+
+```
+
+```{r}
+
+autoplot(forest_wf_fit) +
+  theme_masterDS()
+
+```
+
+
+
+```{r}
+# export files
+
+save(forest_fit, file = "_models/forest_fit.RData")
+save(forest_wf_fit, file = "_models/forest_wf_grif.RData")
+
+```
+
+<!--chapter:end:04.5-random_forest.Rmd-->
+
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r include=FALSE, cache=FALSE}
+rm(list = ls(all = TRUE))
+```
+
+## Workflow: Single Layer Neural Network
+
+
+```{r }
+# libraries
+library(tidyverse)
+library(tidymodels)
+library(workflowsets)
+library(factoextra)
+
+```
+
+```{r , message=TRUE, warning=FALSE, include=FALSE}
+# import data and prepocess
+
+# import and prepare data
+# import data
+unbalanced_data <- read_csv("./data/train_full.csv") %>% 
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
+balanced_data <- read_csv("./data/train_balanced.csv") %>% 
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
+
+# script with visual functions
+source("scripts/eda_functions.r")
+
+
+```
+
+```{r , message=TRUE, warning=FALSE}
+
+# cv 10 folds
+
+set.seed(1234)
+# To keep speed of processing no repeats will be used during resampling
+# folds <- vfold_cv(balanced_data, v = 10, repeats = 5)
+
+folds <- vfold_cv(balanced_data, v = 10)
+
+```
+
+
+
+### Initial experiment
+
+
+```{r}
+# 1. specify the model
+sl_nnet <-
+  mlp(hidden_units = NULL, penalty = NULL, epochs = NULL) %>%
+  set_engine('nnet') %>%
+  set_mode('classification') 
+
+
+# 2. preprocessing 
+preprocess <- 
+ recipe(bought ~ . , data = balanced_data) %>%
+  step_ratio(starts_with("unique_"), denom = denom_vars(view_qty)) %>% 
+  step_rm(device_group, unique_product_qty, unique_browse_designer_qty, 
+          unique_browse_category_qty) %>% 
+  step_other(country, browser_name, threshold = 0.05) %>% 
+  step_log(view_qty) %>%
+  step_filter(
+    duration < 60 * 60 * 24,
+    !((view_qty <= 1) & (duration <= 2))
+    ) %>%
+  step_string2factor(all_nominal_predictors()) %>% 
+  step_impute_knn(all_predictors(), neighbors = 3) %>%
+  step_pca(starts_with("has_"), num_comp = 1) %>% 
+  step_corr(all_numeric_predictors(), threshold = .5) 
+  
+  
+preprocess_mlp_svm <- 
+  preprocess %>% 
+  step_normalize(all_numeric_predictors()) %>% 
+  step_scale(all_numeric_predictors()) %>% 
+  step_dummy(all_nominal_predictors()) %>% 
+  step_zv(all_predictors())
+
+  
+# 3, Buildworkflow
+sl_wflow <- 
+  workflow() %>% 
+  add_model(sl_nnet) %>% 
+  add_recipe(preprocess_mlp_svm)
+
+#4. Fit model
+fit_control <- control_resamples(save_pred = TRUE, save_workflow = TRUE)
+
+sl_fit <- 
+  sl_wflow %>% 
+  fit_resamples(
+    resamples = folds, 
+    metrics = metric_set(yardstick::roc_auc, yardstick::accuracy, yardstick::sens, yardstick::specificity),
+    verbose = TRUE, 
+    control = fit_control)
+
+
+#5. Performance metrics over the validation set
+collect_metrics(sl_fit)
+
+```
+
+```{r }
+
+sl_fit %>% 
+  collect_predictions() %>% 
+  group_by(id) %>% 
+  roc_curve(bought, .pred_0) %>% 
+  ggplot(aes(1- specificity, sensitivity, color = id)) +
+  geom_abline(lty = 3, color = "gray80", size = 1) +
+  geom_path(show.legend = FALSE, alpha = 0.6, size = 1) +
+  theme_masterDS() +
+  coord_equal()
+
+```
+
+### Fitting multiple models using grid search
+
+```{r }
+
+#1. list model to inject into workflow
+sl_nnet <-
+  mlp(hidden_units = tune(), penalty = tune(), epochs = tune()) %>%
+  set_engine('nnet') %>%
+  set_mode('classification')
+
+
+models_flow <- 
+  workflow_set(
+    preproc = list(recipe = preprocess_mlp_svm),
+    models = list(sl_nnet),
+    cross = TRUE 
+    )
+
+nn_wf_fit <- 
+  models_flow %>%
+  workflow_map(
+    fn ="tune_grid",
+    resamples = folds,
+    grid = 10 ,
+    metrics = metric_set(yardstick::roc_auc, yardstick::sens, yardstick::accuracy,yardstick::spec),
+    verbose = TRUE
+    ) 
+
+```
+
+```{r}
+
+autoplot(nn_wf_fit) +
+  theme_masterDS()
+
+```
+
+```{r}
+autoplot(nn_wf_fit, select_best = TRUE) +
+  theme_masterDS()
+```
+
+```{r}
+rank_results(nn_wf_fit, rank_metric = "sens", select_best = TRUE) 
+```
+
+
+```{r}
+# export files
+
+save(sl_fit, file = "_models/sl_fit.RData")
+save(nn_wf_fit, file = "_models/nn_wf_fit.RData")
+
+```
+
+<!--chapter:end:04.6-nn.Rmd-->
+
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r include=FALSE, cache=FALSE}
+rm(list = ls(all = TRUE))
+```
+
+## Support Vector Machine
+
+```{r , include=FALSE}
+# libraries
+library(tidyverse)
+library(tidymodels)
+library(workflowsets)
+
+source("scripts/eda_functions.r")
+
+doParallel::registerDoParallel()
+
+```
+
+```{r , message=TRUE, warning=FALSE, include=FALSE}
+# import data and prepocess
+
+# import and prepare data
+# import data
+unbalanced_data <- read_csv("./data/train_full.csv") %>% 
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
+balanced_data <- read_csv("./data/train_balanced.csv") %>% 
+  dplyr::select(-...1, -session_id) %>% 
+  dplyr::mutate(bought = as.factor(bought))
+
+# script with visual functions
+source("scripts/eda_functions.r")
+
+
+```
+
+```{r, message=TRUE, warning=FALSE, include=FALSE}
+
+# cv 10 folds
+
+set.seed(1234)
+# To keep speed of processing no repeats will be used during resampling
+# folds <- vfold_cv(balanced_data, v = 10, repeats = 5)
+
+folds <- vfold_cv(balanced_data, v = 10)
+
+```
+
+### Initial experience: Linear Kernel
+
+A Linear Kernel with default parameters will be used as the basis for
+
+```{r }
+# 1. specify the model
+svm_linear <-
+  svm_linear(cost = 0.5) %>% 
+  set_engine("kernlab") %>% 
+  set_mode("classification")
+
+
+# 2. preprocessing 
+preprocess <- 
+  recipe(bought ~ . , data = balanced_data) %>%
+  step_ratio(starts_with("unique_"), denom = denom_vars(view_qty)) %>% 
+  step_rm(device_group, unique_product_qty, unique_browse_designer_qty, 
+          unique_browse_category_qty) %>% 
+  step_other(country, browser_name, threshold = 0.05) %>% 
+  step_log(view_qty) %>%
+  step_filter(
+    duration < 60 * 60 * 24,
+    !((view_qty <= 1) & (duration <= 2))
+    ) %>%
+  step_string2factor(all_nominal_predictors()) %>% 
+  step_impute_knn(all_predictors(), neighbors = 3) %>%
+  step_pca(starts_with("has_"), num_comp = 1) %>% 
+  step_corr(all_numeric_predictors(), threshold = .5) 
+  
+
+preprocess_mlp_svm <- 
+  preprocess %>% 
+  step_normalize(all_numeric_predictors()) %>% 
+  step_scale(all_numeric_predictors()) %>% 
+  step_dummy(all_nominal_predictors()) %>% 
+  step_zv(all_predictors()) 
+
+# 3, Buildworkflow
+svm_linear_wflow <- 
+  workflow() %>% 
+  add_model(svm_linear) %>% 
+  add_recipe(preprocess_mlp_svm)
+
+#4. Fit model
+fit_control <- control_grid(save_pred = TRUE, save_workflow = TRUE)
+
+svm_linear_fit <- 
+  svm_linear_wflow %>% 
+  fit_resamples(
+    resamples = folds, 
+    verbose = TRUE, 
+    metrics = metric_set(yardstick::roc_auc, yardstick::accuracy, yardstick::sens,yardstick::specificity),
+    control = fit_control)
+
+
+#5. Performance metrics over the validation set
+collect_metrics(svm_linear_fit)
+
+```
+
+```{r}
+
+conf_mat_resampled(svm_linear_fit)
+
+```
+
+```{r }
+
+svm_linear_fit %>% 
+  collect_predictions() %>% 
+  group_by(id) %>% 
+  roc_curve(bought, .pred_0) %>% 
+  ggplot(aes(1- specificity, sensitivity, color = id)) +
+  geom_abline(lty = 3, color = "gray80", size = 1) +
+  geom_path(show.legend = FALSE, alpha = 0.6, size = 1) +
+  theme_masterDS() +
+  coord_equal()
+
+```
+
+
+
+### Fitting multiple models
+
+```{r }
+
+#1. list model to inject into workflow
+svm_linear <-
+  svm_rbf(cost = tune()) %>% 
+  set_engine("kernlab") %>% 
+  set_mode("classification")
+
+svm_poly_kernlab_spec <-
+  svm_poly(cost = tune(), degree = tune(), scale_factor = tune(), margin = tune()) %>%
+  set_engine('kernlab') %>%
+  set_mode('classification')
+
+svm_rbf_kernlab_spec <-
+  svm_rbf(cost = tune(), rbf_sigma = tune(), margin = tune()) %>%
+  set_engine('kernlab') %>%
+  set_mode('classification')
+
+models_flow <- 
+  workflow_set(
+    preproc = list(recipe = preprocess_mlp_svm),
+    models = list(svm_ploy = svm_poly_kernlab_spec, svm_rbf = svm_rbf_kernlab_spec, linear = svm_linear),
+    cross = TRUE 
+    )
+
+```
+
+```{r}
+
+svm_wf_fit <- 
+  models_flow %>%
+  workflow_map(
+    fn ="tune_grid",
+    resamples = folds,
+    grid = 5,
+    metrics = metric_set(yardstick::roc_auc, yardstick::accuracy, yardstick::sens, yardstick::spec),
+    verbose = TRUE
+    ) 
+
+```
+
+```{r}
+
+autoplot(svm_wf_fit) +
+  theme_masterDS()
+
+```
+
+```{r}
+autoplot(svm_wf_fit, select_best = TRUE) +
+  theme_masterDS()
+```
+
+```{r}
+rank_results(svm_wf_fit, rank_metric = "sens", select_best = TRUE) 
+
+```
+
+```{r}
+
+rank_results(svm_wf_fit, rank_metric = "accuracy", select_best = TRUE) 
+
+```
+
+```{r}
+
+autoplot(svm_wf_fit, metric = "accuracy",id = "recipe_svm_ploy")
+
+```
+
+
+```{r}
+# export files
+save(svm_wf_fit,file="_models/svm_wf_fit.RData")
+save(svm_linear_fit, file = "_models/svm_linear_fit.RData")
+```
+
+
+<!--chapter:end:04.7-svm.Rmd-->
+
+```{r include=FALSE, cache=FALSE}
+rm(list = ls(all = TRUE))
+```
+# Evaluation and conclusion
+
+```{r message=TRUE, warning=FALSE, include=FALSE}
+
+library(tidyverse)
+library(tidymodels)
+
+
+dir_path = "./_models/"
+file_names=as.list(dir(path = dir_path, pattern="*.RData"))
+file_names = lapply(file_names, function(x) paste0(dir_path, x))
+lapply(file_names,load,.GlobalEnv)
+
+source("scripts/eda_functions.r")
+
+doParallel::registerDoParallel()
+
+```
+
+From the initial experiments with different concurrent models the following results were achieved:
+
+```{r}
+# Combine all initial experiments experiments
+
+union_metrics <- rbind(
+  collect_metrics(nbayes_fit) %>% mutate(model = "Naive Bayes Classifier"),
+  collect_metrics(logit_fit) %>% mutate(model = "Logistic Regression"),
+  collect_metrics(kknn_fit) %>% mutate(model = "Nearest Neighbors"),
+  collect_metrics(tree_fit) %>% mutate(model = "Decision tree"),
+  collect_metrics(forest_fit) %>% mutate(model = "Random Forest"),
+  collect_metrics(sl_fit) %>% mutate(model = "Neural Network"),
+  collect_metrics(svm_linear_fit) %>% mutate(model = "Support Vector machine (linear kernel)")
+)
+
+```
+
+
+```{r}
+
+#baseline
+baseline <- data.frame(.metric = c("accuracy", "roc_auc"),values =  c(0.816, 0.913))
+
+# find max
+
+data <- 
+  filter( union_metrics, .metric %in% c("accuracy", "roc_auc") ) %>% 
+  group_by(.metric) %>% 
+  mutate(color = mean == max(mean))
+
+ggplot(data = data, aes(x = model, y = mean, fill = color)) +
+  geom_bar(stat = "identity" ) + 
+  geom_hline(data = baseline, aes(yintercept = values), linetype = "dashed") +
+
+    facet_grid(.metric ~ .) +
+  theme_masterDS() +
+  labs(
+    x = "",
+    y = "",
+    title  = "Comparing metrics between models",
+    caption = "dotted lines represent baseline"
+  ) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1)) +
+  scale_fill_brewer(palette = "Pastel1")
+  
+
+```
+During the business understanding the most accurate model was defined has been the main  goal for this project. Therefore, the model with the highest accuracy metric (other metrics like sensibility and specificity were calculated during the modeling stage) was the one answering the company needs. 
+
+Based on the results Random Forest shows the most promising values and future developments would be made using this model. It not only presents the highest metric for both accuracy and AUC ROC as it provides a more understandable model when compared to others.
+
+Is worth noticing that the increase from a baseline of a simple model without any substantial preprocessing is not substantial making the case towards the use a simpler model, with simpler feature importance attribution and less need for heavy preprocessing.
+
+## Next steps. 
+
+:::{style="color: blue;"}
+*Where to go from here*
+:::
+
+If no time constrains existed or this project was done on a real environment i would do the following differently:
+
+- Business understanding and the discovery phase in general is key to a successful project. The available information raise doubts about the data and the expected use for the model. Although some questions can be assumed its of paramount importance to gain a deeper knowledge about the "question" the company, client, project, etc wishes to answer. It impacts the list of models to experiment, the metrics to focus, etc.
+
+- A model is as good as the action it enacts. This is particularly key on settings similar to this project were we analyse marketing data. Modeling for a marketing team is not the same as modeling to trigger an automation pipeline. The first tend to prefer a inferring models which provide more information about the role of different features. In this context, black box models like Neural Networks might not be advisable.
+
+- On a similar note, when testing linear models, it makes sense to communicate and study coefficients even if its not the model with the highest metrics.
+
+- More information how data was gathered is needed for a better exploration. Many questions were raise during the EDA stage which needed to be assumed.
+
+- Data exploration needed to be expanded with more context information. This is not independent from the previous statement but some industry specific features might exist which could make sense to include.
+
+- Except for a random grid search, no hyperparameter tunning was done on this project. Random grid search is a first step when no more information is available to know on which direction to keep tuning the model. Next steps would include a manual grid search which would narrow the field of test for each model.
+
+- On this project uses the default model engine for each model. Different machines can return different models and have different performances.
+
+- Each model error (difference between real observation and prediction) would need to be studied to validate assumptions, quality of the model. 
+
+
+<!--chapter:end:05-evaluation_conclusion.Rmd-->
+
