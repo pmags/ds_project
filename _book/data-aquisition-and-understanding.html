@@ -4,41 +4,35 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 3 Data aquisition and understanding | 06-evaluation_conclusion</title>
-  <meta name="description" content="<p>This is a minimal example of using the bookdown package to write a book.
-The HTML output format for this example is bookdown::gitbook,
-set in the _output.yml file.</p>" />
+  <title>Stage 2 Data aquisition and understanding | R Notebook</title>
+  <meta name="description" content="Stage 2 Data aquisition and understanding | R Notebook" />
   <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 3 Data aquisition and understanding | 06-evaluation_conclusion" />
+  <meta property="og:title" content="Stage 2 Data aquisition and understanding | R Notebook" />
   <meta property="og:type" content="book" />
   
   
-  <meta property="og:description" content="<p>This is a minimal example of using the bookdown package to write a book.
-The HTML output format for this example is bookdown::gitbook,
-set in the _output.yml file.</p>" />
-  <meta name="github-repo" content="rstudio/bookdown-demo" />
+  
+  
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 3 Data aquisition and understanding | 06-evaluation_conclusion" />
+  <meta name="twitter:title" content="Stage 2 Data aquisition and understanding | R Notebook" />
   
-  <meta name="twitter:description" content="<p>This is a minimal example of using the bookdown package to write a book.
-The HTML output format for this example is bookdown::gitbook,
-set in the _output.yml file.</p>" />
+  
   
 
-<meta name="author" content="Pedro Magalhães" />
+<meta name="author" content="Pedro Miguel de Sousa Magalhães" />
 
 
-<meta name="date" content="2022-05-01" />
+<meta name="date" content="2022-01-16" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="busines-understanding.html"/>
-<link rel="next" href="modeling.html"/>
+<link rel="prev" href="business-understanding.html"/>
+<link rel="next" href="data-transformations.html"/>
 <script src="libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
@@ -140,19 +134,100 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
       <nav role="navigation">
 
 <ul class="summary">
-<li><a href="./">A Minimal Book Example</a></li>
+<li><a href="./">Intro Data Science: Long Project</a></li>
 
 <li class="divider"></li>
-<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> About</a>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Introduction</a></li>
+<li class="chapter" data-level="1" data-path="business-understanding.html"><a href="business-understanding.html"><i class="fa fa-check"></i><b>1</b> Business Understanding</a>
 <ul>
-<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#usage"><i class="fa fa-check"></i><b>1.1</b> Usage</a></li>
-<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#render-book"><i class="fa fa-check"></i><b>1.2</b> Render book</a></li>
-<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#preview-book"><i class="fa fa-check"></i><b>1.3</b> Preview book</a></li>
+<li class="chapter" data-level="1.1" data-path="business-understanding.html"><a href="business-understanding.html#business-objectives"><i class="fa fa-check"></i><b>1.1</b> Business objectives</a></li>
+<li class="chapter" data-level="1.2" data-path="business-understanding.html"><a href="business-understanding.html#assess-situation"><i class="fa fa-check"></i><b>1.2</b> Assess Situation</a>
+<ul>
+<li class="chapter" data-level="1.2.1" data-path="business-understanding.html"><a href="business-understanding.html#hardware-and-environment-special-needs"><i class="fa fa-check"></i><b>1.2.1</b> Hardware and environment special needs</a></li>
 </ul></li>
-<li class="chapter" data-level="2" data-path="busines-understanding.html"><a href="busines-understanding.html"><i class="fa fa-check"></i><b>2</b> Busines Understanding</a></li>
-<li class="chapter" data-level="3" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html"><i class="fa fa-check"></i><b>3</b> Data aquisition and understanding</a></li>
-<li class="chapter" data-level="4" data-path="modeling.html"><a href="modeling.html"><i class="fa fa-check"></i><b>4</b> Modeling</a></li>
-<li class="chapter" data-level="5" data-path="evaluation-and-conclusion.html"><a href="evaluation-and-conclusion.html"><i class="fa fa-check"></i><b>5</b> Evaluation and conclusion</a></li>
+<li class="chapter" data-level="1.3" data-path="business-understanding.html"><a href="business-understanding.html#data-mining-goals"><i class="fa fa-check"></i><b>1.3</b> Data Mining Goals</a></li>
+<li class="chapter" data-level="1.4" data-path="business-understanding.html"><a href="business-understanding.html#project-plan"><i class="fa fa-check"></i><b>1.4</b> Project Plan</a></li>
+<li class="chapter" data-level="1.5" data-path="business-understanding.html"><a href="business-understanding.html#terms"><i class="fa fa-check"></i><b>1.5</b> Terms</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html"><i class="fa fa-check"></i><b>2</b> Data aquisition and understanding</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#description"><i class="fa fa-check"></i><b>2.1</b> Description</a></li>
+<li class="chapter" data-level="2.2" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#irrelevant-or-technical-information"><i class="fa fa-check"></i><b>2.2</b> Irrelevant or technical information</a></li>
+<li class="chapter" data-level="2.3" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#target-variable-to-buy-or-not-to-buy"><i class="fa fa-check"></i><b>2.3</b> Target Variable: To buy or not to buy …</a></li>
+<li class="chapter" data-level="2.4" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#customer-behavior-features"><i class="fa fa-check"></i><b>2.4</b> Customer Behavior Features</a>
+<ul>
+<li class="chapter" data-level="2.4.1" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#duration"><i class="fa fa-check"></i><b>2.4.1</b> Duration</a></li>
+<li class="chapter" data-level="2.4.2" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#page-view-quantity"><i class="fa fa-check"></i><b>2.4.2</b> Page View Quantity</a></li>
+<li class="chapter" data-level="2.4.3" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#product-pages-unique-page-views"><i class="fa fa-check"></i><b>2.4.3</b> Product Pages unique page views</a></li>
+<li class="chapter" data-level="2.4.4" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#designer-browsing-unique-page-views"><i class="fa fa-check"></i><b>2.4.4</b> Designer Browsing unique page views</a></li>
+<li class="chapter" data-level="2.4.5" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#products-categories-unique-id"><i class="fa fa-check"></i><b>2.4.5</b> Products categories unique id</a></li>
+<li class="chapter" data-level="2.4.6" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#potential-ideas-for-feature-engineering-which-were-not-implemented"><i class="fa fa-check"></i><b>2.4.6</b> Potential ideas for feature engineering which were not implemented</a></li>
+</ul></li>
+<li class="chapter" data-level="2.5" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#customer-journey-related-features"><i class="fa fa-check"></i><b>2.5</b> Customer Journey related Features</a>
+<ul>
+<li class="chapter" data-level="2.5.1" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#device-group"><i class="fa fa-check"></i><b>2.5.1</b> Device Group</a></li>
+<li class="chapter" data-level="2.5.2" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#platform"><i class="fa fa-check"></i><b>2.5.2</b> Platform</a></li>
+<li class="chapter" data-level="2.5.3" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#journey-milestones"><i class="fa fa-check"></i><b>2.5.3</b> Journey milestones</a></li>
+</ul></li>
+<li class="chapter" data-level="2.6" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#client-segment-related-features"><i class="fa fa-check"></i><b>2.6</b> Client Segment related Features</a>
+<ul>
+<li class="chapter" data-level="2.6.1" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#customer-type"><i class="fa fa-check"></i><b>2.6.1</b> Customer type</a></li>
+<li class="chapter" data-level="2.6.2" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#segment"><i class="fa fa-check"></i><b>2.6.2</b> Segment</a></li>
+<li class="chapter" data-level="2.6.3" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#visitor-type"><i class="fa fa-check"></i><b>2.6.3</b> Visitor type</a></li>
+<li class="chapter" data-level="2.6.4" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#is-subscribed"><i class="fa fa-check"></i><b>2.6.4</b> Is subscribed</a></li>
+</ul></li>
+<li class="chapter" data-level="2.7" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#device-and-geography-related-features"><i class="fa fa-check"></i><b>2.7</b> Device and Geography related Features</a>
+<ul>
+<li class="chapter" data-level="2.7.1" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#browser-name"><i class="fa fa-check"></i><b>2.7.1</b> Browser name</a></li>
+<li class="chapter" data-level="2.7.2" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#country"><i class="fa fa-check"></i><b>2.7.2</b> Country</a></li>
+<li class="chapter" data-level="2.7.3" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#dealing-with-missing-data"><i class="fa fa-check"></i><b>2.7.3</b> Dealing with Missing Data</a></li>
+</ul></li>
+<li class="chapter" data-level="2.8" data-path="data-aquisition-and-understanding.html"><a href="data-aquisition-and-understanding.html#summary-of-findings"><i class="fa fa-check"></i><b>2.8</b> Summary of findings</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="data-transformations.html"><a href="data-transformations.html"><i class="fa fa-check"></i><b>3</b> Data transformations</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="data-transformations.html"><a href="data-transformations.html#summary-of-transformation-steps-identified-during-eda"><i class="fa fa-check"></i><b>3.1</b> Summary of transformation steps identified during EDA</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="modeling.html"><a href="modeling.html"><i class="fa fa-check"></i><b>4</b> Modeling</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="modeling.html"><a href="modeling.html#baseline"><i class="fa fa-check"></i><b>4.1</b> Baseline</a></li>
+<li class="chapter" data-level="4.2" data-path="modeling.html"><a href="modeling.html#naive-bayes-classifier"><i class="fa fa-check"></i><b>4.2</b> Naive Bayes Classifier</a>
+<ul>
+<li class="chapter" data-level="4.2.1" data-path="modeling.html"><a href="modeling.html#initial-experiments"><i class="fa fa-check"></i><b>4.2.1</b> Initial experiments</a></li>
+</ul></li>
+<li class="chapter" data-level="4.3" data-path="modeling.html"><a href="modeling.html#logistic-regression"><i class="fa fa-check"></i><b>4.3</b> Logistic Regression</a>
+<ul>
+<li class="chapter" data-level="4.3.1" data-path="modeling.html"><a href="modeling.html#initial-experiments-1"><i class="fa fa-check"></i><b>4.3.1</b> Initial experiments</a></li>
+</ul></li>
+<li class="chapter" data-level="4.4" data-path="modeling.html"><a href="modeling.html#knn"><i class="fa fa-check"></i><b>4.4</b> Knn</a>
+<ul>
+<li class="chapter" data-level="4.4.1" data-path="modeling.html"><a href="modeling.html#initial-experiment"><i class="fa fa-check"></i><b>4.4.1</b> Initial experiment</a></li>
+<li class="chapter" data-level="4.4.2" data-path="modeling.html"><a href="modeling.html#fitting-multiple-models-using-grid-search"><i class="fa fa-check"></i><b>4.4.2</b> Fitting multiple models using grid search</a></li>
+</ul></li>
+<li class="chapter" data-level="4.5" data-path="modeling.html"><a href="modeling.html#workflow-rpart"><i class="fa fa-check"></i><b>4.5</b> Workflow: Rpart</a>
+<ul>
+<li class="chapter" data-level="4.5.1" data-path="modeling.html"><a href="modeling.html#initial-experiment-1"><i class="fa fa-check"></i><b>4.5.1</b> Initial experiment</a></li>
+</ul></li>
+<li class="chapter" data-level="4.6" data-path="modeling.html"><a href="modeling.html#workflow-random-forest"><i class="fa fa-check"></i><b>4.6</b> Workflow: Random Forest</a>
+<ul>
+<li class="chapter" data-level="4.6.1" data-path="modeling.html"><a href="modeling.html#initial-experiment-2"><i class="fa fa-check"></i><b>4.6.1</b> Initial experiment</a></li>
+<li class="chapter" data-level="4.6.2" data-path="modeling.html"><a href="modeling.html#fitting-multiple-models-using-grid-search-1"><i class="fa fa-check"></i><b>4.6.2</b> Fitting multiple models using grid search</a></li>
+</ul></li>
+<li class="chapter" data-level="4.7" data-path="modeling.html"><a href="modeling.html#workflow-single-layer-neural-network"><i class="fa fa-check"></i><b>4.7</b> Workflow: Single Layer Neural Network</a>
+<ul>
+<li class="chapter" data-level="4.7.1" data-path="modeling.html"><a href="modeling.html#initial-experiment-3"><i class="fa fa-check"></i><b>4.7.1</b> Initial experiment</a></li>
+<li class="chapter" data-level="4.7.2" data-path="modeling.html"><a href="modeling.html#fitting-multiple-models-using-grid-search-2"><i class="fa fa-check"></i><b>4.7.2</b> Fitting multiple models using grid search</a></li>
+</ul></li>
+<li class="chapter" data-level="4.8" data-path="modeling.html"><a href="modeling.html#support-vector-machine"><i class="fa fa-check"></i><b>4.8</b> Support Vector Machine</a>
+<ul>
+<li class="chapter" data-level="4.8.1" data-path="modeling.html"><a href="modeling.html#initial-experience-linear-kernel"><i class="fa fa-check"></i><b>4.8.1</b> Initial experience: Linear Kernel</a></li>
+<li class="chapter" data-level="4.8.2" data-path="modeling.html"><a href="modeling.html#fitting-multiple-models"><i class="fa fa-check"></i><b>4.8.2</b> Fitting multiple models</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="evaluation-and-conclusion.html"><a href="evaluation-and-conclusion.html"><i class="fa fa-check"></i><b>5</b> Evaluation and conclusion</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="evaluation-and-conclusion.html"><a href="evaluation-and-conclusion.html#next-steps."><i class="fa fa-check"></i><b>5.1</b> Next steps.</a></li>
+</ul></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
 
@@ -165,7 +240,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">06-evaluation_conclusion</a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">R Notebook</a>
           </h1>
         </div>
 
@@ -173,17 +248,531 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="data-aquisition-and-understanding" class="section level1" number="3">
-<h1><span class="header-section-number">Chapter 3</span> Data aquisition and understanding</h1>
+<div id="data-aquisition-and-understanding" class="section level1" number="2">
+<h1><span class="header-section-number">Stage 2</span> Data aquisition and understanding</h1>
+<div id="description" class="section level2" number="2.1">
+<h2><span class="header-section-number">2.1</span> Description</h2>
+<p>Two datasets were made available for analysis. One with a balanced class for the target variable and the other raw. This analysis focus on the full dataset.</p>
+<p>From the available description the available columns follow into one of the following categories:</p>
+<ol style="list-style-type: decimal">
+<li><p>Irrelevant for the project;</p></li>
+<li><p>Target or dependent Variable: what will be studied;</p></li>
+<li><p>Customer Behavior related Features: potential features which reflect how users behaved on each session and can explain the target variable;</p></li>
+<li><p>Customer Journey related Features: potential features contain information on how uses interacted with the on-line shop;</p></li>
+<li><p>Client Segment related Features: potential features which provide information on how a user might be classified from a marketing perspective;</p></li>
+<li><p>Device and Geography related Features: provide information regarding location and access device used by a user.</p></li>
+</ol>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="data-aquisition-and-understanding.html#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(unbalanced_data)</span></code></pre></div>
+<pre><code>## tibble [95,000 x 20] (S3: tbl_df/tbl/data.frame)
+##  $ session_id                : Factor w/ 95000 levels &quot;00012961-8ad6-412d-9a5b-9eada1b93c97&quot;,..: 63567 36472 84761 59471 82382 75884 38721 75862 6836 90844 ...
+##  $ plaform                   : Factor w/ 2 levels &quot;mobile_app&quot;,&quot;website&quot;: 2 2 1 1 2 2 2 2 1 2 ...
+##  $ segment                   : Factor w/ 6 levels &quot;FFACCESS-Bronze&quot;,..: 6 6 1 6 6 6 6 6 2 3 ...
+##  $ customer_type             : Factor w/ 2 levels &quot;customer&quot;,&quot;prospect&quot;: 2 2 1 1 2 2 2 2 1 1 ...
+##  $ device_group              : Factor w/ 3 levels &quot;App&quot;,&quot;Desktop&quot;,..: 3 3 1 1 3 3 3 3 1 2 ...
+##  $ visitor_type              : Factor w/ 2 levels &quot;new&quot;,&quot;returning&quot;: 1 2 2 2 1 2 1 1 2 1 ...
+##  $ has_listing               : Factor w/ 2 levels &quot;0&quot;,&quot;1&quot;: 2 1 2 2 1 1 1 2 2 2 ...
+##  $ has_used_search           : Factor w/ 2 levels &quot;0&quot;,&quot;1&quot;: 1 1 1 1 1 1 1 1 2 2 ...
+##  $ has_recommendation        : Factor w/ 2 levels &quot;0&quot;,&quot;1&quot;: 1 2 2 1 1 1 1 1 1 2 ...
+##  $ has_add_to_wishlist       : Factor w/ 2 levels &quot;0&quot;,&quot;1&quot;: 1 1 1 2 1 1 1 1 1 1 ...
+##  $ has_add_to_bag            : Factor w/ 2 levels &quot;0&quot;,&quot;1&quot;: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ duration                  : num [1:95000] 0 0 27 88 0 128 0 0 9 342 ...
+##  $ view_qty                  : num [1:95000] 1 1 10 15 1 2 1 1 4 7 ...
+##  $ unique_product_qty        : num [1:95000] 0 1 1 5 1 2 1 0 0 2 ...
+##  $ unique_browse_designer_qty: num [1:95000] 0 1 1 1 1 1 1 1 1 3 ...
+##  $ unique_browse_category_qty: Factor w/ 32 levels &quot;0&quot;,&quot;1&quot;,&quot;2&quot;,&quot;3&quot;,..: 2 2 2 2 2 2 2 2 1 3 ...
+##  $ is_subscribed             : Factor w/ 3 levels &quot;No&quot;,&quot;Unknown&quot;,..: NA NA 1 3 NA NA NA NA 3 3 ...
+##  $ browser_name              : Factor w/ 51 levels &quot;AliApp&quot;,&quot;Android&quot;,..: 37 5 NA NA 21 37 28 5 NA 37 ...
+##  $ country                   : Factor w/ 162 levels &quot;AD&quot;,&quot;AE&quot;,&quot;AF&quot;,..: 154 111 134 134 154 134 11 73 128 154 ...
+##  $ bought                    : Factor w/ 2 levels &quot;0&quot;,&quot;1&quot;: 1 1 1 1 1 1 1 1 1 1 ...</code></pre>
+</div>
+<div id="irrelevant-or-technical-information" class="section level2" number="2.2">
+<h2><span class="header-section-number">2.2</span> Irrelevant or technical information</h2>
+<p><code>Session_id</code> is a unique key which sole purpose is to uniquely identify each sessions and contains no exploratory power, therefore it will be removed from future analysis.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="data-aquisition-and-understanding.html#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># test if a single session can have more than one row</span></span>
+<span id="cb5-2"><a href="data-aquisition-and-understanding.html#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>( <span class="fu">unique</span>(unbalanced_data<span class="sc">$</span>session_id) ) <span class="sc">==</span> <span class="fu">nrow</span>(unbalanced_data)</span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+</div>
+<div id="target-variable-to-buy-or-not-to-buy" class="section level2" number="2.3">
+<h2><span class="header-section-number">2.3</span> Target Variable: To buy or not to buy …</h2>
+<p><strong>Boolean variable</strong> which assumes the values of 1 when a transaction happened on the session and zero other wise. Its the objective variable of this project.</p>
+<p>The available dataset with full data presents a severe class imbalance towards <code>not buy</code> which can and will Bias model output (a model assuming that nobody buys on each session is already “92% of the times right”). This bias is corrected on the balanced dataset at the expanse of some changes on</p>
+<p><img src="_main_files/figure-html/target%20unbalanced%20grid-1.png" width="672" /></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="data-aquisition-and-understanding.html#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.draw</span>(balanced_grid)</span></code></pre></div>
+<p><img src="_main_files/figure-html/target%20balanced%20grid-1.png" width="672" /></p>
 
+</div>
+<div id="customer-behavior-features" class="section level2" number="2.4">
+<h2><span class="header-section-number">2.4</span> Customer Behavior Features</h2>
+<p>In this section we will explore the variables available using both unbalanced and balanced data. In special we will focus on the following questions:</p>
+<ul>
+<li>What type of variation occurs within my variables?</li>
+<li>What type of covariation occurs between my variables?</li>
+</ul>
+<div id="duration" class="section level3" number="2.4.1">
+<h3><span class="header-section-number">2.4.1</span> Duration</h3>
+<p>Continuous variable representing the time a user was on a particular sessions. Values measured in seconds. No specifics are given regarding the concept of session used. The market standard is to limit session duration to an engagement window between 25 to 30 minutes. Above that time cap, a new session would start (even if the user is still navigating the site).
+It will assumed that no such cap exist and therefore extreme values are <strong>not due to technical issues on web metrics</strong>.</p>
+<p><img src="_main_files/figure-html/plot%20duration%20unbalanced-1.png" width="672" /></p>
+<p><img src="_main_files/figure-html/plot%20duration%20balanced-1.png" width="672" /></p>
+<p>Distribution information shows a severely left skewed distribution which is confirmed by the behavior of the qq_plot. This is present on both raw and balanced data. The max duration of 2.0295^{4} means that at least one session was <code>{r} max(unbalanced_data$duration)/(60 * 60)</code> hours long, which, given what was said regarding session cap won’t be considered as an outlier due to error.</p>
+<p>Data shows that visit duration is a long tail with a great majority of users staying just a fraction but a long line of users (power users?) which stay for longer. This distribution does not allow for a good analysis of outliers of the distribution given its nature and might prove to be tricky during modeling due to its non Gaussian nature.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="data-aquisition-and-understanding.html#cb8-1" aria-hidden="true" tabindex="-1"></a>  density <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(unbalanced_data, <span class="fu">aes</span>(<span class="at">x =</span> duration)) <span class="sc">+</span></span>
+<span id="cb8-2"><a href="data-aquisition-and-understanding.html#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_density</span>(<span class="at">color=</span><span class="st">&quot;darkblue&quot;</span>) <span class="sc">+</span></span>
+<span id="cb8-3"><a href="data-aquisition-and-understanding.html#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_masterDS</span>() <span class="sc">+</span></span>
+<span id="cb8-4"><a href="data-aquisition-and-understanding.html#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(</span>
+<span id="cb8-5"><a href="data-aquisition-and-understanding.html#cb8-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="st">&quot;&quot;</span>,</span>
+<span id="cb8-6"><a href="data-aquisition-and-understanding.html#cb8-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="st">&quot;&quot;</span>,</span>
+<span id="cb8-7"><a href="data-aquisition-and-understanding.html#cb8-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">title =</span> <span class="st">&quot;Density&quot;</span></span>
+<span id="cb8-8"><a href="data-aquisition-and-understanding.html#cb8-8" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-9"><a href="data-aquisition-and-understanding.html#cb8-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb8-10"><a href="data-aquisition-and-understanding.html#cb8-10" aria-hidden="true" tabindex="-1"></a>  boxplot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(unbalanced_data, <span class="fu">aes</span>(<span class="at">x =</span> <span class="dv">1</span>, <span class="at">y =</span> duration)) <span class="sc">+</span> </span>
+<span id="cb8-11"><a href="data-aquisition-and-understanding.html#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> </span>
+<span id="cb8-12"><a href="data-aquisition-and-understanding.html#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_masterDS</span>()<span class="sc">+</span></span>
+<span id="cb8-13"><a href="data-aquisition-and-understanding.html#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(</span>
+<span id="cb8-14"><a href="data-aquisition-and-understanding.html#cb8-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="st">&quot;&quot;</span>,</span>
+<span id="cb8-15"><a href="data-aquisition-and-understanding.html#cb8-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">y=</span><span class="st">&quot;&quot;</span>,</span>
+<span id="cb8-16"><a href="data-aquisition-and-understanding.html#cb8-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">title =</span> <span class="st">&quot;Boxplot&quot;</span></span>
+<span id="cb8-17"><a href="data-aquisition-and-understanding.html#cb8-17" aria-hidden="true" tabindex="-1"></a>    )   </span>
+<span id="cb8-18"><a href="data-aquisition-and-understanding.html#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="data-aquisition-and-understanding.html#cb8-19" aria-hidden="true" tabindex="-1"></a>  density_log <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(unbalanced_data, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">log</span>(duration))) <span class="sc">+</span></span>
+<span id="cb8-20"><a href="data-aquisition-and-understanding.html#cb8-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_density</span>(<span class="at">color=</span><span class="st">&quot;darkblue&quot;</span>) <span class="sc">+</span></span>
+<span id="cb8-21"><a href="data-aquisition-and-understanding.html#cb8-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_masterDS</span>() <span class="sc">+</span></span>
+<span id="cb8-22"><a href="data-aquisition-and-understanding.html#cb8-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(</span>
+<span id="cb8-23"><a href="data-aquisition-and-understanding.html#cb8-23" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="st">&quot;&quot;</span>,</span>
+<span id="cb8-24"><a href="data-aquisition-and-understanding.html#cb8-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="st">&quot;&quot;</span>,</span>
+<span id="cb8-25"><a href="data-aquisition-and-understanding.html#cb8-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">title =</span> <span class="st">&quot;Density (log transform)&quot;</span></span>
+<span id="cb8-26"><a href="data-aquisition-and-understanding.html#cb8-26" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-27"><a href="data-aquisition-and-understanding.html#cb8-27" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb8-28"><a href="data-aquisition-and-understanding.html#cb8-28" aria-hidden="true" tabindex="-1"></a>  boxplot_log <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(unbalanced_data, <span class="fu">aes</span>(<span class="at">x =</span> <span class="dv">1</span>, <span class="at">y =</span> <span class="fu">log</span>(duration))) <span class="sc">+</span> </span>
+<span id="cb8-29"><a href="data-aquisition-and-understanding.html#cb8-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span> </span>
+<span id="cb8-30"><a href="data-aquisition-and-understanding.html#cb8-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_masterDS</span>()<span class="sc">+</span></span>
+<span id="cb8-31"><a href="data-aquisition-and-understanding.html#cb8-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(</span>
+<span id="cb8-32"><a href="data-aquisition-and-understanding.html#cb8-32" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="st">&quot;&quot;</span>,</span>
+<span id="cb8-33"><a href="data-aquisition-and-understanding.html#cb8-33" aria-hidden="true" tabindex="-1"></a>      <span class="at">y=</span><span class="st">&quot;&quot;</span>,</span>
+<span id="cb8-34"><a href="data-aquisition-and-understanding.html#cb8-34" aria-hidden="true" tabindex="-1"></a>      <span class="at">title =</span> <span class="st">&quot;Boxplot (log transform)&quot;</span></span>
+<span id="cb8-35"><a href="data-aquisition-and-understanding.html#cb8-35" aria-hidden="true" tabindex="-1"></a>    ) </span>
+<span id="cb8-36"><a href="data-aquisition-and-understanding.html#cb8-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-37"><a href="data-aquisition-and-understanding.html#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(density, boxplot, density_log, boxplot_log,  <span class="at">layout_matrix =</span> <span class="fu">rbind</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>),<span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">4</span>)))</span></code></pre></div>
+<pre><code>## Warning: Removed 41417 rows containing non-finite values (stat_density).</code></pre>
+<pre><code>## Warning: Removed 41417 rows containing non-finite values (stat_boxplot).</code></pre>
+<p><img src="_main_files/figure-html/log%20transform%20duration-1.png" width="672" /></p>
+<p><strong>As a preprocess step this feature will be log transformed.</strong> No more complex Box-Cox transformation will be used given that good results can already be achieved with the current transformation. No missing values were found.</p>
+<pre><code>## Warning: Removed 41417 rows containing non-finite values (stat_boxplot).</code></pre>
+<p><img src="_main_files/figure-html/duration%20vs%20bought-1.png" width="672" /></p>
+<pre><code>## Warning: Removed 3823 rows containing non-finite values (stat_boxplot).</code></pre>
+<p><img src="_main_files/figure-html/duration%20vs%20bought%20balanced-1.png" width="672" /></p>
+<p>Ploted against the target variable it seems to imply a positive relationship between duration and conversion. From the sample sessions that converted had on median a higher duration.</p>
+</div>
+<div id="page-view-quantity" class="section level3" number="2.4.2">
+<h3><span class="header-section-number">2.4.2</span> Page View Quantity</h3>
+<p>Discrete variable measuring the number of views during a session.</p>
+<p><img src="_main_files/figure-html/page%20view%20unbalanced-1.png" width="672" /></p>
+<p><img src="_main_files/figure-html/page%20view%20balanced-1.png" width="672" /></p>
+<p>Distribution information shows a severely left skewed distribution which is confirmed by the behavior of the qq_plot. This is present on both raw and balanced data. The max duration is of 1151.</p>
+<p>Despite is distribution the data shows a median of 10 page views which suggest an interesting engagement for a e-commerce provided other indicators regarding navigation are solid (if a user is jumping between pages because they don’t load properly, an increase on page views might no be beneficial).</p>
+<p>Given the available information we cannot conclude that outliers due to errors exist. In an attempt to normalize the distribution a Box-Cox transformation will be used with a Optimized Lambda.</p>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="_main_files/figure-html/view_qty%20box%20cox%20unbalanced-1.png" width="672" /></p>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="_main_files/figure-html/view_qty%20box%20cox%20balanced-1.png" width="672" />
+With this transformation it is now visible 2 segments of sessions which deserve attention, sessions with zero views or just 1 view.</p>
+<p>The information available provides no information whatsoever regardingt definition of view. The standard (defined by google) is the first hit at log to be a pageview. Therefore, technically all sessions would have a view. Using the same approach, a 1 view session is technically called a <strong>bounce</strong>. Once again assuming Googles standard (it owns 97% of the analytics market …) a bounce is a session with just a starting hit but not information regarding log out (duration is a difference based calculation).</p>
+<p>On a standard scenario the approach would be to remove all observations with a zero pageviews (technical errors) and session with 1 page view (if not other information regarding duration is available). In the scenario in analysis, given the available information we can’t assume zero page views to be a technical error and therefore will filter the <strong>dataset for observations with zero or one page views and a session duration smaller than 2 seconds.</strong></p>
+<p><img src="_main_files/figure-html/unbalanced%20no%20outlier-1.png" width="672" /></p>
+<p><img src="_main_files/figure-html/balanced%20no%20outlier-1.png" width="672" /></p>
+<p>The balanced data to be used with modeling is already close to normal distribution.</p>
+<p><img src="_main_files/figure-html/pageview%20vs%20bought%20balanced-1.png" width="672" />
+Compared by conversion the data seems to suggest that sessions with conversion had a higher number of page views.</p>
+</div>
+<div id="product-pages-unique-page-views" class="section level3" number="2.4.3">
+<h3><span class="header-section-number">2.4.3</span> Product Pages unique page views</h3>
+<p>Discrete variable measuring the visits product related pages had.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="data-aquisition-and-understanding.html#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.draw</span>(eda_unbalanced<span class="sc">$</span>unique_product_qty)</span></code></pre></div>
+<p><img src="_main_files/figure-html/eda_unique_product%20unbalanced-1.png" width="672" /></p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="data-aquisition-and-understanding.html#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.draw</span>(eda_balanced<span class="sc">$</span>unique_product_qty)</span></code></pre></div>
+<p><img src="_main_files/figure-html/eda_unique_product%20balanced-1.png" width="672" /></p>
+<p>The initial graphic analysis shows a right skewed distribution similar to was seen on before on Pageviews. Nonetheless, in this scenario zero page views is a acceptable outcome. When the target class is taken into consideration it seems to sugest a teneous impact albeit its true effects might be hidden by the distribution skew.</p>
+<p><img src="_main_files/figure-html/pageviews%20vs%20product-1.png" width="672" /></p>
+<p>Ploted together target, pageviews and product pageviews it becomes more evident that the relationship between target and product pageviews is not very visable but the Chi test lets us renouce the null hypothesis.</p>
+<pre><code>## 
+##  Pearson&#39;s Chi-squared test
+## 
+## data:  x and as.factor(unbalanced_data$bought)
+## X-squared = 8099.1, df = 165, p-value &lt; 2.2e-16</code></pre>
+<p>On the other hand, there seems to have a strong relation positive relation between pageviews and pagevies product. This may suggest an interaction between both features. Given the nature of this feature we will explore the impact of converting into a ratio using page views as denominator since product page view is in fact a subgroup of pageviews.</p>
+<p><img src="_main_files/figure-html/pageviews%20vs%20product%20ratio-1.png" width="672" /></p>
+<p><img src="_main_files/figure-html/unbalanced%20with%20ratio%20product-1.png" width="672" />
+<img src="_main_files/figure-html/balanced%20with%20ratio%20product-1.png" width="672" />
+This transformation provides more insights into the behaviour of the average user indicating that on average 25% of page navigation is done on product related pages (from and into). Simultaneously it smooths the skewed effect reported earlier</p>
+<pre><code>## Warning: Removed 1833 rows containing non-finite values (stat_boxplot).</code></pre>
+<p><img src="_main_files/figure-html/ratio%20product%20view%20vs%20bought%20balanced-1.png" width="672" /></p>
+<p>If the e-commecer has a more transactional focus it might not come as surprice the above plot and it seems to imply that user might already know what they want to buy prior to visit.</p>
+<p>Similar transformation will be done to the subsquent variables-</p>
+</div>
+<div id="designer-browsing-unique-page-views" class="section level3" number="2.4.4">
+<h3><span class="header-section-number">2.4.4</span> Designer Browsing unique page views</h3>
+<p>Discrete variable measuring the number of Designers researched.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="data-aquisition-and-understanding.html#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.draw</span>(eda_unbalanced<span class="sc">$</span>unique_browse_designer_qty)</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="data-aquisition-and-understanding.html#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.draw</span>(eda_balanced<span class="sc">$</span>unique_browse_designer_qty)</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>Similar approach done before</p>
+<p><img src="_main_files/figure-html/pageviews%20vs%20designer-1.png" width="672" /></p>
+<p><img src="_main_files/figure-html/unbalanced%20with%20ratio%20designer-1.png" width="672" /></p>
+<p><img src="_main_files/figure-html/balanced%20with%20ratio%20designer-1.png" width="672" /></p>
+<p>This transformation provides more insights into the behaviour of the average user indicating that on average 25% of page navigation is done on product related pages (from and into). Simultaneously it smooths the skewed effect reported earlier</p>
+<pre><code>## Warning: Removed 1421 rows containing non-finite values (stat_boxplot).</code></pre>
+<p><img src="_main_files/figure-html/ratio%20designer%20view%20vs%20bought%20balanced-1.png" width="672" /></p>
+</div>
+<div id="products-categories-unique-id" class="section level3" number="2.4.5">
+<h3><span class="header-section-number">2.4.5</span> Products categories unique id</h3>
+<p>Discrete variable measuring the visits Designer related pages had.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="data-aquisition-and-understanding.html#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.draw</span>(eda_unbalanced<span class="sc">$</span>unique_browse_category_qty)</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="data-aquisition-and-understanding.html#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.draw</span>(eda_balanced<span class="sc">$</span>unique_browse_category_qty)</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>Similar approach done before</p>
+<p><img src="_main_files/figure-html/pageviews%20vs%20category-1.png" width="672" /></p>
+<pre><code>## NULL</code></pre>
+<p><img src="_main_files/figure-html/unbalanced%20with%20ratio%20category-1.png" width="672" /></p>
+<p><img src="_main_files/figure-html/balanced%20with%20ratio%20category-1.png" width="672" /></p>
+<p>This transformation provides more insights into the behaviour of the average user indicating that on average 25% of page navigation is done on product related pages (from and into). Simultaneously it smooths the skewed effect reported earlier</p>
+<pre><code>## Warning: Removed 1542 rows containing non-finite values (stat_boxplot).</code></pre>
+<p><img src="_main_files/figure-html/ratio%20category%20view%20vs%20bought%20balanced-1.png" width="672" /></p>
+</div>
+<div id="potential-ideas-for-feature-engineering-which-were-not-implemented" class="section level3" number="2.4.6">
+<h3><span class="header-section-number">2.4.6</span> Potential ideas for feature engineering which were not implemented</h3>
+<ul>
+<li>The available data could synthesized using a non-supervised cluster algorithm which would help identify subsets of behaviors to be used during modeling. This approach has the advantage of possible reduce 4 variables into one.</li>
+</ul>
+
+</div>
+</div>
+<div id="customer-journey-related-features" class="section level2" number="2.5">
+<h2><span class="header-section-number">2.5</span> Customer Journey related Features</h2>
+<p>In this section we will explore the variables available using both unbalanced and balanced data. In special we will focus on the following questions:</p>
+<ul>
+<li>What type of variation occurs within my variables?</li>
+<li>What type of covariation occurs between my variables?</li>
+</ul>
+<div id="device-group" class="section level3" number="2.5.1">
+<h3><span class="header-section-number">2.5.1</span> Device Group</h3>
+<p>Categorical variable with 3 levels each representing the device source for each session. App, Desktop, Mobile Web</p>
+<p><img src="_main_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<pre><code>## $device_group
+## 
+##  Pearson&#39;s Chi-squared test
+## 
+## data:  x and unbalanced_data$bought
+## X-squared = 3755.4, df = 2, p-value &lt; 2.2e-16</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+<pre><code>## $device_group
+## 
+##  Pearson&#39;s Chi-squared test
+## 
+## data:  x and balanced_data$bought
+## X-squared = 2003.4, df = 2, p-value &lt; 2.2e-16</code></pre>
+<p>The majority of sessions had origin on a Mobile Web Platform, nonetheless, depite the traffic, graphical analysis sugests that Mobile Appliction has in factr higher convertion rates.</p>
+<p>This same conclusions can be extracted from the balanced dataset although the differences are not as evident. The <span class="math inline">\(\chi ^2\)</span> tests for both dataset leads into refusing the null hypothesis so it suggests that a degree of relation ship exists between both variables.</p>
+<p><img src="_main_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+<p>This dataset includes a variable named platform that suggest that most sessions were done using website. At first glance it seems counter intuitive that most access be done through website and Mobile web but the above plot show that in reality most users opt to access using the mobile version of the website instead of the app.</p>
+<p>The <span class="math inline">\(\chi ^2\)</span> test between this 2 variables confirms that both variable seem to have a degree of relation leading to not refuting the null hypothesis of dependency. This implies interaction (or synergy on marketing terms) between features which can impact how modeling efforts specially for models dependent on linear transformations (least squares regression) as is the case of logit.</p>
+<p>During the modeling step one might consider removing one of the variables or generate a new compound feature. The chi-test confirms the strong relationship between the two since refute the null hypothesis.</p>
+<pre><code>## 
+##  Pearson&#39;s Chi-squared test
+## 
+## data:  as.character(unbalanced_data$plaform) and as.character(unbalanced_data$device_group)
+## X-squared = 95000, df = 2, p-value &lt; 2.2e-16</code></pre>
+</div>
+<div id="platform" class="section level3" number="2.5.2">
+<h3><span class="header-section-number">2.5.2</span> Platform</h3>
+<p>Categorical variable with mobile_app, website representing the platform of origin of the session.</p>
+<p><img src="_main_files/figure-html/unnamed-chunk-24-1.png" width="672" /></p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="data-aquisition-and-understanding.html#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">prop.table</span>(<span class="fu">table</span>(unbalanced_data[[<span class="st">&quot;plaform&quot;</span>]]))</span></code></pre></div>
+<pre><code>## 
+## mobile_app    website 
+##  0.2761263  0.7238737</code></pre>
+<pre><code>## $plaform
+## 
+##  Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
+## 
+## data:  x and unbalanced_data$bought
+## X-squared = 2896.4, df = 1, p-value &lt; 2.2e-16</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-27-1.png" width="672" /></p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="data-aquisition-and-understanding.html#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">prop.table</span>(<span class="fu">table</span>(balanced_data[[<span class="st">&quot;plaform&quot;</span>]]))</span></code></pre></div>
+<pre><code>## 
+## mobile_app    website 
+##    0.39125    0.60875</code></pre>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="data-aquisition-and-understanding.html#cb34-1" aria-hidden="true" tabindex="-1"></a>balanced_chi[<span class="st">&quot;plaform&quot;</span>]</span></code></pre></div>
+<pre><code>## $plaform
+## 
+##  Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
+## 
+## data:  x and balanced_data$bought
+## X-squared = 1360.5, df = 1, p-value &lt; 2.2e-16</code></pre>
+<p>The above graphical analysis suggests that the majority of sessions (around 72% on the unbalanced dataset and 61% on the balanced ) were accessed through the website. Despite the inbalance between platforms the difference on conversion rate is visible between platforms.</p>
+<p>The <span class="math inline">\(\chi ^2\)</span> for both unbalanced and balanced datasets do not allow for the rejection of the null hypothesis implying the existence of a degree of linear regression between the 2 variables.</p>
+</div>
+<div id="journey-milestones" class="section level3" number="2.5.3">
+<h3><span class="header-section-number">2.5.3</span> Journey milestones</h3>
+<p>(has_listings) &gt; has_add_to_bag</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="data-aquisition-and-understanding.html#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.draw</span>(eda_unbalanced<span class="sc">$</span>has_add_to_wishlist)</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-30-1.png" width="672" /></p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="data-aquisition-and-understanding.html#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.draw</span>(eda_unbalanced<span class="sc">$</span>has_listing)</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-31-1.png" width="672" /></p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="data-aquisition-and-understanding.html#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.draw</span>(eda_unbalanced<span class="sc">$</span>has_recommendation)</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-32-1.png" width="672" /></p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="data-aquisition-and-understanding.html#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.draw</span>(eda_unbalanced<span class="sc">$</span>has_used_search)</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-33-1.png" width="672" /></p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="data-aquisition-and-understanding.html#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.draw</span>(eda_unbalanced<span class="sc">$</span>has_add_to_bag)</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-34-1.png" width="672" /></p>
+<p>These features are plotted together because they give insights into the journey a user made inside the website. We can conclude over a conversion funnel but it makes sense to explore the interactions between then while modeling because its known that normally strong effects exist between then (a user had a recommendation and added to the bag might be together a strong signal for conversion).</p>
+<p>The graphical analysis already provides a important insight given the business objectives. From the unbalanced data available we can conclude that around of 46% shopping carts are lost on that session. That raises a question of how are this recovered (example on a next session) or if this means that all this sales are lost right at the end of the sales funnel.</p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="data-aquisition-and-understanding.html#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">prop.table</span>(<span class="fu">table</span>(unbalanced_data[unbalanced_data<span class="sc">$</span>has_add_to_bag <span class="sc">==</span> <span class="dv">1</span>,]<span class="sc">$</span>bought, unbalanced_data[unbalanced_data<span class="sc">$</span>has_add_to_bag <span class="sc">==</span> <span class="dv">1</span>,]<span class="sc">$</span>has_add_to_bag)) [,<span class="dv">2</span>]</span></code></pre></div>
+<pre><code>##         0         1 
+## 0.4500879 0.5499121</code></pre>
+
+</div>
+</div>
+<div id="client-segment-related-features" class="section level2" number="2.6">
+<h2><span class="header-section-number">2.6</span> Client Segment related Features</h2>
+<div id="customer-type" class="section level3" number="2.6.1">
+<h3><span class="header-section-number">2.6.1</span> Customer type</h3>
+<p>Categorical variable with customer, prospect.</p>
+<p><img src="_main_files/figure-html/unnamed-chunk-42-1.png" width="672" /></p>
+<p><img src="_main_files/figure-html/unnamed-chunk-43-1.png" width="672" /></p>
+<p>The graphical analysis shows inbalance towards prospect clients. When plotted together with target class it suggests a potential relationship with customers have a higher propency to buy again (happy customers?)</p>
+<p>The results from the <span class="math inline">\(\chi^2\)</span> hypothesis test does not refuse the null hypothesis reinforcing the graphical analysis that a relationship might exist between this 2 variables that implies that recurrent customers buy more.</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="data-aquisition-and-understanding.html#cb43-1" aria-hidden="true" tabindex="-1"></a>unbalanced_chi[<span class="st">&quot;customer_type&quot;</span>]</span></code></pre></div>
+<pre><code>## $customer_type
+## 
+##  Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
+## 
+## data:  x and unbalanced_data$bought
+## X-squared = 9750.7, df = 1, p-value &lt; 2.2e-16</code></pre>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="data-aquisition-and-understanding.html#cb45-1" aria-hidden="true" tabindex="-1"></a>balanced_chi[<span class="st">&quot;customer_type&quot;</span>]</span></code></pre></div>
+<pre><code>## $customer_type
+## 
+##  Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
+## 
+## data:  x and balanced_data$bought
+## X-squared = 3590, df = 1, p-value &lt; 2.2e-16</code></pre>
+</div>
+<div id="segment" class="section level3" number="2.6.2">
+<h3><span class="header-section-number">2.6.2</span> Segment</h3>
+<p>Categorical variable with FFACCESS-Bronze, FFACCESS-Gold, FFACCESS-Platinum, FFACCESS-Private-Client, FFACCESS-Silver, without_segment levels. No information is provided regarding how this segment is generated and is highly unbalanced towards no segment.</p>
+<p><img src="_main_files/figure-html/unnamed-chunk-46-1.png" width="672" /></p>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="data-aquisition-and-understanding.html#cb47-1" aria-hidden="true" tabindex="-1"></a>unbalanced_chi[<span class="st">&quot;segment&quot;</span>]</span></code></pre></div>
+<pre><code>## $segment
+## 
+##  Pearson&#39;s Chi-squared test
+## 
+## data:  x and unbalanced_data$bought
+## X-squared = 10203, df = 5, p-value &lt; 2.2e-16</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-48-1.png" width="672" /></p>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="data-aquisition-and-understanding.html#cb49-1" aria-hidden="true" tabindex="-1"></a>balanced_chi[<span class="st">&quot;segment&quot;</span>]</span></code></pre></div>
+<pre><code>## $segment
+## 
+##  Pearson&#39;s Chi-squared test
+## 
+## data:  x and balanced_data$bought
+## X-squared = 3071, df = 5, p-value &lt; 2.2e-16</code></pre>
+<p>Despite the low number of sessions made by users with a segment the ones which have seem to have a very high conversion rate despite their level. The number of levels on a categorical variable affects the model, and in this case the extra information doesn’t seem to be bringing any new impute therefore, <strong>it will be collapses into a new variable with just two levels, has segment or it has no segment.</strong></p>
+</div>
+<div id="visitor-type" class="section level3" number="2.6.3">
+<h3><span class="header-section-number">2.6.3</span> Visitor type</h3>
+<p>Categorical variable with 2 levels representing if a given user is a new or recurring user. It differs from customer type because it focus on visits and not actual conversion, therefore a returning user can be a prospect.</p>
+<p><img src="_main_files/figure-html/unnamed-chunk-50-1.png" width="672" /></p>
+<pre><code>## $visitor_type
+## 
+##  Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
+## 
+## data:  x and unbalanced_data$bought
+## X-squared = 4001.3, df = 1, p-value &lt; 2.2e-16</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-52-1.png" width="672" /></p>
+<pre><code>## $visitor_type
+## 
+##  Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
+## 
+## data:  x and balanced_data$bought
+## X-squared = 2529.6, df = 1, p-value &lt; 2.2e-16</code></pre>
+<p>This feature focus on the Visitors. The unbalanced data available shows almost a 50% split, situations that changes on the balanced dataset which has a inbalance towards returning visitors. The graphical analysis suggests a higher conversion rate for returning visitor that for new one, suggesting that continuous visits (engagment) plays a role in conversion.</p>
+<p>The current dataset has information regarding customer type crossed with visitor type can provide us with interesting information</p>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="data-aquisition-and-understanding.html#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(unbalanced_data, <span class="fu">aes</span>(<span class="at">x =</span> visitor_type, <span class="at">fill =</span> customer_type)) <span class="sc">+</span> </span>
+<span id="cb53-2"><a href="data-aquisition-and-understanding.html#cb53-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">&quot;count&quot;</span>) <span class="sc">+</span> </span>
+<span id="cb53-3"><a href="data-aquisition-and-understanding.html#cb53-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_masterDS</span>() <span class="sc">+</span></span>
+<span id="cb53-4"><a href="data-aquisition-and-understanding.html#cb53-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(</span>
+<span id="cb53-5"><a href="data-aquisition-and-understanding.html#cb53-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="st">&quot;&quot;</span>,</span>
+<span id="cb53-6"><a href="data-aquisition-and-understanding.html#cb53-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="st">&quot;&quot;</span>,</span>
+<span id="cb53-7"><a href="data-aquisition-and-understanding.html#cb53-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">title =</span> <span class="st">&quot;Visitor Type x Custor Type&quot;</span></span>
+<span id="cb53-8"><a href="data-aquisition-and-understanding.html#cb53-8" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-54-1.png" width="672" /></p>
+<p>Has expected only a fraction of new visitors actually buy on the first session hinting that the conversion journey is longer than one session, meaning than several visits are needed before a first conversion. We don’t have enough information to conclude about the number of sessions needed (journey lenght) and neither the session index given a time window (eg: the current session is the #3 in the last 28 days) which is know to have a impact on conversion.</p>
+</div>
+<div id="is-subscribed" class="section level3" number="2.6.4">
+<h3><span class="header-section-number">2.6.4</span> Is subscribed</h3>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="data-aquisition-and-understanding.html#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.draw</span>(eda_unbalanced<span class="sc">$</span>is_subscribed)</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-55-1.png" width="672" /></p>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="data-aquisition-and-understanding.html#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.draw</span>(eda_balanced<span class="sc">$</span>is_subscribed)</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-56-1.png" width="672" /></p>
+<p>For both datasets the class majority is NA. From the information given we cannot conclude that we can remove this feature from the model, and given the number of observations affected we will look for imputation alternatives.</p>
+<p>If a particular variable is having more missing values that rest of the variables in the dataset, and, if by removing that one variable you can save many observations then is advisable to remove. But in this case, the fact a user is subscribed is a strong signal and one of the few (apart from segment) which provides insight about the companies marketing strategy. Removing this feature would mean removing signal regarding an ongoing engagement strategy. A concervative approach would be to consider all missing values as non subscribers. Given the context of this project an alternative root of statistical imputation will be used relying on a knn algorithm with a small number of neighbors (3 = 2 levels + 1)</p>
+
+</div>
+</div>
+<div id="device-and-geography-related-features" class="section level2" number="2.7">
+<h2><span class="header-section-number">2.7</span> Device and Geography related Features</h2>
+<div id="browser-name" class="section level3" number="2.7.1">
+<h3><span class="header-section-number">2.7.1</span> Browser name</h3>
+<p>Categorical variable representing the browser used as source for each session. From the available information from the unbalanced data we have 52 different browsers present on this dataset. Most of this levels have only a small number of sessions and will be colapsed during the preprocess</p>
+<pre><code>##  [1] Safari                  Chrome                  &lt;NA&gt;                   
+##  [4] Instagram App           Mobile Safari UIWebView Android WebView        
+##  [7] Facebook App            Firefox                 Yandex Browser         
+## [10] Miui Browser            Google App              Opera                  
+## [13] Edge                    Samsung Browser         HuaweiBrowser          
+## [16] Vivo Browser            Line App                Naver                  
+## [19] WeChat App              Opera Mobile            DuckDuckGo Browser     
+## [22] Sogou Explorer          AliApp                  Silk                   
+## [25] Apple Mail              Firefox for iOS         WKBrowser              
+## [28] UC Browser              HeyTapBrowser           Maxthon                
+## [31] Whale Browser           Snapchat                CM Browser             
+## [34] Weibo                   Default Browser         Tungsten Browser       
+## [37] QQBrowser               Ecosia                  Sleipnir               
+## [40] Android                 RDDocuments App         Coc Coc Browser        
+## [43] Meizu Browser           DareBoost Bot           Playstation Browser    
+## [46] Puffin                  Netease Music           Waterfox               
+## [49] Elements Browser        Iron                    Mail Master            
+## [52] Edge Mobile            
+## 51 Levels: AliApp Android Android WebView Apple Mail Chrome ... Yandex Browser</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-60-1.png" width="672" /></p>
+<p><img src="_main_files/figure-html/unnamed-chunk-61-1.png" width="672" /></p>
+</div>
+<div id="country" class="section level3" number="2.7.2">
+<h3><span class="header-section-number">2.7.2</span> Country</h3>
+<p>Categorical variable containing the country of origin for each session.Most of this levels have only a small number of sessions and will be colapsed during the preprocess</p>
+<pre><code>##   [1] US   MX   RU   AU   IN   PT   KR   CL   GB   AE   CN   HK   DE   GR   PL  
+##  [16] KW   LI   BR   AT   HR   CA   IT   SA   TW   ZA   VN   JP   FR   RO   QA  
+##  [31] ME   BH   ID   PE   ES   BE   PK   LB   IE   KZ   BG   PH   NL   AR   IL  
+##  [46] SE   NZ   GE   DO   DK   BY   AF   MD   TH   MY   UA   LT   CH   EG   NO  
+##  [61] CO   SG   BA   RS   KH   HU   MO   IS   OM   AM   UY   MA   NG   AL   BB  
+##  [76] EE   DZ   MK   SK   LU   AO   TR   PA   EC   JO   IQ   BD   GH   CY   SI  
+##  [91] AZ   CZ   MU   KG   MT   BN   FI   TN   LV   CR   BS   SV   UZ   GT   AD  
+## [106] NP   HN   CM   KE   ET   AI   MC   GP   JM   &lt;NA&gt; MW   SN   VE   VI   CI  
+## [121] MR   ZM   AW   CG   LK   PR   GU   JE   GG   BM   SR   GI   TT   GY   BW  
+## [136] AQ   MN   MQ   HT   LC   SM   GF   KY   BO   SL   LA   IC   KV   VC   TC  
+## [151] BJ   MZ   LS   RE   NC   DM   MV   UG   TG   GL   PY   NI   GM  
+## 162 Levels: AD AE AF AI AL AM AO AQ AR AT AU AW AZ BA BB BD BE BG BH BJ ... ZM</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-63-1.png" width="672" /></p>
+<p><img src="_main_files/figure-html/unnamed-chunk-64-1.png" width="672" /></p>
+</div>
+<div id="dealing-with-missing-data" class="section level3" number="2.7.3">
+<h3><span class="header-section-number">2.7.3</span> Dealing with Missing Data</h3>
+<p>Somo missing data was identified and will be imputed using statistical imputation (refer to customer type analysis)</p>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="data-aquisition-and-understanding.html#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">md.pattern</span>(unbalanced_data, <span class="at">rotate.names =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-65-1.png" width="672" /></p>
+<pre><code>##       session_id plaform segment customer_type device_group visitor_type
+## 7853           1       1       1             1            1            1
+## 60913          1       1       1             1            1            1
+## 19833          1       1       1             1            1            1
+## 6397           1       1       1             1            1            1
+## 2              1       1       1             1            1            1
+## 1              1       1       1             1            1            1
+## 1              1       1       1             1            1            1
+##                0       0       0             0            0            0
+##       has_listing has_used_search has_recommendation has_add_to_wishlist
+## 7853            1               1                  1                   1
+## 60913           1               1                  1                   1
+## 19833           1               1                  1                   1
+## 6397            1               1                  1                   1
+## 2               1               1                  1                   1
+## 1               1               1                  1                   1
+## 1               1               1                  1                   1
+##                 0               0                  0                   0
+##       has_add_to_bag duration view_qty unique_product_qty
+## 7853               1        1        1                  1
+## 60913              1        1        1                  1
+## 19833              1        1        1                  1
+## 6397               1        1        1                  1
+## 2                  1        1        1                  1
+## 1                  1        1        1                  1
+## 1                  1        1        1                  1
+##                    0        0        0                  0
+##       unique_browse_designer_qty unique_browse_category_qty bought country
+## 7853                           1                          1      1       1
+## 60913                          1                          1      1       1
+## 19833                          1                          1      1       1
+## 6397                           1                          1      1       1
+## 2                              1                          1      1       0
+## 1                              1                          1      1       0
+## 1                              1                          1      1       0
+##                                0                          0      0       4
+##       browser_name is_subscribed      
+## 7853             1             1     0
+## 60913            1             0     1
+## 19833            0             1     1
+## 6397             0             0     2
+## 2                1             0     2
+## 1                0             1     2
+## 1                0             0     3
+##              26232         67313 93549</code></pre>
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="data-aquisition-and-understanding.html#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">md.pattern</span>(balanced_data,<span class="at">rotate.names =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-66-1.png" width="672" /></p>
+<pre><code>##      session_id plaform segment customer_type device_group visitor_type
+## 3676          1       1       1             1            1            1
+## 6064          1       1       1             1            1            1
+## 5649          1       1       1             1            1            1
+## 611           1       1       1             1            1            1
+##               0       0       0             0            0            0
+##      has_listing has_used_search has_recommendation has_add_to_wishlist
+## 3676           1               1                  1                   1
+## 6064           1               1                  1                   1
+## 5649           1               1                  1                   1
+## 611            1               1                  1                   1
+##                0               0                  0                   0
+##      has_add_to_bag duration view_qty unique_product_qty
+## 3676              1        1        1                  1
+## 6064              1        1        1                  1
+## 5649              1        1        1                  1
+## 611               1        1        1                  1
+##                   0        0        0                  0
+##      unique_browse_designer_qty unique_browse_category_qty country bought
+## 3676                          1                          1       1      1
+## 6064                          1                          1       1      1
+## 5649                          1                          1       1      1
+## 611                           1                          1       1      1
+##                               0                          0       0      0
+##      browser_name is_subscribed      
+## 3676            1             1     0
+## 6064            1             0     1
+## 5649            0             1     1
+## 611             0             0     2
+##              6260          6675 12935</code></pre>
+</div>
+</div>
+<div id="summary-of-findings" class="section level2" number="2.8">
+<h2><span class="header-section-number">2.8</span> Summary of findings</h2>
+<ul>
+<li>Features <em>Device Group</em> and <em>Platform</em> showed a strong relationship between them. Given that <em>Platform</em> provides more information <em>Device Group will be removed</em></li>
+<li>Features starting with <em>“has_”</em> refere to milestones on customer journey, therefore the need to include all of them should be taken in consideration. We will use PCA to merge this into one feature and experiment between the use of them individual or together,</li>
+<li><em>Duration</em> feature is Right Skewed and contains observations which lack business sense. To avoid any impact on the model, specially on ones more sensible to variance, it will be log transformed and observations above 24hours will be removed</li>
+<li>Replace all <em>Missing values</em> on <em>country</em>, <em>browser_name</em> and <em>is_subscribed</em> using Nearest Neighbors imputation with a very a k of 3,</li>
+<li>Reduce the number of observations of class country and browser_name by compressing smaller ones into a generic class named others. This will be done because some models do not manage very well the fact that some dummy variables only have one level,</li>
+<li>Reduce the number of levels of Segment by re factoring into a class of has or not segment,</li>
+<li>Specially for the use of Neural Networks and Supervisor Vector Machines, numeric variables will be normalized and scaled</li>
+<li>Converts <em>unique_browse_designer_qty, unique_product_qty, unique_browse_designer_qty, unique_browse_category_qty</em> to ratios over Total Pageviews (view_qty) which provides information on the amount of page views actually related to that category and subsquently log transform,</li>
+<li>Sessions with duration lower than 2 seconds and a total page view of 0 or 1 will be removed,</li>
+<li><em>The graphical analysis already provides a important insight given the business objectives. From the unbalanced data available we can conclude that around of 46% shopping carts are lost on that session. That raises a question of how are this recovered (example on a next session) or if this means that all this sales are lost right at the end of the sales funnel</em>.</li>
+</ul>
+
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="busines-understanding.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="modeling.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="business-understanding.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="data-transformations.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -214,7 +803,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/03-Data_aquisition_and_understanding.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/02-Data_aquisition_and_understanding.Rmd",
 "text": "Edit"
 },
 "history": {
@@ -225,7 +814,7 @@ gitbook.start({
 "link": null,
 "text": null
 },
-"download": ["_main.pdf", "_main.epub"],
+"download": ["_main.pdf"],
 "search": {
 "engine": "fuse",
 "options": null
