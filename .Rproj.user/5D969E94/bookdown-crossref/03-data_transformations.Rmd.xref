@@ -1,6 +1,3 @@
 h1:data-transformations Data transformations
-h2:identify-data-transformations-needed-for-modeling Identify data transformations needed for modeling
-h2:clean-data Clean data
-h2:feature-transformation Feature transformation
-h2:format-data Format data
+h2:summary-of-transformation-steps-identified-during-eda Summary of transformation steps identified during EDA
 
